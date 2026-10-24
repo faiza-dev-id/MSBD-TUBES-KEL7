@@ -46,6 +46,7 @@ class PageController extends Controller
         return view('tu.verifikasi', ['row' => $row, 'checklist' => DummyData::checklist(), 'alasan' => DummyData::alasanPengembalian()]);
     }
     public function persetujuan() { return view('tu.persetujuan', ['pengajuan' => DummyData::pengajuanSiswa()]); }
+    public function resetSandi() { return view('tu.reset-sandi', ['pengguna' => DummyData::pengguna()]); }
     public function dataSiswa()   { return view('tu.siswa', ['daftar' => DummyData::daftarSiswa()]); }
     public function detailSiswa(int $id)
     {

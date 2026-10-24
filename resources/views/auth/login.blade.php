@@ -18,14 +18,14 @@
             <h1 class="mt-8 text-3xl font-bold">Masuk</h1>
             <p class="text-sm text-mute mt-1 mb-7">Mode rancangan: pilih peran untuk melihat tampilannya.</p>
 
-            <form method="POST" action="{{ route('login.proses') }}">@csrf
+            <form method="POST" action="{{ route('login.proses') }}" data-validasi>@csrf
                 @error('username')
                     <div class="mb-4 rounded-xl border border-bad/40 bg-bad/10 px-4 py-3 text-sm text-bad">{{ $message }}</div>
                 @enderror
 
                 <div class="space-y-4">
-                    <x-field label="Username / NISN" name="username" placeholder="Contoh: 0012345678" />
-                    <x-field label="Kata sandi" name="password" type="password" />
+                    <x-field label="Username / NISN" name="username" placeholder="Contoh: 0012345678" wajib="1" autocomplete="username" />
+                    <x-field label="Kata sandi" name="password" type="password" wajib="1" autocomplete="current-password" />
                     <div>
                         <label class="label" for="role">Masuk sebagai</label>
                         <select class="input" id="role" name="role" required>

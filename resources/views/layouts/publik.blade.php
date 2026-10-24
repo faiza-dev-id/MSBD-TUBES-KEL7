@@ -22,6 +22,11 @@
     </nav>
 </header>
 
+<nav class="sm:hidden flex gap-2 px-4 py-2 bg-white border-b border-line text-sm font-medium">
+    <a href="{{ route('ppdb') }}" class="flex-1 text-center px-3 py-2 rounded-full {{ request()->routeIs('ppdb') ? 'bg-tint text-flame font-semibold' : 'text-mute' }}">Daftar PPDB</a>
+    <a href="{{ route('ppdb.status') }}" class="flex-1 text-center px-3 py-2 rounded-full {{ request()->routeIs('ppdb.status') ? 'bg-tint text-flame font-semibold' : 'text-mute' }}">Cek Status</a>
+</nav>
+
 <main class="max-w-4xl mx-auto px-4 sm:px-8 py-8 pb-16">
     <div class="mb-7">
         <h1 class="text-2xl sm:text-3xl font-bold leading-tight">@yield('heading')</h1>

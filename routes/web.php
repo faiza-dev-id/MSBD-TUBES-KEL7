@@ -47,6 +47,7 @@ Route::middleware('role:tu')->prefix('tu')->name('tu.')->group(function () {
     Route::get('/kelas/{id}', [PageController::class, 'kelasDetail'])->name('kelas.detail');
     Route::get('/penempatan', [PageController::class, 'penempatan'])->name('penempatan');
     Route::get('/kenaikan', [PageController::class, 'kenaikan'])->name('kenaikan');
+    Route::get('/reset-sandi', [PageController::class, 'resetSandi'])->name('reset');
 });
 
 // Data master (DFD L1-2, proses 2.5): dipegang TU. Nama route tetap "admin.*".

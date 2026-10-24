@@ -1,6 +1,6 @@
 @php
     $role = session('role');
-    // BARU: menu "Ganti Sandi" hanya untuk role di config/sekolah.php ('role_ganti_sandi')
+    // Menu "Ganti Sandi" hanya untuk role di config/sekolah.php ('role_ganti_sandi')
     $akun = in_array($role, config('sekolah.role_ganti_sandi'), true) ? ['Akun', [['Ganti Sandi', 'akun.sandi']]] : null;
     $kelasMenu = ['Kelas', [['Daftar Kelas & Wali', 'tu.kelas'], ['Penempatan Siswa', 'tu.penempatan'], ['Kenaikan Kelas', 'tu.kenaikan']]];
     $akademikMenu = ['Akademik', [['Konfigurasi Akademik', 'akademik.konfigurasi'], ['Jadwal Pelajaran', 'akademik.jadwal']]];
@@ -10,7 +10,7 @@
         'guru'   => [['Mengajar', [['Jadwal Mengajar', 'guru.jadwal']]], ['Wali Kelas', [['Daftar Siswa Kelas', 'guru.kelas'], ['Kelengkapan Data', 'guru.kelengkapan'], ['Catatan Wali Kelas', 'guru.catatan']]], $akun],
         'tu'     => [
             ['Utama', [['Meja TU', 'tu.dashboard']]],
-            ['Data Siswa', [['Data Induk Siswa', 'tu.siswa'], ['Persetujuan Data', 'tu.persetujuan'], ['Periode Update', 'tu.periode']]],
+            ['Data Siswa', [['Data Induk Siswa', 'tu.siswa'], ['Persetujuan Data', 'tu.persetujuan'], ['Periode Update', 'tu.periode'], ['Reset Sandi Akun', 'tu.reset']]],
             ['Data Master', [['Data Referensi', 'admin.referensi'], ['Checklist & Alasan', 'admin.checklist'], ['Aturan Field', 'admin.aturan']]],
             $kelasMenu, $akademikMenu, $akun,
         ],
@@ -22,14 +22,14 @@
         default  => [],
     };
 
-    // BARU: buang entri kosong (menu Akun untuk role yang tidak boleh ganti sandi)
+    // buang entri kosong (menu Akun untuk role yang tidak boleh ganti sandi)
     $menu = array_values(array_filter($menu));
 
     // ikon tiap menu (nama ikon ada di components/icon.blade.php)
     $ikon = [
         'siswa.dashboard' => 'home', 'siswa.profil' => 'idcard', 'siswa.pengajuan' => 'edit',
         'guru.jadwal' => 'calendar', 'guru.kelas' => 'users', 'guru.kelengkapan' => 'clipboard', 'guru.catatan' => 'book',
-        'tu.dashboard' => 'home', 'tu.siswa' => 'folder', 'tu.persetujuan' => 'check', 'tu.periode' => 'clock',
+        'tu.dashboard' => 'home', 'tu.siswa' => 'folder', 'tu.persetujuan' => 'check', 'tu.periode' => 'clock', 'tu.reset' => 'key',
         'tu.kelas' => 'cap', 'tu.penempatan' => 'enter', 'tu.kenaikan' => 'trend',
         'akademik.konfigurasi' => 'sliders', 'akademik.jadwal' => 'grid',
         'kepsek.dashboard' => 'chart',

@@ -35,9 +35,9 @@
     .card  { @apply bg-card border border-line/70 rounded-2xl p-5
              shadow-[0_1px_2px_rgba(15,59,102,.05),0_10px_28px_-14px_rgba(15,59,102,.18)]; }
     .label { @apply block text-xs font-semibold text-mute mb-1.5; }
-    .input { @apply w-full px-3.5 py-2.5 text-sm bg-white border border-line rounded-xl text-ink
+    .input { @apply w-full px-3.5 py-2.5 text-base sm:text-sm bg-white border border-line rounded-xl text-ink
              placeholder:text-mute/60 focus:outline-none focus:border-flame focus:ring-4 focus:ring-flame/15; }
-    .btn   { @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold
+    .btn   { @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 min-h-11 sm:min-h-0 rounded-full text-sm font-semibold
              bg-flame text-white shadow-sm hover:bg-flame-dark active:scale-[.98] transition cursor-pointer; }
     .btn-flame { @apply bg-linear-to-r from-flame to-navy-soft hover:from-flame-dark hover:to-navy; }
     .btn-ghost { @apply bg-white text-flame border border-line shadow-none hover:bg-tint; }
