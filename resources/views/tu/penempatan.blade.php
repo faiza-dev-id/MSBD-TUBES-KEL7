@@ -7,7 +7,7 @@
     <h2 class="sec-title">Siswa belum berkelas</h2>
     @foreach ($belum as $s)
         <label class="flex items-center gap-3 py-2.5 text-sm border-b border-line last:border-0 cursor-pointer">
-            <input type="checkbox" class="size-4 accent-[#d9822b]"> <b>{{ $s['nama'] }}</b> <span class="text-mute">{{ $s['nisn'] }}</span>
+            <input type="checkbox" class="size-4 accent-flame"> <b>{{ $s['nama'] }}</b> <span class="text-mute">{{ $s['nisn'] }}</span>
         </label>
     @endforeach
     <div class="mt-4 flex items-end gap-3 flex-wrap">

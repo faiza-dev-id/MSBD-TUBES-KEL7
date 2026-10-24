@@ -1,8 +1,15 @@
-@extends('layouts.app')
-@section('title', 'Status Pendaftaran')
-@section('heading', 'Status Pendaftaran')
-@section('sub', 'Pantau sampai mana pendaftaranmu diproses. Kalau ada berkas yang dikembalikan, unggah ulang di sini.')
+@extends('layouts.publik')
+@section('title', 'Cek Status Pendaftaran')
+@section('heading', 'Cek Status Pendaftaran')
+@section('sub', 'Masukkan NISN dan kode pendaftaran yang kamu terima saat mengirim formulir. Kabar status juga dikirim lewat WhatsApp.')
 @section('content')
+<form class="card mb-4 grid sm:grid-cols-[1fr_1fr_auto] gap-4 items-end" onsubmit="return false">
+    <x-field label="NISN" name="cek_nisn" placeholder="10 digit" />
+    <x-field label="Kode pendaftaran" name="cek_kode" placeholder="Contoh: PPDB-2026-0142" />
+    <button class="btn btn-flame">Cek status</button>
+</form>
+
+<p class="text-xs text-mute mb-3">Contoh hasil pencarian:</p>
 <div class="grid lg:grid-cols-[1.2fr_1fr] gap-4 items-start">
     <div class="card">
         <h2 class="sec-title">Perjalanan pendaftaran</h2>

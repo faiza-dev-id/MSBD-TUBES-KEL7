@@ -17,8 +17,9 @@
     <form class="card space-y-4" onsubmit="return false">
         <h2 class="sec-title">Tetapkan wali kelas</h2>
         <div><label class="label">Kelas</label><select class="input">@foreach ($kelas as $k)<option>{{ $k['nama'] }}</option>@endforeach</select></div>
-        <div><label class="label">Guru</label><select class="input"><option>Bu Contoh Guru</option><option>Pak Harahap</option></select></div>
+        <div><label class="label">Guru</label><select class="input">@foreach (\App\Support\DummyData::daftarGuru() as $g)<option>{{ $g }}</option>@endforeach</select></div>
         <x-field label="Berlaku mulai" name="tgl_mulai" type="date" />
+        <x-field label="Berlaku sampai (opsional)" name="tgl_selesai" type="date" hint="Kosongkan jika masih berlaku" />
         <button class="btn btn-flame w-full">Tetapkan</button>
     </form>
 </div>

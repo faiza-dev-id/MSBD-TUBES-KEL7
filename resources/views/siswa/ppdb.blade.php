@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.publik')
 @section('title', 'Formulir PPDB')
 @section('heading', 'Formulir Data Calon Siswa')
 @section('sub', 'Isi sesuai dokumen asli (KK, akta, ijazah). Data akan diperiksa Tata Usaha sebelum disahkan.')
@@ -23,6 +23,8 @@
                 <div><label class="label">Agama</label><select class="input"><option>Kristen Protestan</option><option>Katolik</option><option>Islam</option><option>Buddha</option><option>Hindu</option><option>Konghucu</option></select></div>
                 <x-field label="Asal SMP/MTs" name="sekolah_asal" />
                 <x-field label="Nomor Kartu Keluarga" name="no_kk" hint="16 digit" />
+                <x-field label="No. HP / WhatsApp" name="no_hp" hint="Kabar status pendaftaran dikirim ke nomor ini" />
+                <div><label class="label">Jenjang tujuan</label><select class="input" name="jenjang_tujuan"><option>SMA</option></select></div>
             </div>
         </div>
         <div class="card">
@@ -66,7 +68,8 @@
         <div class="card">
             <h2 class="sec-title">Periksa sebelum mengirim</h2>
             <p class="text-sm text-mute">Pastikan data dan berkas sudah benar. Setelah dikirim, data diperiksa Tata Usaha dan tidak bisa diubah sampai ada hasil pemeriksaan.</p>
-            <label class="flex items-start gap-3 mt-4 text-sm cursor-pointer"><input type="checkbox" class="size-4 mt-0.5 accent-[#d9822b]"> Saya menyatakan data yang saya isi sesuai dengan dokumen asli.</label>
+            <p class="text-sm text-mute mt-2">Setelah terkirim kamu mendapat <b>kode pendaftaran</b>. Simpan kode itu untuk mengecek status di halaman <a href="{{ route('ppdb.status') }}" class="font-semibold text-flame">Cek Status</a>.</p>
+            <label class="flex items-start gap-3 mt-4 text-sm cursor-pointer"><input type="checkbox" class="size-4 mt-0.5 accent-flame"> Saya menyatakan data yang saya isi sesuai dengan dokumen asli.</label>
         </div>
     </div>
 
@@ -94,7 +97,7 @@
         el.addEventListener('input', function () {
             var nama = dup[jenis][el.value.trim()];
             box.dataset.dup = nama ? '1' : '';
-            box.textContent = nama ? jenis.toUpperCase() + ' ini sudah terdaftar atas nama ' + nama + '. Cek menu Status Pendaftaran atau hubungi Tata Usaha.' : '';
+            box.textContent = nama ? jenis.toUpperCase() + ' ini sudah terdaftar atas nama ' + nama + '. Cek lewat halaman Cek Status atau hubungi Tata Usaha.' : '';
             box.classList.toggle('hidden', !nama);
             el.classList.toggle('!border-bad', !!nama);
         });

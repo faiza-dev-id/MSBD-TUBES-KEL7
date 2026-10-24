@@ -8,7 +8,7 @@
     @fonts
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-screen grid lg:grid-cols-2">
+<body class="min-h-screen">
     @yield('content')
 </body>
 </html>

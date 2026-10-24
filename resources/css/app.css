@@ -3,21 +3,24 @@
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
+/* Identitas visual: biru langit + putih (warna gedung sekolah).
+   Ganti hex di bawah ini untuk mengubah warna seluruh web. */
 @theme {
     --font-sans: 'Public Sans', ui-sans-serif, system-ui, sans-serif;
-    --font-serif: 'Fraunces', Georgia, serif;
+    --font-serif: 'Poppins', 'Public Sans', ui-sans-serif, system-ui, sans-serif; /* dipakai untuk judul */
 
-    /* navy = biru tua (sidebar, judul) | flame = biru aksen (menu aktif, tombol) | paper = putih kebiruan */
-    --color-navy: #17306b;
-    --color-navy-soft: #24459a;
-    --color-flame: #2563eb;
-    --color-flame-dark: #1d4ed8;
-    --color-paper: #f7f9fd;
-    --color-card: #ffffff;
+    --color-navy: #0f3b66;        /* biru tua: judul, panel gelap */
+    --color-navy-soft: #1a5a96;   /* biru tua lebih terang */
+    --color-flame: #1a7cc0;       /* biru utama: tombol, menu aktif */
+    --color-flame-dark: #14639c;  /* biru utama saat hover */
+    --color-sky: #3fb0ea;         /* biru langit: aksen, gradasi */
+    --color-tint: #e6f3fb;        /* biru sangat muda: latar menu aktif */
+    --color-paper: #eef5fb;       /* latar halaman */
+    --color-card: #ffffff;        /* latar kartu */
 
-    --color-ink: #1a2233;
-    --color-mute: #5b667a;
-    --color-line: #dbe3f0;
+    --color-ink: #16263a;
+    --color-mute: #5d6f85;
+    --color-line: #d9e5f0;
     --color-ok: #2f7d4f;
     --color-warn: #b7791f;
     --color-bad: #b23a3a;
@@ -25,17 +28,20 @@
 
 @layer base {
     body { @apply bg-paper text-ink font-sans antialiased; }
-    h1, h2, h3 { @apply font-serif text-navy; }
+    h1, h2, h3 { @apply font-serif font-semibold text-navy; }
 }
 
 @layer components {
-    .card  { @apply bg-card border border-line rounded-xl p-5; }
-    .label { @apply block text-xs font-semibold text-mute mb-1; }
-    .input { @apply w-full px-3 py-2.5 text-sm bg-paper border border-line rounded-md text-ink
-             focus:outline-2 focus:outline-flame; }
-    .btn   { @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-md text-sm font-semibold
-             bg-navy text-paper hover:bg-navy-soft transition cursor-pointer; }
-    .btn-flame { @apply bg-flame text-white hover:bg-flame-dark; }
-    .btn-ghost { @apply bg-transparent text-navy border border-line hover:bg-paper; }
-    .sec-title { @apply font-serif text-lg text-navy border-b border-dashed border-line pb-2 mb-4; }
+    .card  { @apply bg-card border border-line/70 rounded-2xl p-5
+             shadow-[0_1px_2px_rgba(15,59,102,.05),0_10px_28px_-14px_rgba(15,59,102,.18)]; }
+    .label { @apply block text-xs font-semibold text-mute mb-1.5; }
+    .input { @apply w-full px-3.5 py-2.5 text-sm bg-white border border-line rounded-xl text-ink
+             placeholder:text-mute/60 focus:outline-none focus:border-flame focus:ring-4 focus:ring-flame/15; }
+    .btn   { @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold
+             bg-flame text-white shadow-sm hover:bg-flame-dark active:scale-[.98] transition cursor-pointer; }
+    .btn-flame { @apply bg-linear-to-r from-flame to-navy-soft hover:from-flame-dark hover:to-navy; }
+    .btn-ghost { @apply bg-white text-flame border border-line shadow-none hover:bg-tint; }
+    .sec-title { @apply font-serif text-base font-semibold text-navy pb-3 mb-4 border-b border-line; }
 }
+
+[x-cloak] { display: none !important; }

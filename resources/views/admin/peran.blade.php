@@ -11,7 +11,7 @@
             @foreach ($hak as $nama => $baris)
                 <tr class="border-b border-line">
                     <td class="p-2.5">{{ $nama }}</td>
-                    @foreach ($baris as $v)<td class="p-2.5 text-center"><input type="checkbox" class="size-4 accent-[#d9822b]" {{ $v ? 'checked' : '' }}></td>@endforeach
+                    @foreach ($baris as $v)<td class="p-2.5 text-center"><input type="checkbox" class="size-4 accent-flame" {{ $v ? 'checked' : '' }}></td>@endforeach
                 </tr>
             @endforeach
             </tbody>

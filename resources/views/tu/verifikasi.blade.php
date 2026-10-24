@@ -13,7 +13,7 @@
                 </div>
                 @foreach ($items as $item)
                     <label class="flex items-center gap-3 py-2 text-sm border-b border-line last:border-0 cursor-pointer">
-                        <input type="checkbox" class="size-4 accent-[#d9822b]"> {{ $item }}
+                        <input type="checkbox" class="size-4 accent-flame"> {{ $item }}
                     </label>
                 @endforeach
             </div>

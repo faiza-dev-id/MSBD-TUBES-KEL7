@@ -10,29 +10,33 @@ Route::get('/masuk', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/masuk', [AuthController::class, 'login'])->name('login.proses');
 Route::post('/keluar', [AuthController::class, 'logout'])->name('logout');
 
+// ---- PUBLIK: calon siswa (belum punya akun, DFD 3.1) ----
+Route::get('/ppdb', [PageController::class, 'ppdb'])->name('ppdb');
+Route::get('/ppdb/status', [PageController::class, 'status'])->name('ppdb.status');
+
 Route::get('/beranda', [PageController::class, 'beranda'])->name('beranda');
 
-// ---- SEMUA ROLE ----
-Route::middleware('role:siswa,guru,tu,kepsek,admin')->get('/akun/sandi', [PageController::class, 'sandi'])->name('akun.sandi');
+// ---- GANTI SANDI (hanya role yang diizinkan di config/sekolah.php) ----
+Route::middleware('role:' . implode(',', config('sekolah.role_ganti_sandi')))
+    ->get('/akun/sandi', [PageController::class, 'sandi'])->name('akun.sandi');
 
 // ---- SISWA ----
 Route::middleware('role:siswa')->prefix('siswa')->name('siswa.')->group(function () {
     Route::get('/', [PageController::class, 'siswaDashboard'])->name('dashboard');
-    Route::get('/ppdb', [PageController::class, 'ppdb'])->name('ppdb');
-    Route::get('/status', [PageController::class, 'status'])->name('status');
     Route::get('/profil', [PageController::class, 'profil'])->name('profil');
     Route::get('/pengajuan-perubahan', [PageController::class, 'pengajuan'])->name('pengajuan');
 });
 
-// ---- GURU ----
+// ---- GURU / WALI KELAS ----
 Route::middleware('role:guru')->prefix('guru')->name('guru.')->group(function () {
     Route::get('/jadwal', [PageController::class, 'jadwalGuru'])->name('jadwal');
     Route::get('/kelas', [PageController::class, 'guruKelas'])->name('kelas');
+    Route::get('/kelengkapan', [PageController::class, 'guruKelengkapan'])->name('kelengkapan');
     Route::get('/catatan', [PageController::class, 'catatan'])->name('catatan');
 });
 
-// ---- TU (admin juga boleh) ----
-Route::middleware('role:tu,admin')->prefix('tu')->name('tu.')->group(function () {
+// ---- TATA USAHA ----
+Route::middleware('role:tu')->prefix('tu')->name('tu.')->group(function () {
     Route::get('/', [PageController::class, 'tuDashboard'])->name('dashboard');
     Route::get('/verifikasi/{id}', [PageController::class, 'verifikasi'])->name('verifikasi');
     Route::get('/persetujuan', [PageController::class, 'persetujuan'])->name('persetujuan');
@@ -45,23 +49,29 @@ Route::middleware('role:tu,admin')->prefix('tu')->name('tu.')->group(function ()
     Route::get('/kenaikan', [PageController::class, 'kenaikan'])->name('kenaikan');
 });
 
-Route::middleware('role:tu,admin')->prefix('akademik')->name('akademik.')->group(function () {
+// Data master (DFD L1-2, proses 2.5): dipegang TU. Nama route tetap "admin.*".
+Route::middleware('role:tu')->prefix('tu/master')->name('admin.')->group(function () {
+    Route::get('/referensi/{tab?}', [PageController::class, 'referensi'])->name('referensi');
+    Route::get('/checklist', [PageController::class, 'checklistRef'])->name('checklist');
+    Route::get('/aturan-field', [PageController::class, 'aturan'])->name('aturan');
+});
+
+Route::middleware('role:tu')->prefix('akademik')->name('akademik.')->group(function () {
     Route::get('/konfigurasi/{tab?}', [PageController::class, 'konfigurasi'])->name('konfigurasi');
     Route::get('/jadwal', [PageController::class, 'jadwal'])->name('jadwal');
 });
 
-Route::middleware('role:kepsek,admin')->get('/kepsek', [PageController::class, 'kepsekDashboard'])->name('kepsek.dashboard');
+// ---- KEPALA SEKOLAH (DFD L1-1: akun, peran, pengaturan, log). Nama route tetap "admin.*". ----
+Route::middleware('role:kepsek')->group(function () {
+    Route::get('/kepsek', [PageController::class, 'kepsekDashboard'])->name('kepsek.dashboard');
 
-// ---- ADMIN ----
-Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/pengguna', [PageController::class, 'pengguna'])->name('pengguna');
-    Route::get('/pengguna/tambah', [PageController::class, 'penggunaTambah'])->name('pengguna.tambah');
-    Route::get('/staf', [PageController::class, 'staf'])->name('staf');
-    Route::get('/peran', [PageController::class, 'peran'])->name('peran');
-    Route::get('/referensi/{tab?}', [PageController::class, 'referensi'])->name('referensi');
-    Route::get('/checklist', [PageController::class, 'checklistRef'])->name('checklist');
-    Route::get('/aturan-field', [PageController::class, 'aturan'])->name('aturan');
-    Route::get('/pengaturan', [PageController::class, 'pengaturan'])->name('pengaturan');
-    Route::get('/log-login', [PageController::class, 'logLogin'])->name('log');
-    Route::get('/audit', [PageController::class, 'audit'])->name('audit');
+    Route::prefix('kepsek')->name('admin.')->group(function () {
+        Route::get('/pengguna', [PageController::class, 'pengguna'])->name('pengguna');
+        Route::get('/pengguna/tambah', [PageController::class, 'penggunaTambah'])->name('pengguna.tambah');
+        Route::get('/staf', [PageController::class, 'staf'])->name('staf');
+        Route::get('/peran', [PageController::class, 'peran'])->name('peran');
+        Route::get('/pengaturan', [PageController::class, 'pengaturan'])->name('pengaturan');
+        Route::get('/log-login', [PageController::class, 'logLogin'])->name('log');
+        Route::get('/audit', [PageController::class, 'audit'])->name('audit');
+    });
 });

@@ -1,5 +1,8 @@
 @props(['angka', 'label'])
-<div class="bg-card border border-line border-l-4 border-l-flame rounded-lg p-4">
-    <div class="font-serif text-3xl font-bold text-navy">{{ $angka }}</div>
-    <div class="text-sm text-mute">{{ $label }}</div>
+<div class="card flex items-center gap-4">
+    <div class="w-1.5 self-stretch rounded-full bg-linear-to-b from-sky to-flame"></div>
+    <div>
+        <div class="text-3xl font-bold text-navy leading-none">{{ $angka }}</div>
+        <div class="text-sm text-mute mt-2">{{ $label }}</div>
+    </div>
 </div>

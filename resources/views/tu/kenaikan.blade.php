@@ -11,7 +11,7 @@
     <h2 class="sec-title">Siswa yang naik kelas</h2>
     @foreach ($siswa as $s)
         <label class="flex items-center gap-3 py-2.5 text-sm border-b border-line last:border-0 cursor-pointer">
-            <input type="checkbox" class="size-4 accent-[#d9822b]" checked> <b>{{ $s['nama'] }}</b> <span class="text-mute">{{ $s['nisn'] }}</span>
+            <input type="checkbox" class="size-4 accent-flame" checked> <b>{{ $s['nama'] }}</b> <span class="text-mute">{{ $s['nisn'] }}</span>
         </label>
     @endforeach
     <p class="text-xs text-mute mt-3">Proses ini tercatat di jejak audit. Pastikan kelas tujuan sudah benar sebelum memproses.</p>

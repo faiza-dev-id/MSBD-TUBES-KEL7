@@ -15,7 +15,7 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        $request->validate(['role' => ['required', 'in:siswa,guru,tu,kepsek,admin']]);
+        $request->validate(['role' => ['required', 'in:siswa,guru,tu,kepsek']]);
 
         // DEMO tampilan error (logika asli dikerjakan backend)
         if ($request->username === 'terkunci') {

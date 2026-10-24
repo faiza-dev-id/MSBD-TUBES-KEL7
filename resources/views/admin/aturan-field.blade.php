@@ -11,8 +11,8 @@
             @foreach ($field as [$label, $kolom, $boleh, $bukti, $jenis])
                 <tr class="border-b border-line">
                     <td class="p-2.5 font-medium">{{ $label }}</td><td class="p-2.5 text-mute">{{ $kolom }}</td>
-                    <td class="p-2.5 text-center"><input type="checkbox" class="size-4 accent-[#d9822b]" {{ $boleh ? 'checked' : '' }}></td>
-                    <td class="p-2.5 text-center"><input type="checkbox" class="size-4 accent-[#d9822b]" {{ $bukti ? 'checked' : '' }}></td>
+                    <td class="p-2.5 text-center"><input type="checkbox" class="size-4 accent-flame" {{ $boleh ? 'checked' : '' }}></td>
+                    <td class="p-2.5 text-center"><input type="checkbox" class="size-4 accent-flame" {{ $bukti ? 'checked' : '' }}></td>
                     <td class="p-2.5">{{ $jenis }}</td>
                 </tr>
             @endforeach

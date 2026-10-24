@@ -21,7 +21,6 @@ class DummyData
             'guru'   => ['label' => 'Guru / Wali Kelas', 'nama' => 'Bu Contoh Guru'],
             'tu'     => ['label' => 'Tata Usaha',        'nama' => 'Pak Contoh TU'],
             'kepsek' => ['label' => 'Kepala Sekolah',    'nama' => 'Bapak Kepala Sekolah'],
-            'admin'  => ['label' => 'Admin',             'nama' => 'Admin Sistem'],
         ];
     }
 
@@ -85,10 +84,23 @@ class DummyData
         ];
     }
 
+    // view: kelengkapan data per siswa (DFD 4.3, dilihat wali kelas)
+    public static function kelengkapanSiswa(): array
+    {
+        return [
+            ['nama' => 'Contoh Siswa', 'nisn' => '0012345678', 'status' => 'konfirmasi', 'tgl' => '22 Okt 2026'],
+            ['nama' => 'Dewi Lubis', 'nisn' => '0056789012', 'status' => 'ubah', 'tgl' => '23 Okt 2026'],
+            ['nama' => 'Eka Manurung', 'nisn' => '0067890123', 'status' => 'konfirmasi', 'tgl' => '21 Okt 2026'],
+            ['nama' => 'Gita Silalahi', 'nisn' => '0089012345', 'status' => 'belum', 'tgl' => '-'],
+            ['nama' => 'Hendra Panjaitan', 'nisn' => '0090123456', 'status' => 'belum', 'tgl' => '-'],
+        ];
+    }
+
     // tabel: pengguna + role
     public static function pengguna(): array
     {
         return [
+            ['nama' => 'Bapak Kepala Sekolah', 'username' => 'kepsek01', 'role' => 'Kepala Sekolah', 'aktif' => true, 'login' => '24 Okt 2026 07:30'],
             ['nama' => 'Pak Contoh TU', 'username' => 'tu01', 'role' => 'Tata Usaha', 'aktif' => true, 'login' => '23 Okt 2026 08:12'],
             ['nama' => 'Bu Contoh Guru', 'username' => 'guru01', 'role' => 'Guru / Wali Kelas', 'aktif' => true, 'login' => '22 Okt 2026 14:40'],
             ['nama' => 'Contoh Siswa', 'username' => '0012345678', 'role' => 'Siswa', 'aktif' => true, 'login' => '21 Okt 2026 19:03'],
@@ -146,7 +158,7 @@ class DummyData
             ['waktu' => '24 Okt 2026 08:12', 'user' => 'tu01', 'ok' => true, 'ip' => '192.168.1.12', 'perangkat' => 'Chrome · Windows'],
             ['waktu' => '24 Okt 2026 07:58', 'user' => 'tu01', 'ok' => false, 'ip' => '192.168.1.12', 'perangkat' => 'Chrome · Windows'],
             ['waktu' => '23 Okt 2026 19:03', 'user' => '0012345678', 'ok' => true, 'ip' => '114.122.10.4', 'perangkat' => 'Chrome · Android'],
-            ['waktu' => '23 Okt 2026 02:41', 'user' => 'admin', 'ok' => false, 'ip' => '103.55.20.9', 'perangkat' => 'Firefox · Linux'],
+            ['waktu' => '23 Okt 2026 02:41', 'user' => 'kepsek01', 'ok' => false, 'ip' => '103.55.20.9', 'perangkat' => 'Firefox · Linux'],
         ];
     }
 
@@ -156,24 +168,28 @@ class DummyData
         return [
             ['waktu' => '24 Okt 2026 09:30', 'user' => 'tu01', 'aksi' => 'UPDATE', 'tabel' => 'siswa', 'rec' => '#1', 'lama' => 'alamat: Jl. Lama No. 3', 'baru' => 'alamat: Jl. Contoh No. 12'],
             ['waktu' => '24 Okt 2026 09:12', 'user' => 'tu01', 'aksi' => 'UPDATE', 'tabel' => 'pengajuan_perubahan', 'rec' => '#PP-009', 'lama' => 'status: menunggu', 'baru' => 'status: disetujui'],
-            ['waktu' => '23 Okt 2026 15:02', 'user' => 'admin', 'aksi' => 'INSERT', 'tabel' => 'pengguna', 'rec' => '#12', 'lama' => '-', 'baru' => 'username: guru01'],
+            ['waktu' => '23 Okt 2026 15:02', 'user' => 'kepsek01', 'aksi' => 'INSERT', 'tabel' => 'pengguna', 'rec' => '#12', 'lama' => '-', 'baru' => 'username: guru01'],
         ];
     }
 
     // tabel: role, hak_akses, role_hak_akses
     public static function hakAkses(): array
     {
-        $roles = ['Siswa', 'Guru', 'TU', 'Kepsek', 'Admin'];
+        $roles = ['Siswa', 'Guru', 'TU', 'Kepsek'];
         $hak = [
-            'Isi formulir PPDB'         => [1, 0, 0, 0, 0],
-            'Ajukan perubahan data'     => [1, 0, 0, 0, 0],
-            'Verifikasi berkas PPDB'    => [0, 0, 1, 0, 1],
-            'Setujui perubahan data'    => [0, 0, 1, 0, 1],
-            'Kelola data induk siswa'   => [0, 0, 1, 0, 1],
-            'Buka/tutup periode update' => [0, 0, 1, 0, 1],
-            'Lihat dashboard ringkasan' => [0, 0, 0, 1, 1],
-            'Kelola pengguna & peran'   => [0, 0, 0, 0, 1],
-            'Lihat log & jejak audit'   => [0, 0, 0, 1, 1],
+            'Konfirmasi / ajukan perubahan data' => [1, 0, 0, 0],
+            'Catatan wali kelas'                 => [0, 1, 0, 0],
+            'Pantau kelengkapan data kelas'      => [0, 1, 1, 0],
+            'Verifikasi berkas PPDB'             => [0, 0, 1, 0],
+            'Setujui perubahan data'             => [0, 0, 1, 0],
+            'Kelola data induk siswa'            => [0, 0, 1, 0],
+            'Kelola data master & referensi'     => [0, 0, 1, 0],
+            'Kelola kelas, wali, dan jadwal'     => [0, 0, 1, 0],
+            'Buka/tutup periode update'          => [0, 0, 1, 0],
+            'Lihat dashboard ringkasan'          => [0, 0, 0, 1],
+            'Kelola pengguna & peran'            => [0, 0, 0, 1],
+            'Pengaturan sistem'                  => [0, 0, 0, 1],
+            'Lihat log login & jejak audit'      => [0, 0, 0, 1],
         ];
 
         return compact('roles', 'hak');
@@ -183,6 +199,8 @@ class DummyData
     public static function referensi(): array
     {
         return [
+            'jenjang'       => self::t('Jenjang', ['Nama jenjang'], [['SMP'], ['SMA']]),
+            'tingkat'       => self::t('Tingkat', ['Tingkat', 'Jenjang'], [['X', 'SMA'], ['XI', 'SMA'], ['XII', 'SMA']]),
             'agama'         => self::t('Agama', ['Nama agama'], [['Kristen Protestan'], ['Katolik'], ['Islam'], ['Buddha'], ['Hindu'], ['Konghucu']]),
             'pekerjaan'     => self::t('Pekerjaan', ['Nama pekerjaan'], [['PNS / ASN'], ['TNI / Polri'], ['Karyawan swasta'], ['Wiraswasta'], ['Petani / nelayan'], ['Lainnya']]),
             'sekolah'       => self::t('Sekolah Asal', ['Nama sekolah', 'Jenjang'], [['SMP Contoh Medan', 'SMP'], ['SMP Negeri 1 Medan', 'SMP'], ['MTs Contoh Medan', 'MTs']]),
@@ -212,7 +230,7 @@ class DummyData
     {
         return [
             'guru' => self::t('Data Guru', ['Nama', 'NIP', 'No. HP', 'Username'], [['Bu Contoh Guru', '198001012005012001', '0812-1111-2222', 'guru01'], ['Pak Harahap', '197805052003121002', '0813-3333-4444', 'guru02']]),
-            'staf' => self::t('Data Staf', ['Nama', 'Jabatan', 'No. HP', 'Username'], [['Pak Contoh TU', 'Tata Usaha', '0811-5555-6666', 'tu01'], ['Bu Sitompul', 'Tata Usaha', '0811-7777-8888', 'tu02']]),
+            'staf' => self::t('Data Staf', ['Nama', 'No. HP', 'Username'], [['Pak Contoh TU', '0811-5555-6666', 'tu01'], ['Bu Sitompul', '0811-7777-8888', 'tu02']]),
         ];
     }
 
@@ -244,6 +262,11 @@ class DummyData
     public static function daftarMapel(): array
     {
         return ['Matematika', 'Bahasa Indonesia', 'Bahasa Inggris', 'Fisika', 'Kimia', 'Biologi', 'PKn', 'Pendidikan Agama Kristen', 'Seni Budaya', 'PJOK'];
+    }
+
+    public static function daftarGuru(): array
+    {
+        return ['Bu Contoh Guru', 'Pak Harahap', 'Bu Sitompul', 'Pak Nainggolan'];
     }
 
     // C. tabel: jadwal_pelajaran (untuk guru)
@@ -298,18 +321,18 @@ class DummyData
         ];
     }
 
-        // B. wilayah berjenjang: provinsi > kota > kecamatan > kelurahan
+    // B. wilayah berjenjang: provinsi > kota > kecamatan > kelurahan
     public static function wilayahPohon(): array
     {
         return [
             'Sumatera Utara' => [
                 'Medan' => [
-                    'Medan Kota'  => ['Pasar Baru', 'Teladan Barat', 'Sudirejo I'],
-                    'Medan Baru'  => ['Padang Bulan', 'Babura', 'Merdeka'],
+                    'Medan Kota'    => ['Pasar Baru', 'Teladan Barat', 'Sudirejo I'],
+                    'Medan Baru'    => ['Padang Bulan', 'Babura', 'Merdeka'],
                     'Medan Petisah' => ['Petisah Tengah', 'Sei Putih Barat'],
                 ],
                 'Deli Serdang' => [
-                    'Lubuk Pakam' => ['Lubuk Pakam I-II', 'Pasar Melintang'],
+                    'Lubuk Pakam'     => ['Lubuk Pakam I-II', 'Pasar Melintang'],
                     'Percut Sei Tuan' => ['Tembung', 'Bandar Khalipah'],
                 ],
             ],
