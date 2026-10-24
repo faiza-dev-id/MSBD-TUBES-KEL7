@@ -4,6 +4,38 @@
 @source '../../storage/framework/views/*.php';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Public Sans', ui-sans-serif, system-ui, sans-serif;
+    --font-serif: 'Fraunces', Georgia, serif;
+
+    /* navy = biru tua (sidebar, judul) | flame = biru aksen (menu aktif, tombol) | paper = putih kebiruan */
+    --color-navy: #17306b;
+    --color-navy-soft: #24459a;
+    --color-flame: #2563eb;
+    --color-flame-dark: #1d4ed8;
+    --color-paper: #f7f9fd;
+    --color-card: #ffffff;
+
+    --color-ink: #1a2233;
+    --color-mute: #5b667a;
+    --color-line: #dbe3f0;
+    --color-ok: #2f7d4f;
+    --color-warn: #b7791f;
+    --color-bad: #b23a3a;
+}
+
+@layer base {
+    body { @apply bg-paper text-ink font-sans antialiased; }
+    h1, h2, h3 { @apply font-serif text-navy; }
+}
+
+@layer components {
+    .card  { @apply bg-card border border-line rounded-xl p-5; }
+    .label { @apply block text-xs font-semibold text-mute mb-1; }
+    .input { @apply w-full px-3 py-2.5 text-sm bg-paper border border-line rounded-md text-ink
+             focus:outline-2 focus:outline-flame; }
+    .btn   { @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-md text-sm font-semibold
+             bg-navy text-paper hover:bg-navy-soft transition cursor-pointer; }
+    .btn-flame { @apply bg-flame text-white hover:bg-flame-dark; }
+    .btn-ghost { @apply bg-transparent text-navy border border-line hover:bg-paper; }
+    .sec-title { @apply font-serif text-lg text-navy border-b border-dashed border-line pb-2 mb-4; }
 }
