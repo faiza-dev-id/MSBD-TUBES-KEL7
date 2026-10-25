@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Illuminate\Support\Facades\DB;
 use App\Support\DummyData;
 
 /** Controller halaman (tahap desain). Isinya hanya menyiapkan data tiruan untuk view. */
@@ -47,13 +47,107 @@ class PageController extends Controller
     }
     public function persetujuan() { return view('tu.persetujuan', ['pengajuan' => DummyData::pengajuanSiswa()]); }
     public function resetSandi() { return view('tu.reset-sandi', ['pengguna' => DummyData::pengguna()]); }
-    public function dataSiswa()   { return view('tu.siswa', ['daftar' => DummyData::daftarSiswa()]); }
-    public function detailSiswa(int $id)
-    {
-        $row = collect(DummyData::daftarSiswa())->firstWhere('id', $id) ?? abort(404);
+    public function dataSiswa()
+{
+    $daftar = DB::table('siswa as s')
+        ->leftJoin(
+            'status_siswa as st',
+            's.id_status_siswa',
+            '=',
+            'st.id_status_siswa'
+        )
+        ->leftJoin(
+            'keanggotaan_kelas as kk',
+            's.id_siswa',
+            '=',
+            'kk.id_siswa'
+        )
+        ->leftJoin(
+            'kelas as k',
+            'kk.id_kelas',
+            '=',
+            'k.id_kelas'
+        )
+        ->select(
+            's.id_siswa as id',
+            's.nama_lengkap as nama',
+            's.nisn',
+            'k.nama_kelas as kelas',
+            'st.nama_status as status'
+        )
+        ->orderBy('s.nama_lengkap')
+        ->get()
+        ->map(function ($siswa) {
+            return [
+                'id' => $siswa->id,
+                'nama' => $siswa->nama,
+                'nisn' => $siswa->nisn ?? '-',
+                'kelas' => $siswa->kelas ?? '-',
+                'status' => $siswa->status ?? '-',
+            ];
+        });
 
-        return view('tu.siswa-detail', ['row' => $row, 's' => DummyData::siswa(), 'dokumen' => DummyData::dokumenSiswa()]);
-    }
+    return view('tu.siswa', [
+        'daftar' => $daftar,
+    ]);
+}
+
+public function detailSiswa(int $id)
+{
+    $siswa = DB::table('siswa as s')
+        ->leftJoin('status_siswa as st', 's.id_status_siswa', '=', 'st.id_status_siswa')
+        ->leftJoin('keanggotaan_kelas as kk', 's.id_siswa', '=', 'kk.id_siswa')
+        ->leftJoin('kelas as k', 'kk.id_kelas', '=', 'k.id_kelas')
+        ->leftJoin('pengguna as p', 's.id_pengguna', '=', 'p.id_pengguna')
+        ->where('s.id_siswa', $id)
+        ->select(
+            's.id_siswa as id',
+            's.nis',
+            's.nisn',
+            's.nik',
+            's.nama_lengkap as nama',
+            's.jenis_kelamin',
+            's.tempat_lahir',
+            's.tanggal_lahir',
+            's.email',
+            's.no_telepon',
+            's.tanggal_masuk',
+            'st.nama_status as status',
+            'k.nama_kelas as kelas',
+            'p.username'
+        )
+        ->first();
+
+    abort_if(!$siswa, 404);
+
+    $row = [
+        'id' => $siswa->id,
+        'nama' => $siswa->nama,
+        'nisn' => $siswa->nisn ?? '-',
+        'kelas' => $siswa->kelas ?? '-',
+        'status' => $siswa->status ?? '-',
+    ];
+
+    $s = [
+        'nik' => $siswa->nik ?? '-',
+        'no_kk' => '-',
+        'jenis_kelamin' => $siswa->jenis_kelamin ?? '-',
+        'tempat_lahir' => $siswa->tempat_lahir ?? '-',
+        'tanggal_lahir' => $siswa->tanggal_lahir ?? '-',
+        'agama' => '-',
+        'no_hp' => $siswa->no_telepon ?? '-',
+        'sekolah_asal' => '-',
+        'alamat' => '-',
+        'ayah' => '-',
+        'ibu' => '-',
+    ];
+
+    return view('tu.siswa-detail', [
+        'row' => $row,
+        's' => $s,
+        'dokumen' => [],
+    ]);
+}
     public function periode()     { return view('tu.periode', ['periode' => DummyData::periodeUpdate()]); }
     public function kelas()       { return view('tu.kelas', ['kelas' => DummyData::kelas()]); }
     public function kelasDetail(int $id)

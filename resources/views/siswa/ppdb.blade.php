@@ -12,9 +12,13 @@
     <p id="stepLabel" class="mt-2 text-sm font-semibold text-navy"></p>
 </div>
 
+@if ($errors->any())
+    <div class="mb-4 rounded-xl border border-bad/40 bg-bad/10 px-4 py-3 text-sm text-bad" role="alert">{{ $errors->first() }}</div>
+@endif
 <div id="ringkas" class="hidden mb-4 rounded-xl border border-bad/40 bg-bad/10 px-4 py-3 text-sm text-bad" role="alert"></div>
 
-<form class="space-y-4" onsubmit="return false" id="ppdb" novalidate>
+<form class="space-y-4" method="POST" action="{{ route('ppdb.store') }}" enctype="multipart/form-data" id="ppdb" novalidate>
+    @csrf
     <div data-step="0" class="space-y-4">
         <div class="card">
             <h2 class="sec-title">A. Data pribadi</h2>
@@ -248,7 +252,7 @@
         for (var i = 0; i < steps.length; i++) {
             if (periksa(i).length) { show(i); validasiStep(i); return; }
         }
-        alert('Tampilan rancangan: belum tersambung ke database.');
+        document.getElementById('ppdb').requestSubmit();
     };
     show(0);
 })();

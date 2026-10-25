@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\PendaftaranPpdbController;
+use App\Http\Controllers\SiswaController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/masuk');
@@ -12,6 +14,7 @@ Route::post('/keluar', [AuthController::class, 'logout'])->name('logout');
 
 // ---- PUBLIK: calon siswa (belum punya akun, DFD 3.1) ----
 Route::get('/ppdb', [PageController::class, 'ppdb'])->name('ppdb');
+Route::post('/ppdb', [PendaftaranPpdbController::class, 'store'])->name('ppdb.store');
 Route::get('/ppdb/status', [PageController::class, 'status'])->name('ppdb.status');
 
 Route::get('/beranda', [PageController::class, 'beranda'])->name('beranda');
@@ -40,14 +43,19 @@ Route::middleware('role:tu')->prefix('tu')->name('tu.')->group(function () {
     Route::get('/', [PageController::class, 'tuDashboard'])->name('dashboard');
     Route::get('/verifikasi/{id}', [PageController::class, 'verifikasi'])->name('verifikasi');
     Route::get('/persetujuan', [PageController::class, 'persetujuan'])->name('persetujuan');
-    Route::get('/siswa', [PageController::class, 'dataSiswa'])->name('siswa');
-    Route::get('/siswa/{id}', [PageController::class, 'detailSiswa'])->name('siswa.detail');
     Route::get('/periode', [PageController::class, 'periode'])->name('periode');
     Route::get('/kelas', [PageController::class, 'kelas'])->name('kelas');
     Route::get('/kelas/{id}', [PageController::class, 'kelasDetail'])->name('kelas.detail');
     Route::get('/penempatan', [PageController::class, 'penempatan'])->name('penempatan');
     Route::get('/kenaikan', [PageController::class, 'kenaikan'])->name('kenaikan');
     Route::get('/reset-sandi', [PageController::class, 'resetSandi'])->name('reset');
+
+    // Data induk siswa: tampilan (index, detail) lewat PageController, simpan/ubah/hapus lewat SiswaController
+    Route::get('/siswa', [PageController::class, 'dataSiswa'])->name('siswa');
+    Route::get('/siswa/{id}', [PageController::class, 'detailSiswa'])->name('siswa.detail');
+    Route::post('/siswa', [SiswaController::class, 'store'])->name('siswa.store');
+    Route::put('/siswa/{id}', [SiswaController::class, 'update'])->name('siswa.update');
+    Route::delete('/siswa/{id}', [SiswaController::class, 'destroy'])->name('siswa.destroy');
 });
 
 // Data master (DFD L1-2, proses 2.5): dipegang TU. Nama route tetap "admin.*".
