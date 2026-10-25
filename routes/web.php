@@ -117,11 +117,13 @@ Route::prefix('tu')
         Route::get('/persetujuan', [PageController::class, 'persetujuan'])
             ->name('persetujuan');
 
+        // Data induk siswa. Nama "siswa" dan "siswa.detail" dipakai menu sidebar,
+        // dashboard TU, dan halaman daftar siswa, jangan diganti tanpa mengubah view.
         Route::get('/siswa', [SiswaController::class, 'index'])
-            ->name('siswa.index');
+            ->name('siswa');
 
         Route::get('/siswa/{id}', [SiswaController::class, 'show'])
-            ->name('siswa.show');
+            ->name('siswa.detail');
 
         Route::post('/siswa', [SiswaController::class, 'store'])
             ->name('siswa.store');
