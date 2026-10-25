@@ -3,7 +3,10 @@
 @section('heading', 'Verifikasi: ' . $row['nama'])
 @section('sub', 'NISN ' . $row['nisn'] . ' · masuk ' . $row['tgl'])
 @section('content')
-<form class="grid lg:grid-cols-[1.3fr_1fr] gap-4 items-start" onsubmit="return false">
+{{-- TODO backend: isi action dengan route verifikasi (POST) lalu hapus onsubmit. Tombol keputusan mengirim name="hasil". --}}
+<form class="grid lg:grid-cols-[1.3fr_1fr] gap-4 items-start" method="POST" action="#" onsubmit="return false">
+    @csrf
+    <input type="hidden" name="id_pendaftaran" value="{{ $row['id'] ?? '' }}">
     <div class="space-y-4">
         @foreach ($checklist as $dokumen => $items)
             <div class="card">
@@ -13,7 +16,8 @@
                 </div>
                 @foreach ($items as $item)
                     <label class="flex items-center gap-3 py-2 text-sm border-b border-line last:border-0 cursor-pointer">
-                        <input type="checkbox" class="size-4 accent-flame"> {{ $item }}
+                        {{-- value nanti diganti id_item dari ref_checklist_item --}}
+                        <input type="checkbox" name="lolos[]" value="{{ $item }}" class="size-4 accent-flame"> {{ $item }}
                     </label>
                 @endforeach
             </div>
@@ -23,15 +27,16 @@
     <div class="card lg:sticky lg:top-4">
         <h2 class="sec-title">Keputusan</h2>
         <div class="space-y-3">
-            <div><label class="label">Alasan (jika dikembalikan / ditolak)</label>
-                <select class="input"><option>Pilih alasan</option>@foreach ($alasan as $a)<option>{{ $a }}</option>@endforeach</select></div>
-            <div><label class="label">Catatan untuk siswa</label><textarea class="input" rows="3"></textarea></div>
-            <button class="btn w-full">Terima berkas</button>
-            <button class="btn btn-ghost w-full">Kembalikan untuk diperbaiki</button>
-            <button class="btn btn-ghost w-full !text-bad">Tolak</button>
+            <div><label class="label" for="id_alasan">Alasan (jika dikembalikan / ditolak)</label>
+                {{-- value nanti diganti id_alasan dari ref_alasan_pengembalian --}}
+                <select class="input" id="id_alasan" name="id_alasan"><option value="">Pilih alasan</option>@foreach ($alasan as $a)<option value="{{ $a }}">{{ $a }}</option>@endforeach</select></div>
+            <div><label class="label" for="catatan">Catatan untuk siswa</label><textarea class="input" id="catatan" name="catatan" rows="3"></textarea></div>
+            <button class="btn w-full" name="hasil" value="terima">Terima berkas</button>
+            <button class="btn btn-ghost w-full" name="hasil" value="kembalikan">Kembalikan untuk diperbaiki</button>
+            <button class="btn btn-ghost w-full !text-bad" name="hasil" value="tolak">Tolak</button>
             <hr class="border-line">
-            <div><label class="label">Nilai ujian seleksi</label><input class="input" inputmode="decimal"></div>
-            <button class="btn btn-flame w-full">Sahkan &amp; buat akun siswa</button>
+            <div><label class="label" for="nilai_ujian">Nilai ujian seleksi</label><input class="input" id="nilai_ujian" name="nilai_ujian" inputmode="decimal"></div>
+            <button class="btn btn-flame w-full" name="hasil" value="sahkan">Sahkan &amp; buat akun siswa</button>
             <p class="text-[11px] text-mute">Akun siswa dibuat otomatis memakai NISN.</p>
         </div>
     </div>

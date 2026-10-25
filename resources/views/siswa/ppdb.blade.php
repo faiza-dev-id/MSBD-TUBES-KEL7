@@ -92,6 +92,9 @@
                             <span class="btn btn-ghost !py-1.5 shrink-0">Pilih file</span>
                             <input type="file" class="hidden" name="berkas_{{ $loop->index }}" accept=".pdf,.jpg,.jpeg,.png" data-wajib data-nama="{{ $d }}">
                         </label>
+                        @if (in_array($loop->index, [1, 2]))
+                            <div class="mt-2"><x-field :label="$loop->index === 1 ? 'Nomor akta kelahiran' : 'Nomor ijazah / SKL'" name="nomor_dokumen_{{ $loop->index }}" /></div>
+                        @endif
                     </div>
                 @endforeach
             </div>

@@ -4,9 +4,12 @@
 @section('sub', 'Selama periode dibuka, siswa bisa mengonfirmasi data atau mengajukan perubahan.')
 @section('content')
 <div class="grid lg:grid-cols-[1fr_1.2fr] gap-4 items-start">
-    <form class="card space-y-4" onsubmit="return false">
+    {{-- TODO backend: isi action dengan route buka periode (POST) lalu hapus onsubmit. --}}
+    <form class="card space-y-4" method="POST" action="#" onsubmit="return false">
+        @csrf
         <h2 class="sec-title">Buka periode baru</h2>
-        <div><label class="label">Tahun ajaran</label><select class="input"><option>2026/2027</option><option>2027/2028</option></select></div>
+        {{-- value nanti diganti id_tahun_ajaran dari tabel tahun_ajaran --}}
+        <div><label class="label" for="id_tahun_ajaran">Tahun ajaran</label><select class="input" id="id_tahun_ajaran" name="id_tahun_ajaran"><option value="2026/2027">2026/2027</option><option value="2027/2028">2027/2028</option></select></div>
         <x-field label="Tanggal buka" name="tgl_buka" type="date" />
         <x-field label="Tanggal tutup" name="tgl_tutup" type="date" />
         <button class="btn btn-flame w-full">Buka periode</button>
