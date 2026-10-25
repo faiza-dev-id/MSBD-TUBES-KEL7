@@ -1,0 +1,4 @@
+<?php
+namespace App\Http\Controllers\Api;
+use App\Http\Controllers\Controller; use App\Http\Requests\StorePpdbRequest; use App\Http\Requests\VerifyPpdbRequest; use App\Models\PendaftaranPpdb; use App\Services\PpdbService; use Illuminate\Http\Request;
+class PpdbController extends Controller { public function __construct(private PpdbService $service){} public function store(StorePpdbRequest $r){return response()->json($this->service->daftar($r->validated()),201);} public function index(Request $r){return PendaftaranPpdb::query()->latest('diajukan_pada')->paginate($r->integer('per_page',20));} public function verifikasi(VerifyPpdbRequest $r,int $id){$p=$this->service->verifikasi($id,(int)$r->user()->id_pengguna,$r->validated('status_pendaftaran'),$r->validated('catatan_verifikasi'));return response()->json($p);} }

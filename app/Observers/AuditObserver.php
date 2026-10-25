@@ -1,0 +1,4 @@
+<?php
+namespace App\Observers;
+use App\Models\LogAudit; use Illuminate\Database\Eloquent\Model; use Illuminate\Support\Facades\Auth;
+class AuditObserver { private array $secret=['password','password_hash','remember_token','token','api_token']; public function created(Model $m):void{$this->write($m,'INSERT',null,$m->getAttributes());} public function updated(Model $m):void{$this->write($m,'UPDATE',$m->getRawOriginal(),$m->getAttributes());} public function deleted(Model $m):void{$this->write($m,'DELETE',$m->getAttributes(),null);} private function write(Model $m,string $op,?array $old,?array $new):void { $clean=fn($a)=>$a===null?null:collect($a)->except($this->secret)->all(); LogAudit::create(['nama_tabel'=>$m->getTable(),'operasi'=>$op,'id_data'=>(string)$m->getKey(),'nilai_lama'=>$clean($old),'nilai_baru'=>$clean($new),'id_pengguna_pengubah'=>Auth::id(),'username_pengubah'=>Auth::user()?->username,'waktu'=>now()]); } }
