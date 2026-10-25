@@ -131,6 +131,7 @@
                 <h1 class="text-2xl sm:text-3xl font-bold leading-tight">@yield('heading')</h1>
                 @hasSection('sub') <p class="text-mute mt-1.5 max-w-2xl">@yield('sub')</p> @endif
             </div>
+            <x-pesan />
             @yield('content')
             <p class="text-xs text-mute text-center mt-12">Tampilan rancangan · data masih contoh</p>
         </div>

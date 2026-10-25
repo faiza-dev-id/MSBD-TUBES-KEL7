@@ -30,5 +30,6 @@
             </button>
         @endif
     </div>
+    @error($name) <p class="err text-xs text-bad mt-1" role="alert">{{ $message }}</p> @enderror
     @if ($hint) <p class="text-[11px] text-mute mt-1">{{ $hint }}</p> @endif
 </div>
