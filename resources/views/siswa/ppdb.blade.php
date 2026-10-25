@@ -9,7 +9,12 @@
     @endforeach
 </div>
 
-<form class="space-y-4" onsubmit="return false" id="ppdb">
+<form class="space-y-4"
+      method="POST"
+      action="{{ route('ppdb.store') }}"
+      enctype="multipart/form-data"
+      id="ppdb">
+    @csrf
     <div data-step="0" class="space-y-4">
         <div class="card">
             <h2 class="sec-title">A. Data pribadi</h2>
@@ -121,7 +126,7 @@
             alert('NISN atau NIK ini sudah terdaftar. Periksa kembali data yang kamu isi.');
             return;
         }
-        if (cur < steps.length - 1) show(cur + 1); else alert('Tampilan rancangan: belum tersambung ke database.');
+        if (cur < steps.length - 1) show(cur + 1); else document.getElementById('ppdb').requestSubmit();
     };
     show(0);
 })();
