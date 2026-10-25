@@ -3,9 +3,16 @@
 @section('heading', 'Cek Status Pendaftaran')
 @section('sub', 'Masukkan NISN dan kode pendaftaran yang kamu terima saat mengirim formulir. Kabar status juga dikirim lewat WhatsApp.')
 @section('content')
+@if (session('success'))
+    <div class="mb-4 rounded-xl border border-ok/40 bg-ok/10 px-4 py-3 text-sm text-ok" role="status">
+        {{ session('success') }}
+        <div class="text-xs mt-1 opacity-80">Simpan nomor ini untuk mengecek status pendaftaran.</div>
+    </div>
+@endif
 <form class="card mb-4 grid sm:grid-cols-[1fr_1fr_auto] gap-4 items-end" onsubmit="return false">
     <x-field label="NISN" name="cek_nisn" placeholder="10 digit" />
-    <x-field label="Kode pendaftaran" name="cek_kode" placeholder="Contoh: PPDB-2026-0142" />
+    <x-field label="Kode pendaftaran" name="cek_kode" placeholder="Contoh: PPDB-20261025-AB12CD" wajib="1"
+        pola="^PPDB-[0-9]{8}-[A-Z0-9]{6}$" pesan="Kode pendaftaran tidak sesuai format. Contoh: PPDB-20261025-AB12CD." />
     <button class="btn btn-flame">Cek status</button>
 </form>
 

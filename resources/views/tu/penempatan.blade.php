@@ -10,8 +10,9 @@
             <input type="checkbox" class="size-4 accent-flame"> <b>{{ $s['nama'] }}</b> <span class="text-mute">{{ $s['nisn'] }}</span>
         </label>
     @endforeach
-    <div class="mt-4 flex items-end gap-3 flex-wrap">
-        <div class="flex-1 min-w-40"><label class="label">Tempatkan ke kelas</label><select class="input">@foreach ($kelas as $k)<option>{{ $k['nama'] }}</option>@endforeach</select></div>
+    <div class="mt-4 grid sm:grid-cols-[1fr_1fr_auto] gap-3 items-end">
+        <div><label class="label">Tempatkan ke kelas</label><select class="input">@foreach ($kelas as $k)<option>{{ $k['nama'] }}</option>@endforeach</select></div>
+        <div><label class="label" for="tgl_masuk">Tanggal masuk</label><input class="input" type="date" id="tgl_masuk" name="tgl_masuk" value="{{ now()->format('Y-m-d') }}"></div>
         <button class="btn btn-flame">Tempatkan yang dipilih</button>
     </div>
 </form>

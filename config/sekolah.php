@@ -6,7 +6,7 @@ return [
     'singkat' => 'SMA Methodist 2',
     'kota'    => 'Medan',
     'sistem'  => 'Data Siswa & PPDB',
-    'logo'    => 'images/logo.jpg', // letakkan file di public/images/logo.jpg
+    'logo'    => 'images/logo.png', // PNG transparan, letakkan di public/images/logo.png
 
     // Role yang boleh mengganti kata sandi sendiri.
     // Role yang tidak ada di daftar ini tidak melihat menu "Ganti Sandi"

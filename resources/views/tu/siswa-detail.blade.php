@@ -26,4 +26,12 @@
         @endforeach
     </div>
 </div>
+
+<div class="card mt-4 flex items-center justify-between gap-3 flex-wrap">
+    <div>
+        <h2 class="font-serif text-lg font-bold">Akun login siswa</h2>
+        <p class="text-sm text-mute mt-1">Username: <b class="text-ink">{{ $row['nisn'] }}</b> (NISN). Siswa tidak bisa mengganti sandi sendiri. Jika lupa, Tata Usaha yang meresetnya.</p>
+    </div>
+    <button type="button" class="btn btn-ghost" onclick="if (confirm('Reset kata sandi siswa ini? Sandi sementara akan dibuat.')) alert('Tampilan rancangan: sandi sementara dibuat oleh backend.')">Reset sandi</button>
+</div>
 @endsection

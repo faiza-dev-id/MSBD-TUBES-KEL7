@@ -7,6 +7,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+
 class EnsureRole
 {
     public function handle(
@@ -26,8 +27,7 @@ class EnsureRole
         }
 
         // Ambil pengguna beserta role dari database
-        $user = Pengguna::with('role')
-            ->find($idPengguna);
+        $user = Pengguna::with('role')->find($idPengguna);
 
         // Pengguna tidak ditemukan atau akun dinonaktifkan
         if (!$user || !$user->is_aktif || !$user->role) {
