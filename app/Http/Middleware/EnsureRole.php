@@ -6,20 +6,17 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-/**
- * Pembatas halaman per role. Sementara membaca session('role') (login tiruan).
- * Setelah backend siap, ganti dengan $request->user()->role->nama_role.
- */
+/** Pembatas halaman per role, membaca role dari tabel role (via pengguna). */
 class EnsureRole
 {
     public function handle(Request $request, Closure $next, string ...$roles): Response
     {
-        $role = $request->session()->get('role');
+        $user = $request->user();
 
-        if (! $role) {
+        if (! $user) {
             return redirect()->route('login');
         }
-        if (! in_array($role, $roles, true)) {
+        if (! in_array($user->role->nama_role, $roles, true)) {
             abort(403, 'Anda tidak punya hak akses ke halaman ini.');
         }
 
