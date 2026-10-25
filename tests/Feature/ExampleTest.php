@@ -1,7 +1,7 @@
 <?php
 
-test('the application returns a successful response', function () {
+test('halaman utama mengarahkan pengguna ke halaman masuk', function () {
     $response = $this->get('/');
 
-    $response->assertStatus(200);
+    $response->assertRedirect('/masuk');
 });

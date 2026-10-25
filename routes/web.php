@@ -3,6 +3,11 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PageController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PendaftaranPpdbController;
+use App\Http\Controllers\SiswaController;
+
+Route::post('/ppdb', [PendaftaranPpdbController::class, 'store'])
+    ->name('ppdb.store');
 
 Route::redirect('/', '/masuk');
 
@@ -48,6 +53,11 @@ Route::middleware('role:tu')->prefix('tu')->name('tu.')->group(function () {
     Route::get('/penempatan', [PageController::class, 'penempatan'])->name('penempatan');
     Route::get('/kenaikan', [PageController::class, 'kenaikan'])->name('kenaikan');
     Route::get('/reset-sandi', [PageController::class, 'resetSandi'])->name('reset');
+    Route::get('/siswa', [SiswaController::class, 'index'])->name('tu.siswa.index');
+    Route::get('/siswa/{id}', [SiswaController::class, 'show']) ->name('tu.siswa.show');
+    Route::post('/siswa', [SiswaController::class, 'store'])->name('tu.siswa.store');
+    Route::put('/siswa/{id}', [SiswaController::class, 'update'])->name('tu.siswa.update');
+    Route::delete('/siswa/{id}', [SiswaController::class, 'destroy']) ->name('tu.siswa.destroy');
 });
 
 // Data master (DFD L1-2, proses 2.5): dipegang TU. Nama route tetap "admin.*".
