@@ -1,0 +1,4 @@
+<?php
+// Merge this alias configuration into bootstrap/app.php ->withMiddleware(...).
+use Illuminate\Foundation\Configuration\Middleware; use App\Http\Middleware\CheckPermission; use App\Http\Middleware\CheckRole;
+$middleware->alias(['permission'=>CheckPermission::class,'role'=>CheckRole::class]);

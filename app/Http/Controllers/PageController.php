@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\DB;
 use App\Support\DummyData;
 
-/** Controller halaman (tahap desain). Isinya hanya menyiapkan data tiruan untuk view. */
+
 class PageController extends Controller
 {
     /** Arahkan ke beranda sesuai role. */
@@ -18,7 +18,13 @@ class PageController extends Controller
             default  => redirect()->route('login'),
         };
     }
-
+    //public halaman login
+public function masuk()
+{
+    return view('auth.login', [
+        'roles' => DummyData::roles(),
+    ]);
+}
     // ---- PUBLIK (calon siswa) ----
     public function ppdb()   { return view('siswa.ppdb'); }
     public function status() { return view('siswa.status', ['langkah' => DummyData::statusPendaftaran()]); }
