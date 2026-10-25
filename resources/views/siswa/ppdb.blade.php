@@ -29,7 +29,7 @@
                 <div>
                     <label class="label" for="jenis_kelamin">Jenis kelamin</label>
                     <select class="input" id="jenis_kelamin" name="jenis_kelamin" data-wajib>
-                        <option value="">Pilih jenis kelamin</option><option>Laki-laki</option><option>Perempuan</option>
+                        <option value="">Pilih jenis kelamin</option><option value="L">Laki-laki</option><option value="P">Perempuan</option>
                     </select>
                 </div>
                 <x-field label="Tempat lahir" name="tempat_lahir" wajib="1" />

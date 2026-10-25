@@ -30,13 +30,6 @@
                     <div class="space-y-4">
                         <x-field label="Username / NISN" name="username" placeholder="Contoh: 0012345678" wajib="1" autocomplete="username" />
                         <x-field label="Kata sandi" name="password" type="password" wajib="1" autocomplete="current-password" />
-                        <div>
-                            <label class="label" for="role">Masuk sebagai</label>
-                            <select class="input" id="role" name="role" required>
-                                @foreach ($roles as $key => $r) <option value="{{ $key }}">{{ $r['label'] }}</option> @endforeach
-                            </select>
-                            @error('role') <p class="text-xs text-bad mt-1">{{ $message }}</p> @enderror
-                        </div>
                         <button class="btn btn-flame w-full !py-3.5 !text-base mt-2">Masuk</button>
                         <p class="text-sm text-center text-mute">Calon siswa? <a href="{{ route('ppdb') }}" class="font-semibold text-flame">Daftar PPDB</a> · <a href="{{ route('ppdb.status') }}" class="font-semibold text-flame">Cek status</a></p>
                     </div>
