@@ -39,11 +39,11 @@
                     <td class="p-2 text-xs text-mute whitespace-nowrap">{{ $j }}</td>
                     @foreach ($hari as $h => $nama)
                         <td class="p-1.5 space-y-1">
-                            <select class="input !py-1.5 !text-xs" aria-label="Mata pelajaran">
+                            <select class="input !py-1.5 !text-xs" aria-label="Mata pelajaran" data-native>
                                 <option value="">— mapel —</option>
                                 @foreach ($mapel as $m)<option {{ $m === $mapel[($h + $s * 2) % count($mapel)] ? 'selected' : '' }}>{{ $m }}</option>@endforeach
                             </select>
-                            <select class="input !py-1.5 !text-xs" aria-label="Guru">
+                            <select class="input !py-1.5 !text-xs" aria-label="Guru" data-native>
                                 <option value="">— guru —</option>
                                 @foreach ($guru as $g)<option {{ $g === $guru[($h + $s) % count($guru)] ? 'selected' : '' }}>{{ $g }}</option>@endforeach
                             </select>

@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title', 'Persetujuan Data')
 @section('heading', 'Persetujuan Perubahan Data')
-@section('sub', 'Bandingkan data lama dan baru, cek bukti, lalu setujui atau tolak. Setiap keputusan tercatat di jejak audit.')
+@section('sub', 'Bandingkan data lama dan baru, cek bukti, lalu setujui, kembalikan, atau tolak. Setiap keputusan tercatat di jejak audit.')
 @section('content')
 <div class="space-y-3">
     @foreach ($pengajuan as $p)
@@ -18,10 +18,17 @@
                 <div class="bg-ok/10 rounded-md p-3"><div class="text-xs text-mute mb-1">Data baru</div>{{ $p['baru'] }}</div>
             </div>
             @if ($p['status'] === 'menunggu')
-                <div class="flex gap-2 mt-4 flex-wrap">
-                    <button class="btn">Setujui</button><button class="btn btn-ghost !text-bad">Tolak</button>
+                <div class="mt-4">
+                    <label class="label" for="cat-{{ $p['id'] }}">Catatan untuk siswa <span class="font-normal">(isi jika dikembalikan atau ditolak)</span></label>
+                    <textarea class="input" id="cat-{{ $p['id'] }}" rows="2"></textarea>
+                </div>
+                <div class="flex gap-2 mt-3 flex-wrap">
+                    <button class="btn">Setujui</button>
+                    <button class="btn btn-ghost">Kembalikan</button>
+                    <button class="btn btn-ghost !text-bad">Tolak</button>
                     <a href="#" class="btn btn-ghost">Lihat bukti</a>
                 </div>
+                <p class="text-[11px] text-mute mt-2"><b>Kembalikan</b>: siswa diminta memperbaiki data atau bukti, lalu mengajukan lagi.</p>
             @endif
         </div>
     @endforeach

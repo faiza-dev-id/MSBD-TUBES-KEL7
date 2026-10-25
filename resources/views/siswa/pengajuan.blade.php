@@ -3,8 +3,12 @@
 @section('heading', 'Ajukan Perubahan Data')
 @section('sub', 'Pilih data yang berubah dan lampirkan bukti. Perubahan baru berlaku setelah disetujui Tata Usaha.')
 @section('content')
+@php $periode = \App\Support\DummyData::periodeAktif(); @endphp
+@if (! $periode['dibuka'])
+    <div class="mb-4 rounded-xl border border-warn/40 bg-warn/10 px-4 py-3 text-sm text-warn">Periode update data sedang ditutup. Kamu belum bisa mengirim pengajuan baru, tapi status pengajuan sebelumnya tetap bisa dilihat.</div>
+@endif
 <div class="grid lg:grid-cols-[1.2fr_1fr] gap-4 items-start">
-    <form class="card space-y-4" onsubmit="return false">
+    <form class="card space-y-4 {{ $periode['dibuka'] ? '' : 'opacity-50' }}" onsubmit="return false" @if (! $periode['dibuka']) inert @endif>
         <h2 class="sec-title">Form pengajuan</h2>
         <div><label class="label">Data yang diubah</label>
             <select class="input"><option>Pilih data</option><option>Alamat</option><option>No. HP</option><option>Nama (perlu akta)</option><option>NIK / No. KK (perlu KK baru)</option></select></div>

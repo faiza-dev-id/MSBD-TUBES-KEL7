@@ -75,7 +75,7 @@ export function tampil(el) {
     const msg = cek(el), p = kotakPesan(induk(el));
     p.textContent = msg;
     p.classList.toggle('hidden', !msg);
-    if (!adaCek(el)) (adaFile(el) ? el.closest('label') : el).classList.toggle('!border-bad', !!msg);
+    if (!adaCek(el)) (adaFile(el) ? el.closest('label') : (el._dd || el)).classList.toggle('!border-bad', !!msg);
     return msg;
 }
 

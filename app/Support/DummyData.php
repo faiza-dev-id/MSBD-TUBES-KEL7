@@ -78,9 +78,9 @@ class DummyData
     public static function kelengkapanKelas(): array
     {
         return [
-            ['kelas' => 'X IPA 1', 'total' => 36, 'konfirmasi' => 30, 'ubah' => 3, 'belum' => 3],
-            ['kelas' => 'X IPS 1', 'total' => 34, 'konfirmasi' => 22, 'ubah' => 2, 'belum' => 10],
-            ['kelas' => 'XI IPA 1', 'total' => 35, 'konfirmasi' => 33, 'ubah' => 1, 'belum' => 1],
+            ['nama_kelas' => 'X IPA 1',  'total_siswa' => 36, 'sudah_konfirmasi' => 30, 'mengajukan_perubahan' => 3, 'belum_respons' => 3],
+            ['nama_kelas' => 'X IPS 1',  'total_siswa' => 34, 'sudah_konfirmasi' => 22, 'mengajukan_perubahan' => 2, 'belum_respons' => 10],
+            ['nama_kelas' => 'XI IPA 1', 'total_siswa' => 35, 'sudah_konfirmasi' => 33, 'mengajukan_perubahan' => 1, 'belum_respons' => 1],
         ];
     }
 
@@ -190,6 +190,8 @@ class DummyData
             'Kelola pengguna & peran'            => [0, 0, 0, 1],
             'Pengaturan sistem'                  => [0, 0, 0, 1],
             'Lihat log login & jejak audit'      => [0, 0, 0, 1],
+            'Reset sandi siswa'                  => [0, 0, 1, 0],
+            'Aktifkan / nonaktifkan akun'        => [0, 0, 0, 1],
         ];
 
         return compact('roles', 'hak');
@@ -201,12 +203,12 @@ class DummyData
         return [
             'jenjang'       => self::t('Jenjang', ['Nama jenjang'], [['SMP'], ['SMA']]),
             'tingkat'       => self::t('Tingkat', ['Tingkat', 'Jenjang'], [['X', 'SMA'], ['XI', 'SMA'], ['XII', 'SMA']]),
-            'agama'         => self::t('Agama', ['Nama agama'], [['Kristen Protestan'], ['Katolik'], ['Islam'], ['Buddha'], ['Hindu'], ['Konghucu']]),
-            'pekerjaan'     => self::t('Pekerjaan', ['Nama pekerjaan'], [['PNS / ASN'], ['TNI / Polri'], ['Karyawan swasta'], ['Wiraswasta'], ['Petani / nelayan'], ['Lainnya']]),
+            'agama'         => self::t('Agama', ['Nama agama'], array_map(fn ($a) => [$a], self::daftarAgama())),
+            'pekerjaan'     => self::t('Pekerjaan', ['Nama pekerjaan'], array_map(fn ($a) => [$a], self::daftarPekerjaan())),
             'sekolah'       => self::t('Sekolah Asal', ['Nama sekolah', 'Jenjang'], [['SMP Contoh Medan', 'SMP'], ['SMP Negeri 1 Medan', 'SMP'], ['MTs Contoh Medan', 'MTs']]),
             'status-siswa'  => self::t('Status Siswa', ['Status'], [['Calon'], ['Aktif'], ['Lulus'], ['Mutasi keluar'], ['Nonaktif']]),
             'jenis-dokumen' => self::t('Jenis Dokumen', ['Nama dokumen'], [['Kartu Keluarga'], ['Akta Kelahiran'], ['Ijazah / SKL'], ['Pas Foto'], ['Surat keterangan pindah']]),
-            'wilayah'       => self::t('Wilayah', ['Provinsi', 'Kota/Kabupaten', 'Kecamatan', 'Kelurahan'], [['Sumatera Utara', 'Medan', 'Medan Kota', 'Contoh 1'], ['Sumatera Utara', 'Medan', 'Medan Baru', 'Contoh 2']]),
+            'wilayah'       => self::t('Wilayah', ['Provinsi', 'Kota/Kabupaten', 'Kecamatan', 'Kelurahan', 'Kode pos'], [['Sumatera Utara', 'Medan', 'Medan Kota', 'Contoh 1', '20212'], ['Sumatera Utara', 'Medan', 'Medan Baru', 'Contoh 2', '20153']]),
         ];
     }
 
@@ -243,6 +245,7 @@ class DummyData
             ['Lama penguncian (menit)', 'durasi_kunci', '15', 'Lama akun terkunci setelah gagal beruntun'],
             ['Ukuran maksimal berkas (MB)', 'ukuran_berkas_mb', '2', 'Batas unggah per berkas'],
             ['Format berkas diizinkan', 'format_berkas', 'pdf, jpg, png', 'Pisahkan dengan koma'],
+            ['Tahun ajaran aktif', 'tahun_ajaran_aktif', '2026/2027', 'Dipakai sebagai tahun ajaran berjalan di seluruh sistem'],
         ];
     }
 
@@ -267,6 +270,20 @@ class DummyData
     public static function daftarGuru(): array
     {
         return ['Bu Contoh Guru', 'Pak Harahap', 'Bu Sitompul', 'Pak Nainggolan'];
+    }
+
+    // B. daftar pilihan referensi: satu sumber untuk form PPDB dan halaman Data Referensi TU.
+    // Nanti dibaca dari tabel referensi di database (dikelola TU lewat halaman Data Referensi).
+    public static function daftarAgama(): array
+    {
+        return ['Kristen Protestan', 'Katolik', 'Islam', 'Buddha', 'Hindu', 'Konghucu'];
+    }
+
+    public static function daftarPekerjaan(): array
+    {
+        return ['PNS / ASN', 'TNI / Polri', 'Guru / Dosen', 'Tenaga kesehatan', 'Karyawan swasta',
+                'Wiraswasta / pedagang', 'Petani / peternak', 'Nelayan', 'Buruh', 'Pensiunan',
+                'Tidak bekerja', 'Sudah meninggal', 'Lainnya'];
     }
 
     // C. tabel: jadwal_pelajaran (untuk guru)
@@ -322,6 +339,7 @@ class DummyData
     }
 
     // B. wilayah berjenjang: provinsi > kota > kecamatan > kelurahan
+    // CONTOH SAJA. Data lengkap seluruh wilayah dimasukkan DBA ke tabel wilayah dan disajikan backend lewat endpoint.
     public static function wilayahPohon(): array
     {
         return [
@@ -349,5 +367,11 @@ class DummyData
             'nisn' => ['0012345678' => 'Contoh Siswa', '0023456789' => 'Anggi Sitorus'],
             'nik'  => ['1271010101100001' => 'Contoh Siswa', '1271010101100009' => 'Anggi Sitorus'],
         ];
+    }
+
+    // tabel: periode_update (DFD 4.2.1 "Cek Periode Aktif"). Ubah 'dibuka' jadi false untuk melihat tampilan ditutup.
+    public static function periodeAktif(): array
+    {
+        return ['dibuka' => true, 'tahun' => '2026/2027', 'tutup' => '31 Okt 2026'];
     }
 }

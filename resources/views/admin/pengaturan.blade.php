@@ -7,7 +7,15 @@
     @foreach ($set as [$label, $kunci, $nilai, $ket])
         <div>
             <label class="label" for="{{ $kunci }}">{{ $label }}</label>
-            <input class="input" id="{{ $kunci }}" name="{{ $kunci }}" value="{{ $nilai }}">
+            @if ($kunci === 'tahun_ajaran_aktif')
+                <select class="input" id="{{ $kunci }}" name="{{ $kunci }}">
+                    @foreach (\App\Support\DummyData::akademik()['tahun-ajaran']['baris'] as $t)
+                        <option @selected($t[0] === $nilai)>{{ $t[0] }}</option>
+                    @endforeach
+                </select>
+            @else
+                <input class="input" id="{{ $kunci }}" name="{{ $kunci }}" value="{{ $nilai }}">
+            @endif
             <p class="text-[11px] text-mute mt-1">{{ $ket }}</p>
         </div>
     @endforeach
