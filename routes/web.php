@@ -6,6 +6,8 @@ use App\Http\Controllers\WebAuthController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\PendaftaranPpdbController;
 use App\Http\Controllers\SiswaController;
+use App\Http\Controllers\Admin\LogController;
+use App\Http\Controllers\Admin\PengaturanController;
 
 // =====================================================
 // HALAMAN AWAL
@@ -118,7 +120,8 @@ Route::prefix('tu')
             ->name('persetujuan');
 
         // Data induk siswa. Nama "siswa" dan "siswa.detail" dipakai menu sidebar,
-        // dashboard TU, dan halaman daftar siswa, jangan diganti tanpa mengubah view.
+        // dashboard TU, dan view tu/siswa, jangan diganti tanpa mengubah view.
+
         Route::get('/siswa', [SiswaController::class, 'index'])
             ->name('siswa');
 
@@ -212,12 +215,15 @@ Route::prefix('kepsek')
         Route::get('/peran', [PageController::class, 'peran'])
             ->name('admin.peran');
 
-        Route::get('/pengaturan', [PageController::class, 'pengaturan'])
+        Route::get('/pengaturan', [PengaturanController::class, 'index'])
             ->name('admin.pengaturan');
 
-        Route::get('/log-login', [PageController::class, 'logLogin'])
+        Route::put('/pengaturan', [PengaturanController::class, 'update'])
+            ->name('admin.pengaturan.simpan');
+
+        Route::get('/log-login', [LogController::class, 'login'])
             ->name('admin.log');
 
-        Route::get('/audit', [PageController::class, 'audit'])
+        Route::get('/audit', [LogController::class, 'audit'])
             ->name('admin.audit');
     });

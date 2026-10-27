@@ -5,7 +5,7 @@
 @section('content')
 <div class="card">
     <div class="flex items-center justify-between gap-3 flex-wrap mb-3">
-        <input class="input !w-64" placeholder="Cari nama / NISN">
+        <form method="GET" action="{{ route('tu.siswa.index') }}" class="flex items-center gap-2"><input name="cari" value="{{ request('cari') }}" class="input !w-64" placeholder="Cari nama / NISN"><button class="btn btn-ghost" type="submit">Cari</button></form>
         <select class="input !w-44"><option>Semua status</option><option>Aktif</option><option>Mutasi keluar</option></select>
     </div>
     <div class="overflow-x-auto">
@@ -16,11 +16,12 @@
                 <tr class="border-b border-line">
                     <td class="p-2.5 font-medium">{{ $r['nama'] }}</td><td class="p-2.5">{{ $r['nisn'] }}</td><td class="p-2.5">{{ $r['kelas'] }}</td>
                     <td class="p-2.5">{{ $r['status'] }}</td>
-                    <td class="p-2.5 text-right"><a class="btn btn-ghost !py-1.5" href="{{ route('tu.siswa.detail', $r['id']) }}">Buka</a></td>
+                    <td class="p-2.5 text-right"><a class="btn btn-ghost !py-1.5" href="{{ route('tu.siswa.show', $r['id']) }}">Buka</a></td>
                 </tr>
             @endforeach
             </tbody>
         </table>
+        <div class="mt-4">{{ $daftar->links() }}</div>
     </div>
 </div>
 @endsection

@@ -1,7 +1,52 @@
+
 <?php
-use Illuminate\Database\Migrations\Migration; use Illuminate\Support\Facades\DB; use Illuminate\Support\Facades\Schema;
-return new class extends Migration { public function up():void {
- if(Schema::hasTable('pendaftaran_ppdb')) DB::unprepared(file_get_contents(database_path('sql/views/vw_antrean_verifikasi.sql')));
- if(Schema::hasTable('siswa') && Schema::hasTable('status_siswa') && Schema::hasTable('pendaftaran_ppdb') && Schema::hasTable('pengajuan_perubahan')) DB::unprepared(file_get_contents(database_path('sql/views/vw_dashboard_kepsek.sql')));
- // Remaining four views are intentionally not installed until target tables/semantics are approved.
- } public function down():void { foreach(['vw_antrean_verifikasi','vw_dashboard_kepsek'] as $v) DB::statement('DROP VIEW IF EXISTS '.$v); } };
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        $views = [
+            'vw_antrean_verifikasi' => [
+                'file' => 'vw_antrean_verifikasi.sql',
+                'tables' => ['pendaftaran_ppdb'],
+            ],
+            'vw_dashboard_kepsek' => [
+                'file' => 'vw_dashboard_kepsek.sql',
+                'tables' => [
+                    'siswa',
+                    'status_siswa',
+                    'pendaftaran_ppdb',
+                    'pengajuan_perubahan',
+                ],
+            ],
+        ];
+
+        foreach ($views as $view) {
+            foreach ($view['tables'] as $table) {
+                if (!Schema::hasTable($table)) {
+                    continue 2;
+                }
+            }
+
+            $path = database_path('sql/' . $view['file']);
+
+            if (!is_file($path)) {
+                throw new RuntimeException(
+                    "File SQL view tidak ditemukan: {$path}"
+                );
+            }
+
+            DB::unprepared(file_get_contents($path));
+        }
+    }
+
+    public function down(): void
+    {
+        DB::statement('DROP VIEW IF EXISTS vw_dashboard_kepsek');
+        DB::statement('DROP VIEW IF EXISTS vw_antrean_verifikasi');
+    }
+};

@@ -5,9 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-
 
 class Semester extends Model
 {
@@ -15,6 +12,12 @@ class Semester extends Model
     protected $primaryKey = 'id_semester';
     public $timestamps = false;
     protected $guarded = ['id_semester'];
+
+    protected function casts(): array
+    {
+        return ['tanggal_mulai' => 'date', 'tanggal_selesai' => 'date', 'is_aktif' => 'boolean'];
+    }
+
     public function tahunAjaran(): BelongsTo { return $this->belongsTo(TahunAjaran::class, 'id_tahun_ajaran', 'id_tahun_ajaran'); }
     public function jadwalPelajaran(): HasMany { return $this->hasMany(JadwalPelajaran::class, 'id_semester', 'id_semester'); }
     public function keanggotaanKelas(): HasMany { return $this->hasMany(KeanggotaanKelas::class, 'id_semester', 'id_semester'); }
