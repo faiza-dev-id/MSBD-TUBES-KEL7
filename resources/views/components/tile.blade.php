@@ -1,4 +1,4 @@
-{{-- Pintasan: kartu kecil berisi ikon, judul, keterangan, dan panah. <x-tile :href="route('tu.siswa')" judul="Data Induk" ket="Cari siswa" ikon="users" warna="blue" /> --}}
+{{-- Pintasan: kartu kecil berisi ikon, judul, keterangan, dan panah. <x-tile :href="route('tu.siswa.index')" judul="Data Induk" ket="Cari siswa" ikon="users" warna="blue" /> --}}
 @props(['href', 'judul', 'ket' => null, 'ikon' => 'dot', 'warna' => 'blue'])
 @php
     $tile = [

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\LogLogin;
 use App\Models\Pengguna;
+use App\Services\PengaturanService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -12,7 +13,7 @@ use Illuminate\Support\Str;
 
 class WebAuthController extends Controller
 {
-    public function login(Request $request)
+    public function login(Request $request, PengaturanService $pengaturan)
     {
         $data = $request->validate([
             'username' => 'required|string|max:100',
@@ -20,9 +21,13 @@ class WebAuthController extends Controller
             'role' => 'required|in:siswa,guru,tu,kepsek',
         ]);
 
+        // Dari Pengaturan Sistem (DFD 1.4); bawaan 5 kali gagal, dikunci 15 menit.
+        $maksGagal = max(1, (int) $pengaturan->nilai('max_login_gagal'));
+        $detikKunci = max(60, (int) $pengaturan->nilai('durasi_kunci') * 60);
+
         $key = Str::lower($data['username']) . '|' . $request->ip();
 
-        if (RateLimiter::tooManyAttempts($key, 5)) {
+        if (RateLimiter::tooManyAttempts($key, $maksGagal)) {
             return back()
                 ->withErrors([
                     'username' => 'Terlalu banyak percobaan login. Coba lagi dalam '
@@ -48,11 +53,7 @@ class WebAuthController extends Controller
                 'username_dicoba' => $data['username'],
                 'berhasil' => (bool) $valid,
                 'ip_address' => $request->ip(),
-                'user_agent' => substr(
-                    (string) $request->userAgent(),
-                    0,
-                    255
-                ),
+                'user_agent' => substr((string) $request->userAgent(), 0, 255),
                 'waktu' => now(),
             ]);
         } catch (\Throwable $e) {
@@ -66,7 +67,7 @@ class WebAuthController extends Controller
         }
 
         if (!$valid) {
-            RateLimiter::hit($key, 300);
+            RateLimiter::hit($key, $detikKunci);
 
             return back()
                 ->withErrors([
@@ -76,17 +77,13 @@ class WebAuthController extends Controller
         }
 
         RateLimiter::clear($key);
-
         $request->session()->regenerate();
-
         $request->session()->put([
             'id_pengguna' => $user->id_pengguna,
             'role' => $user->role->nama_role,
         ]);
 
-        $user->forceFill([
-            'terakhir_login' => now(),
-        ])->save();
+        $user->forceFill(['terakhir_login' => now()])->save();
 
         $tujuan = match ($user->role->nama_role) {
             'siswa' => route('siswa.dashboard'),
@@ -101,7 +98,6 @@ class WebAuthController extends Controller
     public function logout(Request $request)
     {
         Auth::logout();
-
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 

@@ -53,6 +53,15 @@ class SiswaController extends Controller
         $daftar = $query
             ->orderBy('s.nama_lengkap')
             ->paginate(15)
+            ->through(fn ($row) => [
+                'id' => $row->id_siswa,
+                'nis' => $row->nis,
+                'nisn' => $row->nisn,
+                'nama' => $row->nama_lengkap,
+                'jenis_kelamin' => $row->jenis_kelamin,
+                'status' => $row->nama_status,
+                'kelas' => $row->nama_kelas,
+            ])
             ->withQueryString();
 
         return view('tu.siswa', compact('daftar'));
@@ -104,7 +113,7 @@ class SiswaController extends Controller
         Siswa::create($data);
 
         return redirect()
-            ->route('tu.siswa')
+            ->route('tu.siswa.index')
             ->with('success', 'Data siswa berhasil ditambahkan.');
     }
 
@@ -130,7 +139,7 @@ class SiswaController extends Controller
         $siswa->update($data);
 
         return redirect()
-            ->route('tu.siswa')
+            ->route('tu.siswa.index')
             ->with('success', 'Data siswa berhasil diperbarui.');
     }
 
@@ -142,7 +151,7 @@ class SiswaController extends Controller
         $siswa->delete();
 
         return redirect()
-            ->route('tu.siswa')
+            ->route('tu.siswa.index')
             ->with('success', 'Data siswa berhasil dihapus.');
     }
 }
