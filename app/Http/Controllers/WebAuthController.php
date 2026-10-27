@@ -95,6 +95,62 @@ class WebAuthController extends Controller
         return redirect()->to($tujuan);
     }
 
+    public function changePassword(Request $request)
+    {
+        $request->validate([
+            'sandi_lama' => 'required|string',
+            'sandi_baru' => [
+                'required',
+                'string',
+                'min:8',
+                'regex:/[A-Za-z]/',
+                'regex:/[0-9]/',
+                'different:sandi_lama',
+            ],
+            'sandi_ulang' => 'required|same:sandi_baru',
+        ], [
+            'sandi_baru.min' => 'Kata sandi baru minimal 8 karakter.',
+            'sandi_baru.regex' => 'Kata sandi baru harus mengandung huruf dan angka.',
+            'sandi_baru.different' => 'Kata sandi baru harus berbeda dari kata sandi lama.',
+            'sandi_ulang.same' => 'Ulangi kata sandi dengan benar.',
+        ]);
+
+        $idPengguna = $request->session()->get('id_pengguna');
+
+        $pengguna = Pengguna::find($idPengguna);
+
+        if (!$pengguna || !$pengguna->is_aktif) {
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()
+                ->route('login')
+                ->withErrors([
+                    'username' => 'Akun tidak ditemukan atau sudah tidak aktif.',
+                ]);
+        }
+
+        if (!Hash::check(
+            $request->input('sandi_lama'),
+            $pengguna->password_hash
+        )) {
+            return back()->withErrors([
+                'sandi_lama' => 'Kata sandi lama tidak benar.',
+            ]);
+        }
+
+        $pengguna->password_hash = Hash::make(
+            $request->input('sandi_baru')
+        );
+
+        $pengguna->save();
+
+        return redirect()
+            ->route('akun.sandi')
+            ->with('success', 'Kata sandi berhasil diubah.');
+    }
+
+
     public function logout(Request $request)
     {
         Auth::logout();

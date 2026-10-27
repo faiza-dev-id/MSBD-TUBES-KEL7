@@ -63,6 +63,12 @@ Route::middleware(
 )->get('/akun/sandi', [PageController::class, 'sandi'])
     ->name('akun.sandi');
 
+Route::middleware(
+    'role:' . implode(',', config('sekolah.role_ganti_sandi', []))
+)->post('/akun/sandi', [WebAuthController::class, 'changePassword'])
+    ->name('akun.sandi.update');
+
+
 // =====================================================
 // SISWA
 // =====================================================
@@ -76,6 +82,9 @@ Route::prefix('siswa')
 
         Route::get('/profil', [PageController::class, 'profil'])
             ->name('profil');
+
+        Route::get('/konfirmasi', [PageController::class, 'konfirmasi'])
+                ->name('konfirmasi');
 
         Route::get('/pengajuan-perubahan', [PageController::class, 'pengajuan'])
             ->name('pengajuan');
@@ -113,8 +122,14 @@ Route::prefix('tu')
         Route::get('/', [PageController::class, 'tuDashboard'])
             ->name('dashboard');
 
+        Route::get('/antrean', [PageController::class, 'antrean'])
+            ->name('antrean');
+
         Route::get('/verifikasi/{id}', [PageController::class, 'verifikasi'])
             ->name('verifikasi');
+
+        Route::get('/kelulusan', [PageController::class, 'kelulusan'])
+            ->name('kelulusan');
 
         Route::get('/persetujuan', [PageController::class, 'persetujuan'])
             ->name('persetujuan');
@@ -127,6 +142,9 @@ Route::prefix('tu')
 
         Route::get('/siswa/{id}', [SiswaController::class, 'show'])
             ->name('siswa.detail');
+
+        Route::get('/siswa/{id}/dokumen', [PageController::class, 'dokumenSiswa'])
+            ->name('siswa.dokumen');
 
         Route::post('/siswa', [SiswaController::class, 'store'])
             ->name('siswa.store');
@@ -207,6 +225,18 @@ Route::prefix('kepsek')
 
                 Route::get('/tambah', [PageController::class, 'penggunaTambah'])
                     ->name('pengguna.tambah');
+
+                Route::post('/simpan', [PageController::class, 'penggunaSimpan'])
+                ->name('pengguna.simpan');
+
+                Route::get('/{id}/edit', [PageController::class, 'penggunaEdit'])
+                 ->name('pengguna.edit');
+
+                Route::put('/{id}', [PageController::class, 'penggunaUpdate'])
+                ->name('pengguna.update');
+
+                Route::patch('/{id}/status', [PageController::class, 'penggunaUbahStatus'])
+                ->name('pengguna.status');
             });
 
         Route::get('/staf', [PageController::class, 'staf'])

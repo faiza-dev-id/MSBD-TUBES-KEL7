@@ -31,7 +31,7 @@
 <div class="card mb-4">
     <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
         <h2 class="font-serif text-lg font-bold">Antrean verifikasi PPDB</h2>
-        <input class="input !w-56" placeholder="Cari nama / NISN">
+        <a class="btn btn-ghost !py-1.5" href="{{ route('tu.antrean') }}">Lihat semua &amp; cari</a>
     </div>
     <div class="overflow-x-auto">
         <table class="w-full min-w-[560px] text-sm">
@@ -55,6 +55,10 @@
         @php $pct = round(($k['sudah_konfirmasi'] + $k['mengajukan_perubahan']) / $k['total_siswa'] * 100); @endphp
         <x-progress :nilai="$pct" :label="$k['nama_kelas']" :ket="$k['belum_respons'] . ' belum merespons'" />
     @endforeach
-    <button class="btn btn-ghost mt-3">Kirim pengingat ke siswa</button>
+    {{-- TODO backend: isi action dengan route kirim pengingat (POST) lalu hapus onsubmit. --}}
+    <form method="POST" action="#" onsubmit="return false" data-validasi data-konfirmasi="Kirim pengingat ke semua siswa yang belum merespons?">
+        @csrf
+        <button class="btn btn-ghost mt-3">Kirim pengingat ke siswa</button>
+    </form>
 </div>
 @endsection

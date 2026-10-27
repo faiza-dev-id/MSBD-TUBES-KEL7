@@ -5,7 +5,28 @@
 @section('content')
 <div class="card">
     <div class="flex items-center justify-between gap-3 flex-wrap mb-3">
-        <input class="input !w-64" placeholder="Cari nama / username">
+        <form method="GET"
+    action="{{ route('admin.pengguna') }}"
+    class="flex items-center gap-2 flex-wrap">
+
+    <input
+        type="text"
+        name="cari"
+        class="input !w-64"
+        placeholder="Cari nama / username / peran"
+        value="{{ $cari ?? '' }}"
+    >
+
+    <button type="submit" class="btn btn-ghost">
+        Cari
+    </button>
+
+    @if (!empty($cari))
+        <a href="{{ route('admin.pengguna') }}" class="btn btn-ghost">
+            Reset
+        </a>
+    @endif
+</form>
         <a href="{{ route('admin.pengguna.tambah') }}" class="btn btn-flame">+ Tambah pengguna</a>
     </div>
     <div class="overflow-x-auto">
@@ -17,9 +38,23 @@
                     <td class="p-2.5 font-medium">{{ $u['nama'] }}</td><td class="p-2.5">{{ $u['username'] }}</td><td class="p-2.5">{{ $u['role'] }}</td><td class="p-2.5 text-mute">{{ $u['login'] }}</td>
                     <td class="p-2.5"><span class="text-xs font-semibold {{ $u['aktif'] ? 'text-ok' : 'text-mute' }}">{{ $u['aktif'] ? 'Aktif' : 'Nonaktif' }}</span></td>
                     <td class="p-2.5 text-right whitespace-nowrap">
-                        <button type="button" class="btn btn-ghost !py-1.5">Ubah</button>
-                        <button type="button" class="btn btn-ghost !py-1.5 {{ $u['aktif'] ? '!text-bad' : '' }}"
-                                onclick="if (confirm('{{ $u['aktif'] ? 'Nonaktifkan' : 'Aktifkan' }} akun ini?')) alert('Tampilan rancangan: belum tersimpan ke database.')">{{ $u['aktif'] ? 'Nonaktifkan' : 'Aktifkan' }}</button>
+                        <a href="{{ route('admin.pengguna.edit', $u['id_pengguna']) }}"
+                            class="btn btn-ghost !py-1.5">
+                            Ubah
+                        </a>
+                        <form method="POST"
+                            action="{{ route('admin.pengguna.status', $u['id_pengguna']) }}"
+                            class="inline"
+                            data-validasi
+                            data-konfirmasi="{{ $u['aktif'] ? 'Nonaktifkan' : 'Aktifkan' }} akun ini?">
+                            @csrf
+                            @method('PATCH')
+
+                            <button type="submit"
+                                class="btn btn-ghost !py-1.5 {{ $u['aktif'] ? '!text-bad' : '' }}">
+                                {{ $u['aktif'] ? 'Nonaktifkan' : 'Aktifkan' }}
+                            </button>
+                        </form>
                     </td>
                 </tr>
             @endforeach

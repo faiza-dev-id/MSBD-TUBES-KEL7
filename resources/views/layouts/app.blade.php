@@ -6,10 +6,11 @@
     $akademikMenu = ['Akademik', [['Konfigurasi Akademik', 'akademik.konfigurasi'], ['Jadwal Pelajaran', 'akademik.jadwal']]];
 
     $menu = match ($role) {
-        'siswa'  => [['Utama', [['Beranda', 'siswa.dashboard']]], ['Data Saya', [['Profil Saya', 'siswa.profil'], ['Ubah Data', 'siswa.pengajuan']]], $akun],
+        'siswa'  => [['Utama', [['Beranda', 'siswa.dashboard']]], ['Data Saya', [['Profil Saya', 'siswa.profil'], ['Konfirmasi Data', 'siswa.konfirmasi'], ['Ubah Data', 'siswa.pengajuan']]], $akun],
         'guru'   => [['Mengajar', [['Jadwal Mengajar', 'guru.jadwal']]], ['Wali Kelas', [['Daftar Siswa Kelas', 'guru.kelas'], ['Kelengkapan Data', 'guru.kelengkapan'], ['Catatan Wali Kelas', 'guru.catatan']]], $akun],
         'tu'     => [
             ['Utama', [['Meja TU', 'tu.dashboard']]],
+            ['PPDB', [['Antrean Verifikasi', 'tu.antrean'], ['Pengesahan Kelulusan', 'tu.kelulusan']]],
             ['Data Siswa', [['Data Induk Siswa', 'tu.siswa'], ['Persetujuan Data', 'tu.persetujuan'], ['Periode Update', 'tu.periode'], ['Reset Sandi Akun', 'tu.reset']]],
             ['Data Master', [['Data Referensi', 'admin.referensi'], ['Checklist & Alasan', 'admin.checklist'], ['Aturan Field', 'admin.aturan']]],
             $kelasMenu, $akademikMenu, $akun,
@@ -27,9 +28,9 @@
 
     // ikon tiap menu (nama ikon ada di components/icon.blade.php)
     $ikon = [
-        'siswa.dashboard' => 'home', 'siswa.profil' => 'idcard', 'siswa.pengajuan' => 'edit',
+        'siswa.dashboard' => 'home', 'siswa.profil' => 'idcard', 'siswa.konfirmasi' => 'check', 'siswa.pengajuan' => 'edit',
         'guru.jadwal' => 'calendar', 'guru.kelas' => 'users', 'guru.kelengkapan' => 'clipboard', 'guru.catatan' => 'book',
-        'tu.dashboard' => 'home', 'tu.siswa' => 'folder', 'tu.persetujuan' => 'check', 'tu.periode' => 'clock', 'tu.reset' => 'key',
+        'tu.dashboard' => 'home', 'tu.antrean' => 'clipboard', 'tu.kelulusan' => 'cap', 'tu.siswa' => 'folder', 'tu.persetujuan' => 'check', 'tu.periode' => 'clock', 'tu.reset' => 'key',
         'tu.kelas' => 'cap', 'tu.penempatan' => 'enter', 'tu.kenaikan' => 'trend',
         'akademik.konfigurasi' => 'sliders', 'akademik.jadwal' => 'grid',
         'kepsek.dashboard' => 'chart',

@@ -19,7 +19,11 @@
 <div class="card">
     <div class="flex items-center justify-between gap-3 flex-wrap mb-3">
         <h2 class="font-serif text-lg font-bold">Status per siswa</h2>
-        <button class="btn btn-flame">Kirim pengingat ke yang belum merespons</button>
+        {{-- TODO backend: isi action dengan route pengingat ke siswa kelas (POST) lalu hapus onsubmit. --}}
+        <form method="POST" action="#" onsubmit="return false" data-validasi data-konfirmasi="Kirim pengingat ke siswa yang belum merespons?">
+            @csrf
+            <button class="btn btn-flame">Kirim pengingat ke yang belum merespons</button>
+        </form>
     </div>
     <div class="overflow-x-auto">
         <table class="w-full text-sm min-w-[520px]">

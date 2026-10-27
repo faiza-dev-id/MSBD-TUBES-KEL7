@@ -9,8 +9,8 @@
         <div class="text-xs mt-1 opacity-80">Simpan nomor ini untuk mengecek status pendaftaran.</div>
     </div>
 @endif
-<form class="card mb-4 grid sm:grid-cols-[1fr_1fr_auto] gap-4 items-end" onsubmit="return false">
-    <x-field label="NISN" name="cek_nisn" placeholder="10 digit" />
+<form class="card mb-4 grid sm:grid-cols-[1fr_1fr_auto] gap-4 items-end" method="GET" action="{{ route('ppdb.status') }}" data-validasi>
+    <x-field label="NISN" name="cek_nisn" placeholder="10 digit" digit="10" />
     <x-field label="Kode pendaftaran" name="cek_kode" placeholder="Contoh: PPDB-20261025-AB12CD" wajib="1"
         pola="^PPDB-[0-9]{8}-[A-Z0-9]{6}$" pesan="Kode pendaftaran tidak sesuai format. Contoh: PPDB-20261025-AB12CD." />
     <button class="btn btn-flame">Cek status</button>
@@ -35,10 +35,16 @@
     <div class="card border-l-4 !border-l-bad">
         <h2 class="text-lg font-bold">Berkas perlu diunggah ulang</h2>
         <p class="text-sm text-mute mt-1">Kartu Keluarga: berkas buram / tidak terbaca. Foto ulang di tempat terang, pastikan semua tulisan terbaca.</p>
+        {{-- TODO backend: isi action dengan route unggah ulang berkas (POST, multipart) lalu hapus onsubmit. Field: kode_pendaftaran, id_jenis_dokumen, berkas_ulang (multipart) --}}
+        <form method="POST" action="#" onsubmit="return false" enctype="multipart/form-data" data-validasi>
+        @csrf
+        <input type="hidden" name="kode_pendaftaran" value="{{ request('cek_kode') }}">
+        <input type="hidden" name="id_jenis_dokumen" value="Kartu Keluarga">
         <label class="flex items-center justify-between gap-3 border-2 border-dashed border-line rounded-lg p-3.5 text-sm cursor-pointer hover:border-flame mt-4">
-            <span>Kartu Keluarga</span><span class="btn btn-ghost !py-1.5">Pilih file</span><input type="file" class="hidden">
+            <span>Kartu Keluarga</span><span class="btn btn-ghost !py-1.5">Pilih file</span><input type="file" name="berkas_ulang" data-wajib accept=".pdf,.jpg,.jpeg,.png" class="hidden">
         </label>
         <button class="btn btn-flame mt-3 w-full">Kirim ulang berkas</button>
+        </form>
     </div>
 </div>
 @endsection

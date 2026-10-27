@@ -57,6 +57,16 @@ class DummyData
         ];
     }
 
+    /** Pendaftar yang berkasnya sudah diterima dan menunggu pengesahan kelulusan (E: pengesahan + nilai ujian). */
+    public static function kelulusan(): array
+    {
+        return [
+            ['id' => 5, 'nama' => 'Eka Purba', 'nisn' => '0067890123', 'tgl_terima' => '21 Okt 2026', 'nilai' => '', 'status' => 'menunggu'],
+            ['id' => 6, 'nama' => 'Fajar Siregar', 'nisn' => '0078901234', 'tgl_terima' => '21 Okt 2026', 'nilai' => '82', 'status' => 'menunggu'],
+            ['id' => 4, 'nama' => 'Dewi Lubis', 'nisn' => '0056789012', 'tgl_terima' => '18 Okt 2026', 'nilai' => '88', 'status' => 'disahkan'],
+        ];
+    }
+
     // tabel: ref_checklist_item (per jenis_dokumen)
     public static function checklist(): array
     {
