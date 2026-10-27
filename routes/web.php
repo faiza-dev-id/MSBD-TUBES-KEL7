@@ -121,6 +121,7 @@ Route::prefix('tu')
 
         // Data induk siswa. Nama "siswa" dan "siswa.detail" dipakai menu sidebar,
         // dashboard TU, dan view tu/siswa, jangan diganti tanpa mengubah view.
+
         Route::get('/siswa', [SiswaController::class, 'index'])
             ->name('siswa');
 

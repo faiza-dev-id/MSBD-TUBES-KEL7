@@ -18,16 +18,21 @@
                 <div class="bg-ok/10 rounded-md p-3"><div class="text-xs text-mute mb-1">Data baru</div>{{ $p['baru'] }}</div>
             </div>
             @if ($p['status'] === 'menunggu')
-                <div class="mt-4">
-                    <label class="label" for="cat-{{ $p['id'] }}">Catatan untuk siswa <span class="font-normal">(isi jika dikembalikan atau ditolak)</span></label>
-                    <textarea class="input" id="cat-{{ $p['id'] }}" rows="2"></textarea>
-                </div>
-                <div class="flex gap-2 mt-3 flex-wrap">
-                    <button class="btn">Setujui</button>
-                    <button class="btn btn-ghost">Kembalikan</button>
-                    <button class="btn btn-ghost !text-bad">Tolak</button>
-                    <a href="#" class="btn btn-ghost">Lihat bukti</a>
-                </div>
+                {{-- TODO backend: isi action dengan route keputusan (POST) lalu hapus onsubmit. --}}
+                <form method="POST" action="#" onsubmit="return false">
+                    @csrf
+                    <input type="hidden" name="id_pengajuan" value="{{ $p['id'] }}">
+                    <div class="mt-4">
+                        <label class="label" for="cat-{{ $p['id'] }}">Catatan untuk siswa <span class="font-normal">(isi jika dikembalikan atau ditolak)</span></label>
+                        <textarea class="input" id="cat-{{ $p['id'] }}" name="catatan" rows="2"></textarea>
+                    </div>
+                    <div class="flex gap-2 mt-3 flex-wrap">
+                        <button class="btn" name="keputusan" value="setujui">Setujui</button>
+                        <button class="btn btn-ghost" name="keputusan" value="kembalikan">Kembalikan</button>
+                        <button class="btn btn-ghost !text-bad" name="keputusan" value="tolak">Tolak</button>
+                        <a href="#" class="btn btn-ghost">Lihat bukti</a>
+                    </div>
+                </form>
                 <p class="text-[11px] text-mute mt-2"><b>Kembalikan</b>: siswa diminta memperbaiki data atau bukti, lalu mengajukan lagi.</p>
             @endif
         </div>
