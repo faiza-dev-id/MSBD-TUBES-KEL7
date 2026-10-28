@@ -2,9 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Kelas;
 use App\Models\KomponenPenilaian;
-use App\Models\MataPelajaran;
 use App\Models\Semester;
 use App\Models\SkalaPredikat;
 use App\Models\TahunAjaran;
@@ -12,9 +10,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 /**
- * DFD 2.1 Konfigurasi Akademik (L2: 2.1.1 - 2.1.4).
- * Semua aturan "cek tumpang tindih", "cek duplikat", dan bobot ada di sini
- * supaya controller tetap tipis.
+ * DFD 2.1 Konfigurasi Akademik (L2: 2.1.1 - 2.1.4), dipakai bersama oleh API dan halaman web.
+ * Semua aturan "cek tumpang tindih", "cek duplikat", dan bobot ada di sini.
  */
 class MasterAkademikService
 {
@@ -43,7 +40,18 @@ class MasterAkademikService
                     ->get()->each->update(['is_aktif' => false]); // each->update agar observer audit jalan
             }
 
-            return $ta ? tap($ta)->update($d) : TahunAjaran::create($d);
+            $hasil = $ta ? tap($ta)->update($d) : TahunAjaran::create($d);
+
+            // Semester aktif harus selalu milik tahun ajaran yang aktif.
+            if (!empty($d['is_aktif'])) {
+                Semester::where('is_aktif', true)->where('id_tahun_ajaran', '!=', $hasil->id_tahun_ajaran)
+                    ->get()->each->update(['is_aktif' => false]);
+            } elseif (array_key_exists('is_aktif', $d)) {
+                Semester::where('is_aktif', true)->where('id_tahun_ajaran', $hasil->id_tahun_ajaran)
+                    ->get()->each->update(['is_aktif' => false]);
+            }
+
+            return $hasil;
         });
     }
 
@@ -124,18 +132,16 @@ class MasterAkademikService
     /** Tolak hapus jika masih dipakai tabel lain; kembalikan pesan, atau null jika boleh. */
     public function alasanTidakBisaDihapus(string $jenis, int $id): ?string
     {
+        $ada = fn (string $tabel, string $kolom) => DB::table($tabel)->where($kolom, $id)->exists();
+
         $pakai = match ($jenis) {
-            'tahun_ajaran' => DB::table('semester')->where('id_tahun_ajaran', $id)->exists()
-                || DB::table('kelas')->where('id_tahun_ajaran', $id)->exists(),
-            'semester'     => DB::table('jadwal_pelajaran')->where('id_semester', $id)->exists()
-                || DB::table('keanggotaan_kelas')->where('id_semester', $id)->exists()
-                || DB::table('nilai_siswa')->where('id_semester', $id)->exists(),
-            'kelas'        => DB::table('keanggotaan_kelas')->where('id_kelas', $id)->exists()
-                || DB::table('jadwal_pelajaran')->where('id_kelas', $id)->exists(),
-            'mapel'        => DB::table('jadwal_pelajaran')->where('id_mata_pelajaran', $id)->exists()
-                || DB::table('nilai_siswa')->where('id_mapel', $id)->exists(),
-            'komponen'     => DB::table('nilai_siswa')->where('id_komponen', $id)->exists(),
-            'predikat'     => DB::table('detail_rapor')->where('id_predikat', $id)->exists(),
+            'tahun_ajaran' => $ada('semester', 'id_tahun_ajaran') || $ada('kelas', 'id_tahun_ajaran') || $ada('periode_update', 'id_tahun_ajaran'),
+            'semester'     => $ada('jadwal_pelajaran', 'id_semester') || $ada('keanggotaan_kelas', 'id_semester')
+                || $ada('penugasan_wali_kelas', 'id_semester') || $ada('nilai_siswa', 'id_semester') || $ada('rapor', 'id_semester'),
+            'kelas'        => $ada('keanggotaan_kelas', 'id_kelas') || $ada('jadwal_pelajaran', 'id_kelas') || $ada('penugasan_wali_kelas', 'id_kelas'),
+            'mapel'        => $ada('jadwal_pelajaran', 'id_mata_pelajaran') || $ada('nilai_siswa', 'id_mapel') || $ada('detail_rapor', 'id_mapel'),
+            'komponen'     => $ada('nilai_siswa', 'id_komponen'),
+            'predikat'     => $ada('detail_rapor', 'id_predikat'),
             default        => false,
         };
 
