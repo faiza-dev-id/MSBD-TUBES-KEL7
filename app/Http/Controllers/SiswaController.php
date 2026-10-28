@@ -113,7 +113,7 @@ class SiswaController extends Controller
         Siswa::create($data);
 
         return redirect()
-            ->route('tu.siswa.index')
+            ->route('tu.siswa')
             ->with('success', 'Data siswa berhasil ditambahkan.');
     }
 
@@ -139,7 +139,7 @@ class SiswaController extends Controller
         $siswa->update($data);
 
         return redirect()
-            ->route('tu.siswa.index')
+            ->route('tu.siswa')
             ->with('success', 'Data siswa berhasil diperbarui.');
     }
 

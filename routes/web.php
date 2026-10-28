@@ -8,6 +8,14 @@ use App\Http\Controllers\PendaftaranPpdbController;
 use App\Http\Controllers\SiswaController;
 use App\Http\Controllers\Admin\LogController;
 use App\Http\Controllers\Admin\PengaturanController;
+use App\Http\Controllers\Admin\PeranController;
+use App\Http\Controllers\Admin\PenggunaController;
+use App\Http\Controllers\Tu\ResetSandiController;
+use App\Http\Controllers\Tu\ReferensiController;
+use App\Http\Controllers\Tu\ChecklistController;
+use App\Http\Controllers\Tu\AturanFieldController;
+use App\Http\Controllers\Tu\KonfigurasiController;
+use App\Http\Controllers\Tu\KelasController;
 
 // =====================================================
 // HALAMAN AWAL
@@ -158,11 +166,20 @@ Route::prefix('tu')
         Route::get('/periode', [PageController::class, 'periode'])
             ->name('periode');
 
-        Route::get('/kelas', [PageController::class, 'kelas'])
+        Route::get('/kelas', [KelasController::class, 'index'])
             ->name('kelas');
 
-        Route::get('/kelas/{id}', [PageController::class, 'kelasDetail'])
-            ->name('kelas.detail');
+        Route::post('/kelas/wali', [KelasController::class, 'tetapkan'])
+            ->name('kelas.wali');
+
+        Route::delete('/kelas/wali/{id}', [KelasController::class, 'cabut'])
+            ->whereNumber('id')->name('kelas.wali.cabut');
+
+        Route::get('/kelas/{id}', [KelasController::class, 'detail'])
+            ->whereNumber('id')->name('kelas.detail');
+
+        Route::get('/kelas/{id}/unduh', [KelasController::class, 'unduh'])
+            ->whereNumber('id')->name('kelas.unduh');
 
         Route::get('/penempatan', [PageController::class, 'penempatan'])
             ->name('penempatan');
@@ -170,8 +187,12 @@ Route::prefix('tu')
         Route::get('/kenaikan', [PageController::class, 'kenaikan'])
             ->name('kenaikan');
 
-        Route::get('/reset-sandi', [PageController::class, 'resetSandi'])
+        Route::get('/reset-sandi', [ResetSandiController::class, 'index'])
             ->name('reset');
+
+        Route::post('/reset-sandi/{id}', [ResetSandiController::class, 'reset'])
+            ->middleware('throttle:30,1')
+            ->name('reset.proses');
     });
 
 // =====================================================
@@ -182,14 +203,37 @@ Route::prefix('tu/master')
     ->name('admin.')
     ->middleware('role:tu')
     ->group(function () {
-        Route::get('/referensi/{tab?}', [PageController::class, 'referensi'])
+        // 2.5 Data referensi
+        Route::get('/referensi/{tab?}', [ReferensiController::class, 'index'])
             ->name('referensi');
+        Route::post('/referensi/{tab}', [ReferensiController::class, 'store'])
+            ->name('referensi.simpan');
+        Route::put('/referensi/{tab}/{id}', [ReferensiController::class, 'update'])
+            ->whereNumber('id')->name('referensi.ubah');
+        Route::delete('/referensi/{tab}/{id}', [ReferensiController::class, 'destroy'])
+            ->whereNumber('id')->name('referensi.hapus');
 
-        Route::get('/checklist', [PageController::class, 'checklistRef'])
+        // Checklist verifikasi dan alasan pengembalian
+        Route::get('/checklist', [ChecklistController::class, 'index'])
             ->name('checklist');
+        Route::post('/checklist/item', [ChecklistController::class, 'simpanItem'])
+            ->name('checklist.item.simpan');
+        Route::put('/checklist/item/{id}', [ChecklistController::class, 'ubahItem'])
+            ->whereNumber('id')->name('checklist.item.ubah');
+        Route::delete('/checklist/item/{id}', [ChecklistController::class, 'hapusItem'])
+            ->whereNumber('id')->name('checklist.item.hapus');
+        Route::post('/checklist/alasan', [ChecklistController::class, 'simpanAlasan'])
+            ->name('checklist.alasan.simpan');
+        Route::put('/checklist/alasan/{id}', [ChecklistController::class, 'ubahAlasan'])
+            ->whereNumber('id')->name('checklist.alasan.ubah');
+        Route::delete('/checklist/alasan/{id}', [ChecklistController::class, 'hapusAlasan'])
+            ->whereNumber('id')->name('checklist.alasan.hapus');
 
-        Route::get('/aturan-field', [PageController::class, 'aturan'])
+        // Aturan perubahan data siswa
+        Route::get('/aturan-field', [AturanFieldController::class, 'index'])
             ->name('aturan');
+        Route::put('/aturan-field', [AturanFieldController::class, 'update'])
+            ->name('aturan.simpan');
     });
 
 // =====================================================
@@ -200,8 +244,14 @@ Route::prefix('akademik')
     ->name('akademik.')
     ->middleware('role:tu')
     ->group(function () {
-        Route::get('/konfigurasi/{tab?}', [PageController::class, 'konfigurasi'])
+        Route::get('/konfigurasi/{tab?}', [KonfigurasiController::class, 'index'])
             ->name('konfigurasi');
+        Route::post('/konfigurasi/{tab}', [KonfigurasiController::class, 'store'])
+            ->name('konfigurasi.simpan');
+        Route::put('/konfigurasi/{tab}/{id}', [KonfigurasiController::class, 'update'])
+            ->whereNumber('id')->name('konfigurasi.ubah');
+        Route::delete('/konfigurasi/{tab}/{id}', [KonfigurasiController::class, 'destroy'])
+            ->whereNumber('id')->name('konfigurasi.hapus');
 
         Route::get('/jadwal', [PageController::class, 'jadwal'])
             ->name('jadwal');
@@ -232,18 +282,21 @@ Route::prefix('kepsek')
                 Route::get('/{id}/edit', [PageController::class, 'penggunaEdit'])
                  ->name('pengguna.edit');
 
-                Route::put('/{id}', [PageController::class, 'penggunaUpdate'])
+                Route::put('/{id}', [PenggunaController::class, 'update'])
                 ->name('pengguna.update');
 
-                Route::patch('/{id}/status', [PageController::class, 'penggunaUbahStatus'])
+                Route::patch('/{id}/status', [PenggunaController::class, 'ubahStatus'])
                 ->name('pengguna.status');
             });
 
-        Route::get('/staf', [PageController::class, 'staf'])
+        Route::get('/staf', [PenggunaController::class, 'staf'])
             ->name('admin.staf');
 
-        Route::get('/peran', [PageController::class, 'peran'])
+        Route::get('/peran', [PeranController::class, 'index'])
             ->name('admin.peran');
+
+        Route::put('/peran', [PeranController::class, 'update'])
+            ->name('admin.peran.simpan');
 
         Route::get('/pengaturan', [PengaturanController::class, 'index'])
             ->name('admin.pengaturan');
