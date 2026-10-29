@@ -14,18 +14,17 @@
                     <b>{{ $d['jenis'] }}</b> <span class="text-mute">· {{ $d['format'] }}, {{ $d['ukuran'] }}</span>
                     <div class="text-xs text-mute">No. {{ $d['nomor'] }} · diunggah {{ $d['tgl'] }} · {{ $d['fisik'] ? 'fisik sudah diterima' : 'fisik belum diterima' }}</div>
                 </div>
-                {{-- TODO backend: isi action dengan route nonaktifkan dokumen (PATCH) lalu hapus onsubmit. Field: id_dokumen --}}
-                <form method="POST" action="#" onsubmit="return false" data-validasi data-konfirmasi="Nonaktifkan dokumen {{ $d['jenis'] }}?">
-                    @csrf @method('PATCH')
-                    <input type="hidden" name="id_dokumen" value="{{ $loop->iteration }}">
-                    <button class="btn btn-ghost !py-1.5 !text-bad">Nonaktifkan</button>
-                </form>
+                @if (! empty($d['id_dokumen']))
+                    <form method="POST" action="{{ route('tu.siswa.dokumen.nonaktif', [$id, $d['id_dokumen']]) }}" data-konfirmasi="Nonaktifkan dokumen {{ $d['jenis'] }}?">
+                        @csrf @method('PATCH')
+                        <button class="btn btn-ghost !py-1.5 !text-bad">Nonaktifkan</button>
+                    </form>
+                @endif
             </div>
         @endforeach
     </div>
 
-    {{-- TODO backend: isi action dengan route unggah dokumen (POST, multipart) lalu hapus onsubmit. Field: id_siswa, id_jenis_dokumen, nomor_dokumen, berkas, ada_fisik --}}
-    <form class="card space-y-4" method="POST" action="#" onsubmit="return false" enctype="multipart/form-data" data-validasi>
+    <form class="card space-y-4" method="POST" action="{{ route('tu.siswa.dokumen.simpan', $id) }}" enctype="multipart/form-data" data-validasi>
         @csrf
         <h2 class="sec-title">Tambah atau ganti dokumen</h2>
         <input type="hidden" name="id_siswa" value="{{ $id }}">

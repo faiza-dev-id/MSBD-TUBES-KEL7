@@ -65,20 +65,7 @@ class LogController extends Controller
             ->when($f['dari'] ?? null, fn ($q, $v) => $q->where('waktu', '>=', $this->awalHari($v)))
             ->when($f['sampai'] ?? null, fn ($q, $v) => $q->where('waktu', '<', $this->awalHari($v)->addDay()))
             ->orderByDesc('waktu')->orderByDesc('id_log')
-            ->paginate(self::PER_HALAMAN)->withQueryString()
-            ->through(function ($l) {
-                [$lama, $baru] = $this->bandingkan($l->operasi, $this->json($l->nilai_lama), $this->json($l->nilai_baru));
-
-                return [
-                    'waktu' => $this->tampilWaktu($l->waktu),
-                    'user'  => $l->username_pengubah ?: 'sistem / tidak diketahui',
-                    'aksi'  => $l->operasi,
-                    'tabel' => $l->nama_tabel,
-                    'rec'   => $l->id_data !== null ? '#'.$l->id_data : '',
-                    'lama'  => $lama,
-                    'baru'  => $baru,
-                ];
-            });
+            ->paginate(self::PER_HALAMAN)->withQueryString();
 
         $daftarTabel = LogAudit::query()->distinct()->orderBy('nama_tabel')->pluck('nama_tabel');
 

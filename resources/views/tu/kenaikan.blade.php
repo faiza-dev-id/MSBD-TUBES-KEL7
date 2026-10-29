@@ -3,8 +3,8 @@
 @section('heading', 'Kenaikan Kelas Massal')
 @section('sub', 'Pindahkan semua siswa satu kelas sekaligus. Hilangkan centang untuk siswa yang tinggal kelas.')
 @section('content')
-{{-- TODO backend: isi action dengan route kenaikan kelas massal (POST) lalu hapus onsubmit. Field: id_kelas_asal, id_kelas_tujuan, id_siswa[] --}}
-<form class="card max-w-2xl" method="POST" action="#" onsubmit="return false" data-validasi data-konfirmasi="Proses kenaikan kelas untuk semua siswa yang dicentang? Tindakan ini tercatat di jejak audit.">
+{{-- Field: id_kelas_asal, id_kelas_tujuan, id_siswa[] --}}
+<form class="card max-w-2xl" method="POST" action="{{ route('tu.kenaikan.simpan') }}" data-validasi data-konfirmasi="Proses kenaikan kelas untuk semua siswa yang dicentang? Tindakan ini tercatat di jejak audit.">
     @csrf
     <div class="grid sm:grid-cols-2 gap-4 mb-4">
         <div><label class="label" for="id_kelas_asal">Dari kelas</label><select class="input" id="id_kelas_asal" name="id_kelas_asal" data-wajib>@foreach ($kelas as $k)<option value="{{ $k['id'] }}">{{ $k['nama'] }}</option>@endforeach</select></div>

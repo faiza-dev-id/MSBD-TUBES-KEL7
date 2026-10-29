@@ -35,8 +35,7 @@
     <div class="card border-l-4 !border-l-bad">
         <h2 class="text-lg font-bold">Berkas perlu diunggah ulang</h2>
         <p class="text-sm text-mute mt-1">Kartu Keluarga: berkas buram / tidak terbaca. Foto ulang di tempat terang, pastikan semua tulisan terbaca.</p>
-        {{-- TODO backend: isi action dengan route unggah ulang berkas (POST, multipart) lalu hapus onsubmit. Field: kode_pendaftaran, id_jenis_dokumen, berkas_ulang (multipart) --}}
-        <form method="POST" action="#" onsubmit="return false" enctype="multipart/form-data" data-validasi>
+        <form method="POST" action="{{ route('ppdb.status.berkas') }}" enctype="multipart/form-data" data-validasi>
         @csrf
         <input type="hidden" name="kode_pendaftaran" value="{{ request('cek_kode') }}">
         <input type="hidden" name="id_jenis_dokumen" value="Kartu Keluarga">

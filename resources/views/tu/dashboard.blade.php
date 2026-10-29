@@ -55,8 +55,7 @@
         @php $pct = round(($k['sudah_konfirmasi'] + $k['mengajukan_perubahan']) / $k['total_siswa'] * 100); @endphp
         <x-progress :nilai="$pct" :label="$k['nama_kelas']" :ket="$k['belum_respons'] . ' belum merespons'" />
     @endforeach
-    {{-- TODO backend: isi action dengan route kirim pengingat (POST) lalu hapus onsubmit. --}}
-    <form method="POST" action="#" onsubmit="return false" data-validasi data-konfirmasi="Kirim pengingat ke semua siswa yang belum merespons?">
+    <form method="POST" action="{{ route('tu.pengingat') }}" data-validasi data-konfirmasi="Kirim pengingat ke semua siswa yang belum merespons?">
         @csrf
         <button class="btn btn-ghost mt-3">Kirim pengingat ke siswa</button>
     </form>

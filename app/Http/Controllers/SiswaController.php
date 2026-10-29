@@ -151,7 +151,7 @@ class SiswaController extends Controller
         $siswa->delete();
 
         return redirect()
-            ->route('tu.siswa.index')
+            ->route('tu.siswa')
             ->with('success', 'Data siswa berhasil dihapus.');
     }
 }

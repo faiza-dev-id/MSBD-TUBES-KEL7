@@ -8,7 +8,7 @@
         <div class="card">
             <div class="flex items-start justify-between gap-3 flex-wrap">
                 <div>
-                    <div class="text-xs text-mute">{{ $p['id'] }} · Contoh Siswa · {{ $p['tgl'] }}</div>
+                    <div class="text-xs text-mute">{{ $p['id'] }} · {{ $p['nama'] ?? 'Siswa' }} · {{ $p['tgl'] }}</div>
                     <h2 class="font-serif text-lg font-bold">Ubah {{ $p['field'] }}</h2>
                 </div>
                 <x-badge :status="$p['status']" />
@@ -18,8 +18,7 @@
                 <div class="bg-ok/10 rounded-md p-3"><div class="text-xs text-mute mb-1">Data baru</div>{{ $p['baru'] }}</div>
             </div>
             @if ($p['status'] === 'menunggu')
-                {{-- TODO backend: isi action dengan route keputusan (POST) lalu hapus onsubmit. --}}
-                <form method="POST" action="#" onsubmit="return false">
+                <form method="POST" action="{{ route('tu.persetujuan.simpan') }}">
                     @csrf
                     <input type="hidden" name="id_pengajuan" value="{{ $p['id'] }}">
                     <div class="mt-4">

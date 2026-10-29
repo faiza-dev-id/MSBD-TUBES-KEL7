@@ -20,8 +20,7 @@
     </dl>
 </div>
 
-{{-- TODO backend: isi action dengan route konfirmasi data (POST) lalu hapus onsubmit. Field: id_periode, konfirmasi --}}
-<form class="card space-y-4 {{ $dibuka ? '' : 'opacity-50' }}" method="POST" action="#" onsubmit="return false" data-validasi @if (! $dibuka) inert @endif>
+<form class="card space-y-4 {{ $dibuka ? '' : 'opacity-50' }}" method="POST" action="{{ route('siswa.konfirmasi.simpan') }}" data-validasi @if (! $dibuka) inert @endif>
     @csrf
     <input type="hidden" name="id_periode" value="{{ $periode['id'] ?? '' }}">
     <div data-grup data-minimal="1" data-pesan="Centang dulu untuk menyatakan datamu benar.">

@@ -3,8 +3,8 @@
 @section('heading', 'Penempatan Siswa ke Kelas')
 @section('sub', 'Siswa baru yang sudah disahkan dan belum punya kelas.')
 @section('content')
-{{-- TODO backend: isi action dengan route penempatan siswa (POST) lalu hapus onsubmit. Field: id_siswa[], id_kelas, tgl_masuk --}}
-<form class="card max-w-2xl" method="POST" action="#" onsubmit="return false" data-validasi>
+{{-- Field: id_siswa[], id_kelas, tgl_masuk --}}
+<form class="card max-w-2xl" method="POST" action="{{ route('tu.penempatan.simpan') }}" data-validasi>
     @csrf
     <h2 class="sec-title">Siswa belum berkelas</h2>
     <div data-grup data-minimal="1" data-pesan="Pilih minimal satu siswa.">
