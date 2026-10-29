@@ -16,11 +16,24 @@ class EnsureRole
     public function handle(Request $request, Closure $next, string ...$roles): Response
     {
         $idPengguna = $request->session()->get('id_pengguna');
+        $username = $request->session()->get('username');
+        $roleSesi = $request->session()->get('role');
 
         // Belum login
         abort_unless($idPengguna, 404);
 
-        $user = Pengguna::with('role')->find($idPengguna);
+        // Cocokkan juga username/peran sesi. Ini mencegah 404 ketika tabel pengguna
+        // memiliki id yang sama untuk akun berbeda (mis. akibat urutan sequence lama),
+        // sehingga find() bisa mengambil akun dengan peran yang salah.
+        $query = Pengguna::with('role')->where('id_pengguna', $idPengguna);
+
+        if ($username) {
+            $query->where('username', $username);
+        } elseif ($roleSesi) {
+            $query->whereHas('role', fn ($q) => $q->where('nama_role', $roleSesi));
+        }
+
+        $user = $query->first();
 
         // Akun sudah dihapus atau dinonaktifkan setelah login: keluarkan dengan pesan
         if (!$user || !$user->is_aktif || !$user->role) {

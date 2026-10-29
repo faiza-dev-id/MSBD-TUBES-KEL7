@@ -91,6 +91,7 @@ class WebAuthController extends Controller
 
         $request->session()->put([
             'id_pengguna' => $user->id_pengguna,
+            'username' => $user->username,
             'role' => $user->role->nama_role,
             'nama' => $nama,
         ]);
