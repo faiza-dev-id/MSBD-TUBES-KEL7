@@ -4,8 +4,7 @@
 @section('sub', 'Catatan perkembangan siswa di kelas yang kamu walikan (X IPA 1).')
 @section('content')
 <div class="grid lg:grid-cols-[1fr_1.2fr] gap-4 items-start">
-    {{-- TODO backend: isi action dengan route simpan catatan wali kelas (POST) lalu hapus onsubmit. Field: id_siswa, isi_catatan --}}
-<form class="card space-y-4" method="POST" action="#" onsubmit="return false" data-validasi>
+<form class="card space-y-4" method="POST" action="{{ route('guru.catatan.simpan') }}" data-validasi>
     @csrf
         <h2 class="sec-title">Tulis catatan</h2>
         <div><label class="label" for="id_siswa">Siswa</label><select class="input" id="id_siswa" name="id_siswa" data-wajib>@foreach ($siswa as $s)<option value="{{ $s['id'] ?? $s['nisn'] }}">{{ $s['nama'] }}</option>@endforeach</select></div>

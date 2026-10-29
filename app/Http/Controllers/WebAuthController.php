@@ -78,9 +78,21 @@ class WebAuthController extends Controller
 
         RateLimiter::clear($key);
         $request->session()->regenerate();
+
+        // Nama yang tampil di topbar diambil dari data guru/staf/siswa terkait.
+        $user->loadMissing(['guru', 'staf', 'siswa']);
+        $nama = match ($user->role->nama_role) {
+            'guru'   => $user->guru->first()->nama_guru ?? $user->username,
+            'tu',
+            'kepsek' => $user->staf->first()->nama_staf ?? $user->username,
+            'siswa'  => $user->siswa->first()->nama_lengkap ?? $user->username,
+            default  => $user->username,
+        };
+
         $request->session()->put([
             'id_pengguna' => $user->id_pengguna,
             'role' => $user->role->nama_role,
+            'nama' => $nama,
         ]);
 
         $user->forceFill(['terakhir_login' => now()])->save();

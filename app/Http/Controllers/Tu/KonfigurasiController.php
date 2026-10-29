@@ -100,8 +100,6 @@ class KonfigurasiController extends Controller
                 'judul' => 'Kelas', 'model' => Kelas::class, 'pk' => 'id_kelas', 'jenis' => 'kelas', 'cari' => 'k.nama_kelas',
                 'fields' => [
                     ['name' => 'nama_kelas', 'label' => 'Nama kelas (mis. X IPA 1)', 'type' => 'text', 'max' => 80, 'required' => true],
-                    ['name' => 'id_tingkat', 'label' => 'Tingkat', 'type' => 'select', 'required' => true,
-                        'opsi' => ['tabel' => 'tingkat', 'nilai' => 'id_tingkat', 'label' => 'nama_tingkat']],
                     ['name' => 'id_tahun_ajaran', 'label' => 'Tahun ajaran', 'type' => 'select',
                         'opsi' => ['tabel' => 'tahun_ajaran', 'nilai' => 'id_tahun_ajaran', 'label' => 'nama_tahun_ajaran']],
                     ['name' => 'kapasitas', 'label' => 'Kapasitas', 'type' => 'int', 'min' => 1, 'maks' => 100],
@@ -235,7 +233,7 @@ class KonfigurasiController extends Controller
                 'tanggal_selesai' => $r->filled('tanggal_mulai') ? ['after:tanggal_mulai'] : [],
             ],
             'kelas' => [
-                'nama_kelas' => [Rule::unique('kelas', 'nama_kelas')->where('id_tingkat', $r->input('id_tingkat'))->ignore($id, 'id_kelas')],
+                'nama_kelas' => [Rule::unique('kelas', 'nama_kelas')->ignore($id, 'id_kelas')],
             ],
             'mapel' => [
                 'kode_mapel' => ['alpha_dash', Rule::unique('mata_pelajaran', 'kode_mapel')->ignore($id, 'id_mata_pelajaran')],

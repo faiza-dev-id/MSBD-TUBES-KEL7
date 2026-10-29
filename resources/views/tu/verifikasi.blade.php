@@ -3,8 +3,7 @@
 @section('heading', 'Verifikasi: ' . $row['nama'])
 @section('sub', 'NISN ' . $row['nisn'] . ' · masuk ' . $row['tgl'])
 @section('content')
-{{-- TODO backend: isi action dengan route verifikasi (POST) lalu hapus onsubmit. Tombol keputusan mengirim name="hasil". --}}
-<form class="grid lg:grid-cols-[1.3fr_1fr] gap-4 items-start" method="POST" action="#" onsubmit="return false">
+<form class="grid lg:grid-cols-[1.3fr_1fr] gap-4 items-start" method="POST" action="{{ route('tu.verifikasi.simpan') }}">
     @csrf
     <input type="hidden" name="id_pendaftaran" value="{{ $row['id'] ?? '' }}">
     <div class="space-y-4">
@@ -35,7 +34,6 @@
             <button class="btn btn-ghost w-full" name="hasil" value="kembalikan">Kembalikan untuk diperbaiki</button>
             <button class="btn btn-ghost w-full !text-bad" name="hasil" value="tolak">Tolak</button>
             <hr class="border-line">
-            <div><label class="label" for="nilai_ujian">Nilai ujian seleksi</label><input class="input" id="nilai_ujian" name="nilai_ujian" inputmode="decimal"></div>
             <button class="btn btn-flame w-full" name="hasil" value="sahkan">Sahkan &amp; buat akun siswa</button>
             <p class="text-[11px] text-mute">Akun siswa dibuat otomatis memakai NISN.</p>
         </div>

@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AksiFormController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\WebAuthController;
 use App\Http\Controllers\Api\AuthController;
@@ -12,8 +13,6 @@ use App\Http\Controllers\Admin\PeranController;
 use App\Http\Controllers\Admin\PenggunaController;
 use App\Http\Controllers\Tu\ResetSandiController;
 use App\Http\Controllers\Tu\ReferensiController;
-use App\Http\Controllers\Tu\ChecklistController;
-use App\Http\Controllers\Tu\AturanFieldController;
 use App\Http\Controllers\Tu\KonfigurasiController;
 use App\Http\Controllers\Tu\KelasController;
 
@@ -55,6 +54,9 @@ Route::post('/ppdb', [PendaftaranPpdbController::class, 'store'])
 Route::get('/ppdb/status', [PageController::class, 'status'])
     ->name('ppdb.status');
 
+Route::post('/ppdb/status/berkas', [AksiFormController::class, 'berkasUlang'])
+    ->name('ppdb.status.berkas');
+
 // =====================================================
 // BERANDA
 // =====================================================
@@ -94,8 +96,23 @@ Route::prefix('siswa')
         Route::get('/konfirmasi', [PageController::class, 'konfirmasi'])
                 ->name('konfirmasi');
 
+        Route::post('/konfirmasi', [AksiFormController::class, 'konfirmasiSiswa'])
+            ->name('konfirmasi.simpan');
+
         Route::get('/pengajuan-perubahan', [PageController::class, 'pengajuan'])
             ->name('pengajuan');
+
+        Route::post('/pengajuan-perubahan', [AksiFormController::class, 'pengajuanSiswa'])
+            ->name('pengajuan.simpan');
+
+        Route::get('/jadwal', [PageController::class, 'jadwalSiswa'])
+            ->name('jadwal');
+
+        Route::get('/kehadiran', [PageController::class, 'absensiSiswa'])
+            ->name('absensi');
+
+        Route::get('/rapor', [PageController::class, 'raporSiswa'])
+            ->name('rapor');
     });
 
 // =====================================================
@@ -117,6 +134,21 @@ Route::prefix('guru')
 
         Route::get('/catatan', [PageController::class, 'catatan'])
             ->name('catatan');
+
+        Route::post('/catatan', [AksiFormController::class, 'catatanSimpan'])
+            ->name('catatan.simpan');
+
+        Route::get('/absensi', [PageController::class, 'guruAbsensi'])
+            ->name('absensi');
+
+        Route::post('/absensi', [AksiFormController::class, 'absensiSimpan'])
+            ->name('absensi.simpan');
+
+        Route::get('/rapor', [PageController::class, 'guruRapor'])
+            ->name('rapor');
+
+        Route::post('/rapor', [AksiFormController::class, 'raporSimpan'])
+            ->name('rapor.simpan');
     });
 
 // =====================================================
@@ -130,17 +162,23 @@ Route::prefix('tu')
         Route::get('/', [PageController::class, 'tuDashboard'])
             ->name('dashboard');
 
+        Route::post('/pengingat', [AksiFormController::class, 'pengingat'])
+            ->name('pengingat');
+
         Route::get('/antrean', [PageController::class, 'antrean'])
             ->name('antrean');
 
         Route::get('/verifikasi/{id}', [PageController::class, 'verifikasi'])
             ->name('verifikasi');
 
-        Route::get('/kelulusan', [PageController::class, 'kelulusan'])
-            ->name('kelulusan');
+        Route::post('/verifikasi', [AksiFormController::class, 'verifikasiSimpan'])
+            ->name('verifikasi.simpan');
 
         Route::get('/persetujuan', [PageController::class, 'persetujuan'])
             ->name('persetujuan');
+
+        Route::post('/persetujuan', [AksiFormController::class, 'persetujuanSimpan'])
+            ->name('persetujuan.simpan');
 
         // Data induk siswa. Nama "siswa" dan "siswa.detail" dipakai menu sidebar,
         // dashboard TU, dan view tu/siswa, jangan diganti tanpa mengubah view.
@@ -154,6 +192,12 @@ Route::prefix('tu')
         Route::get('/siswa/{id}/dokumen', [PageController::class, 'dokumenSiswa'])
             ->name('siswa.dokumen');
 
+        Route::post('/siswa/{id}/dokumen', [AksiFormController::class, 'dokumenSimpan'])
+            ->whereNumber('id')->name('siswa.dokumen.simpan');
+
+        Route::patch('/siswa/{id}/dokumen/{idDokumen}', [AksiFormController::class, 'dokumenNonaktif'])
+            ->whereNumber('id')->whereNumber('idDokumen')->name('siswa.dokumen.nonaktif');
+
         Route::post('/siswa', [SiswaController::class, 'store'])
             ->name('siswa.store');
 
@@ -165,6 +209,12 @@ Route::prefix('tu')
 
         Route::get('/periode', [PageController::class, 'periode'])
             ->name('periode');
+
+        Route::post('/periode', [AksiFormController::class, 'periodeSimpan'])
+            ->name('periode.simpan');
+
+        Route::post('/periode/{id}/tutup', [AksiFormController::class, 'periodeTutup'])
+            ->whereNumber('id')->name('periode.tutup');
 
         Route::get('/kelas', [KelasController::class, 'index'])
             ->name('kelas');
@@ -184,8 +234,14 @@ Route::prefix('tu')
         Route::get('/penempatan', [PageController::class, 'penempatan'])
             ->name('penempatan');
 
+        Route::post('/penempatan', [AksiFormController::class, 'penempatanSimpan'])
+            ->name('penempatan.simpan');
+
         Route::get('/kenaikan', [PageController::class, 'kenaikan'])
             ->name('kenaikan');
+
+        Route::post('/kenaikan', [AksiFormController::class, 'kenaikanSimpan'])
+            ->name('kenaikan.simpan');
 
         Route::get('/reset-sandi', [ResetSandiController::class, 'index'])
             ->name('reset');
@@ -193,6 +249,16 @@ Route::prefix('tu')
         Route::post('/reset-sandi/{id}', [ResetSandiController::class, 'reset'])
             ->middleware('throttle:30,1')
             ->name('reset.proses');
+
+        Route::get('/mutasi', [PageController::class, 'mutasiTu'])
+            ->name('mutasi');
+
+        Route::post('/mutasi', [AksiFormController::class, 'mutasiSimpan'])
+            ->name('mutasi.simpan');
+
+        Route::post('/mutasi/{id}/keputusan', [AksiFormController::class, 'mutasiPutuskan'])
+            ->whereNumber('id')
+            ->name('mutasi.putuskan');
     });
 
 // =====================================================
@@ -212,28 +278,6 @@ Route::prefix('tu/master')
             ->whereNumber('id')->name('referensi.ubah');
         Route::delete('/referensi/{tab}/{id}', [ReferensiController::class, 'destroy'])
             ->whereNumber('id')->name('referensi.hapus');
-
-        // Checklist verifikasi dan alasan pengembalian
-        Route::get('/checklist', [ChecklistController::class, 'index'])
-            ->name('checklist');
-        Route::post('/checklist/item', [ChecklistController::class, 'simpanItem'])
-            ->name('checklist.item.simpan');
-        Route::put('/checklist/item/{id}', [ChecklistController::class, 'ubahItem'])
-            ->whereNumber('id')->name('checklist.item.ubah');
-        Route::delete('/checklist/item/{id}', [ChecklistController::class, 'hapusItem'])
-            ->whereNumber('id')->name('checklist.item.hapus');
-        Route::post('/checklist/alasan', [ChecklistController::class, 'simpanAlasan'])
-            ->name('checklist.alasan.simpan');
-        Route::put('/checklist/alasan/{id}', [ChecklistController::class, 'ubahAlasan'])
-            ->whereNumber('id')->name('checklist.alasan.ubah');
-        Route::delete('/checklist/alasan/{id}', [ChecklistController::class, 'hapusAlasan'])
-            ->whereNumber('id')->name('checklist.alasan.hapus');
-
-        // Aturan perubahan data siswa
-        Route::get('/aturan-field', [AturanFieldController::class, 'index'])
-            ->name('aturan');
-        Route::put('/aturan-field', [AturanFieldController::class, 'update'])
-            ->name('aturan.simpan');
     });
 
 // =====================================================
@@ -309,4 +353,14 @@ Route::prefix('kepsek')
 
         Route::get('/audit', [LogController::class, 'audit'])
             ->name('admin.audit');
+
+        Route::get('/mutasi', [PageController::class, 'mutasiKepsek'])
+            ->name('kepsek.mutasi');
+
+        Route::post('/mutasi', [AksiFormController::class, 'mutasiSimpan'])
+            ->name('kepsek.mutasi.simpan');
+
+        Route::post('/mutasi/{id}/keputusan', [AksiFormController::class, 'mutasiPutuskan'])
+            ->whereNumber('id')
+            ->name('kepsek.mutasi.putuskan');
     });

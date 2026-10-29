@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title', 'Kelengkapan Data')
 @section('heading', 'Kelengkapan Data Kelas X IPA 1')
-@section('sub', 'Pantau siapa yang sudah mengonfirmasi atau mengajukan perubahan selama periode update, lalu kirim pengingat.')
+@section('sub', 'Pantau siapa yang sudah mengonfirmasi atau mengajukan perubahan selama periode update.')
 @section('content')
 @php
     $hitung = collect($siswa)->countBy('status');
@@ -19,11 +19,6 @@
 <div class="card">
     <div class="flex items-center justify-between gap-3 flex-wrap mb-3">
         <h2 class="font-serif text-lg font-bold">Status per siswa</h2>
-        {{-- TODO backend: isi action dengan route pengingat ke siswa kelas (POST) lalu hapus onsubmit. --}}
-        <form method="POST" action="#" onsubmit="return false" data-validasi data-konfirmasi="Kirim pengingat ke siswa yang belum merespons?">
-            @csrf
-            <button class="btn btn-flame">Kirim pengingat ke yang belum merespons</button>
-        </form>
     </div>
     <div class="overflow-x-auto">
         <table class="w-full text-sm min-w-[520px]">
