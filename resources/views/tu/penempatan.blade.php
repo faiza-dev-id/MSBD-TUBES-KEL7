@@ -6,7 +6,7 @@
 {{-- Field: id_siswa[], id_kelas, tgl_masuk --}}
 <form class="card max-w-2xl" method="POST" action="{{ route('tu.penempatan.simpan') }}" data-validasi>
     @csrf
-    <h2 class="sec-title">Siswa belum berkelas</h2>
+    <h2 class="sec-title">Siswa belum memiliki kelas</h2>
     <div data-grup data-minimal="1" data-pesan="Pilih minimal satu siswa.">
     @foreach ($belum as $s)
         <label class="flex items-center gap-3 py-2.5 text-sm border-b border-line last:border-0 cursor-pointer">

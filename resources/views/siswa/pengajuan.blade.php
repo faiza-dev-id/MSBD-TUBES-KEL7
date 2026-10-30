@@ -7,7 +7,7 @@
     <div class="mb-4 rounded-xl border border-warn/40 bg-warn/10 px-4 py-3 text-sm text-warn">Periode update data sedang ditutup. Kamu belum bisa mengirim pengajuan baru, tapi status pengajuan sebelumnya tetap bisa dilihat.</div>
 @endif
 <div class="grid lg:grid-cols-[1.2fr_1fr] gap-4 items-start">
-    <form class="card space-y-4 {{ $periode['dibuka'] ? '' : 'opacity-50' }}" method="POST" action="{{ route('siswa.pengajuan.simpan') }}" enctype="multipart/form-data" @if (! $periode['dibuka']) inert @endif>
+    <form class="card space-y-4 {{ $periode['dibuka'] ? '' : 'opacity-50' }}" method="POST" action="{{ route('siswa.pengajuan.simpan') }}" enctype="multipart/form-data" data-validasi @if (! $periode['dibuka']) inert @endif>
         @csrf
         <h2 class="sec-title">Form pengajuan</h2>
         <div><label class="label" for="id_field">Data yang diubah</label>
@@ -16,7 +16,12 @@
         <div><label class="label">Nilai sekarang</label><input class="input opacity-60" value="{{ $s['alamat'] }}" disabled></div>
         <x-field label="Nilai baru" name="nilai_baru" />
         <label class="flex items-center justify-between gap-3 border-2 border-dashed border-line rounded-lg p-3.5 text-sm cursor-pointer hover:border-flame">
-            <span>Bukti pendukung <span class="text-mute">(wajib untuk nama, NIK, KK)</span></span><span class="btn btn-ghost !py-1.5">Pilih file</span><input type="file" name="bukti" class="hidden" accept=".pdf,.jpg,.jpeg,.png">
+            <span class="min-w-0">
+                <span class="block">Bukti pendukung <span class="text-mute">(wajib untuk nama, NIK, KK)</span></span>
+                <span class="nama-file block text-xs text-mute truncate">Belum ada file</span>
+            </span>
+            <span class="btn btn-ghost !py-1.5">Pilih file</span>
+            <input type="file" name="bukti" class="hidden" accept=".pdf,.jpg,.jpeg,.png" data-nama="Bukti pendukung">
         </label>
         <button class="btn btn-flame">Kirim pengajuan</button>
     </form>
