@@ -30,26 +30,36 @@ document.querySelectorAll('[data-form-pengajuan]').forEach((form) => {
 });
 
 document.querySelectorAll('[data-waktu-real-time]').forEach((clock) => {
-    const format = new Intl.DateTimeFormat('id-ID', {
+    const tanggal = clock.querySelector('[data-jakarta-date]');
+    const waktu = clock.querySelector('[data-jakarta-time]');
+    if (!tanggal || !waktu) return;
+
+    const formatTanggal = new Intl.DateTimeFormat('id-ID', {
         timeZone: 'Asia/Jakarta',
         weekday: 'long',
         day: 'numeric',
         month: 'long',
         year: 'numeric',
+    });
+    const formatWaktu = new Intl.DateTimeFormat('id-ID', {
+        timeZone: 'Asia/Jakarta',
         hour: '2-digit',
         minute: '2-digit',
-        second: '2-digit',
         hourCycle: 'h23',
     });
 
     const update = () => {
         const now = new Date();
         clock.dateTime = now.toISOString();
-        clock.textContent = format.format(now);
+        const parts = formatWaktu.formatToParts(now);
+        const jam = parts.find((part) => part.type === 'hour')?.value;
+        const menit = parts.find((part) => part.type === 'minute')?.value;
+        tanggal.textContent = formatTanggal.format(now);
+        waktu.textContent = `${jam}.${menit}`;
     };
 
     update();
-    window.setInterval(update, 1000);
+    window.setInterval(update, 30000);
 });
 
 const formatTanggalJakarta = new Intl.DateTimeFormat('en-CA', {

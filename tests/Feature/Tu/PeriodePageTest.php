@@ -56,6 +56,15 @@ it('shows future academic years in the TU period dropdown', function (): void {
         ->assertSee('value="2"', false);
 });
 
+it('shows an empty state instead of fabricated academic years', function (): void {
+    $response = $this->withoutMiddleware([EnsureRole::class])->get(route('tu.periode'));
+
+    $response->assertOk()
+        ->assertSee('Tambahkan tahun ajaran terlebih dahulu')
+        ->assertDontSee('2026/2027')
+        ->assertDontSee('2027/2028');
+});
+
 it('accepts a future academic year selected in the period form', function (): void {
     DB::table('tahun_ajaran')->insert([
         'id_tahun_ajaran' => 1,

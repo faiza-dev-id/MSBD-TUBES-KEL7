@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Tu;
 
 use App\Http\Controllers\Controller;
+use App\Models\KomponenPenilaian;
 use App\Models\Kelas;
 use App\Models\MataPelajaran;
 use App\Models\Semester;
+use App\Models\SkalaPredikat;
 use App\Models\TahunAjaran;
 use App\Services\MasterAkademikService;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -34,7 +36,28 @@ class KonfigurasiController extends Controller
             'cari' => $cari,
             'baris' => $this->baris($tab, $sp, $cari),
             'opsi' => $this->opsi($sp),
+            'rentangPredikat' => $tab === 'predikat'
+                ? SkalaPredikat::query()->orderBy('nilai_min')->get()
+                : collect(),
         ]);
+    }
+
+    public function simpanRentangPredikat(Request $r)
+    {
+        $data = $r->validate([
+            'rentang' => ['required', 'array', 'min:1'],
+            'rentang.*.id_predikat' => ['nullable', 'integer', 'exists:skala_predikat,id_predikat'],
+            'rentang.*.hapus' => ['sometimes', 'boolean'],
+            'rentang.*.huruf' => ['nullable', 'string', 'max:5'],
+            'rentang.*.nilai_min' => ['nullable', 'numeric', 'between:0,100', 'decimal:0,2'],
+            'rentang.*.nilai_maks' => ['nullable', 'numeric', 'between:0,100', 'decimal:0,2'],
+            'rentang.*.deskripsi' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $this->svc->simpanRentangPredikat($data['rentang']);
+
+        return redirect()->route('akademik.konfigurasi', 'predikat')
+            ->with('success', 'Skala predikat disimpan.');
     }
 
     public function store(Request $r, string $tab)
@@ -57,6 +80,11 @@ class KonfigurasiController extends Controller
     {
         $sp = $this->sp($tab);
         $model = $sp['model']::findOrFail($id);
+
+        if ($tab === 'predikat') {
+            return redirect()->route('akademik.konfigurasi', $tab)
+                ->with('galat', 'Ubah atau hapus skala melalui formulir lengkap agar seluruh rentang tetap berurutan.');
+        }
 
         if ($alasan = $this->svc->alasanTidakBisaDihapus($sp['jenis'], $id)) {
             return redirect()->route('akademik.konfigurasi', $tab)->with('galat', $alasan);
@@ -117,6 +145,24 @@ class KonfigurasiController extends Controller
                 ],
                 'kolom' => [['Kode', 'kode_mapel'], ['Mata pelajaran', 'nama_mapel'], ['Status', 'is_aktif', 'aktif']],
             ],
+            'komponen' => [
+                'judul' => 'Komponen Penilaian', 'model' => KomponenPenilaian::class, 'pk' => 'id_komponen', 'jenis' => 'komponen', 'cari' => 'kp.nama_komponen',
+                'fields' => [
+                    ['name' => 'nama_komponen', 'label' => 'Nama komponen', 'type' => 'text', 'max' => 120, 'required' => true],
+                    ['name' => 'bobot_persen', 'label' => 'Bobot (%)', 'type' => 'num', 'required' => true],
+                ],
+                'kolom' => [['Komponen', 'nama_komponen'], ['Bobot (%)', 'bobot_persen', 'num']],
+            ],
+            'predikat' => [
+                'judul' => 'Skala Predikat', 'model' => SkalaPredikat::class, 'pk' => 'id_predikat', 'jenis' => 'predikat', 'cari' => 'sp.huruf',
+                'fields' => [
+                    ['name' => 'huruf', 'label' => 'Predikat', 'type' => 'text', 'max' => 5, 'required' => true],
+                    ['name' => 'nilai_min', 'label' => 'Nilai minimum', 'type' => 'num', 'required' => true],
+                    ['name' => 'nilai_maks', 'label' => 'Nilai maksimum', 'type' => 'num', 'required' => true],
+                    ['name' => 'deskripsi', 'label' => 'Deskripsi', 'type' => 'text', 'max' => 255],
+                ],
+                'kolom' => [['Predikat', 'huruf'], ['Minimum', 'nilai_min', 'num'], ['Maksimum', 'nilai_maks', 'num'], ['Deskripsi', 'deskripsi']],
+            ],
         ];
     }
 
@@ -139,6 +185,8 @@ class KonfigurasiController extends Controller
                 ->select('s.*', 't.nama_tahun_ajaran')->orderByDesc('t.tanggal_mulai')->orderBy('s.tanggal_mulai'),
             'kelas' => $this->queryKelas(),
             'mapel' => DB::table('mata_pelajaran as m')->select('m.*')->orderBy('m.nama_mapel'),
+            'komponen' => DB::table('komponen_penilaian as kp')->select('kp.*')->orderBy('kp.nama_komponen'),
+            'predikat' => DB::table('skala_predikat as sp')->select('sp.*')->orderBy('sp.nilai_min'),
         };
 
         if ($cari !== '') {
@@ -225,6 +273,15 @@ class KonfigurasiController extends Controller
                 'kode_mapel' => ['alpha_dash', Rule::unique('mata_pelajaran', 'kode_mapel')->ignore($id, 'id_mata_pelajaran')],
                 'nama_mapel' => [Rule::unique('mata_pelajaran', 'nama_mapel')->ignore($id, 'id_mata_pelajaran')],
             ],
+            'komponen' => [
+                'nama_komponen' => [Rule::unique('komponen_penilaian', 'nama_komponen')->ignore($id, 'id_komponen')],
+                'bobot_persen' => ['numeric', 'between:0,100', 'decimal:0,2'],
+            ],
+            'predikat' => [
+                'huruf' => [Rule::unique('skala_predikat', 'huruf')->ignore($id, 'id_predikat')],
+                'nilai_min' => ['numeric', 'between:0,100', 'decimal:0,2'],
+                'nilai_maks' => ['numeric', 'between:0,100', 'decimal:0,2', 'gte:nilai_min'],
+            ],
         };
         foreach ($tambahan as $kolom => $aturan) {
             if (isset($rules[$kolom])) {
@@ -267,6 +324,16 @@ class KonfigurasiController extends Controller
                 break;
             case 'mapel':
                 $id ? MataPelajaran::findOrFail($id)->update($data) : MataPelajaran::create($data);
+                break;
+            case 'komponen':
+                $id
+                    ? $this->svc->simpanKomponen($data, KomponenPenilaian::findOrFail($id))
+                    : $this->svc->simpanKomponen($data);
+                break;
+            case 'predikat':
+                $id
+                    ? $this->svc->simpanPredikat($data, SkalaPredikat::findOrFail($id))
+                    : $this->svc->simpanPredikat($data);
                 break;
         }
     }

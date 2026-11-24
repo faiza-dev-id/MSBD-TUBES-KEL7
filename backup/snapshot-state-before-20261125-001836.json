@@ -1,0 +1,174 @@
+﻿{
+    "roles": [
+        {
+            "id_role": 1,
+            "nama_role": "siswa"
+        },
+        {
+            "id_role": 2,
+            "nama_role": "wali_kelas"
+        },
+        {
+            "id_role": 3,
+            "nama_role": "tu"
+        },
+        {
+            "id_role": 4,
+            "nama_role": "kepsek"
+        }
+    ],
+    "years": [
+        {
+            "is_aktif": false,
+            "tanggal_mulai": "2026-07-01",
+            "id_tahun_ajaran": 1,
+            "tanggal_selesai": "2027-06-30",
+            "nama_tahun_ajaran": "2026/2027"
+        },
+        {
+            "is_aktif": true,
+            "tanggal_mulai": "2027-07-01",
+            "id_tahun_ajaran": 2,
+            "tanggal_selesai": "2028-06-30",
+            "nama_tahun_ajaran": "2027/2028"
+        },
+        {
+            "is_aktif": false,
+            "tanggal_mulai": "2028-07-01",
+            "id_tahun_ajaran": 3,
+            "tanggal_selesai": "2029-06-30",
+            "nama_tahun_ajaran": "2028/2029"
+        }
+    ],
+    "periods": [
+        {
+            "status": "ditutup",
+            "nama_periode": "Perubahan Data Ganjil 2026/2027",
+            "tanggal_mulai": "2026-11-01",
+            "id_tahun_ajaran": 1,
+            "tanggal_selesai": "2026-11-30",
+            "id_periode_update": 1
+        },
+        {
+            "status": "ditutup",
+            "nama_periode": "Update Data 2027/2028",
+            "tanggal_mulai": "2027-01-01",
+            "id_tahun_ajaran": 2,
+            "tanggal_selesai": "2027-07-24",
+            "id_periode_update": 4
+        },
+        {
+            "status": "ditutup",
+            "nama_periode": "Update Data 2027/2028",
+            "tanggal_mulai": "2027-07-01",
+            "id_tahun_ajaran": 2,
+            "tanggal_selesai": "2028-07-01",
+            "id_periode_update": 5
+        },
+        {
+            "status": "ditutup",
+            "nama_periode": "Update Data 2026/2027",
+            "tanggal_mulai": "2026-07-01",
+            "id_tahun_ajaran": 1,
+            "tanggal_selesai": "2027-06-30",
+            "id_periode_update": 6
+        },
+        {
+            "status": "ditutup",
+            "nama_periode": "Update Data 2026/2027",
+            "tanggal_mulai": "2026-11-01",
+            "id_tahun_ajaran": 1,
+            "tanggal_selesai": "2026-12-30",
+            "id_periode_update": 18
+        },
+        {
+            "status": "ditutup",
+            "nama_periode": "Update Data 2028/2029",
+            "tanggal_mulai": "2026-07-01",
+            "id_tahun_ajaran": 3,
+            "tanggal_selesai": "2027-06-30",
+            "id_periode_update": 19
+        },
+        {
+            "status": "ditutup",
+            "nama_periode": "Update Data 2026/2027",
+            "tanggal_mulai": "2026-07-01",
+            "id_tahun_ajaran": 1,
+            "tanggal_selesai": "2027-06-30",
+            "id_periode_update": 20
+        },
+        {
+            "status": "aktif",
+            "nama_periode": "Update Data 2027/2028",
+            "tanggal_mulai": "2027-07-01",
+            "id_tahun_ajaran": 2,
+            "tanggal_selesai": "2028-06-30",
+            "id_periode_update": 21
+        }
+    ],
+    "semesters": [
+        {
+            "is_aktif": false,
+            "id_semester": 1,
+            "nama_semester": "Ganjil",
+            "tanggal_mulai": "2026-07-13",
+            "id_tahun_ajaran": 1,
+            "tanggal_selesai": "2026-12-18"
+        },
+        {
+            "is_aktif": false,
+            "id_semester": 2,
+            "nama_semester": "Genap",
+            "tanggal_mulai": "2027-01-05",
+            "id_tahun_ajaran": 1,
+            "tanggal_selesai": "2027-06-18"
+        },
+        {
+            "is_aktif": true,
+            "id_semester": 3,
+            "nama_semester": "Ganjil",
+            "tanggal_mulai": "2027-07-01",
+            "id_tahun_ajaran": 2,
+            "tanggal_selesai": "2027-12-23"
+        }
+    ],
+    "captured_at": "2026-11-25T00:18:36.180456+07:00",
+    "users_without_credentials": [
+        {
+            "id_role": 1,
+            "is_aktif": true,
+            "username": "demo_siswa",
+            "id_pengguna": 3
+        },
+        {
+            "id_role": 3,
+            "is_aktif": true,
+            "username": "demo_tu",
+            "id_pengguna": 4
+        },
+        {
+            "id_role": 4,
+            "is_aktif": true,
+            "username": "demo_kepsek",
+            "id_pengguna": 5
+        },
+        {
+            "id_role": 2,
+            "is_aktif": true,
+            "username": "demo_wali_kelas",
+            "id_pengguna": 6
+        },
+        {
+            "id_role": 2,
+            "is_aktif": true,
+            "username": "ekasirait",
+            "id_pengguna": 23
+        },
+        {
+            "id_role": 1,
+            "is_aktif": true,
+            "username": "1122334455",
+            "id_pengguna": 85
+        }
+    ]
+}

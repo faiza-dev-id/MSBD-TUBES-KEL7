@@ -5,6 +5,11 @@
 @section('content')
 @php $dibuka = $periode['dibuka']; @endphp
 
+@unless ($terhubung)
+    <div class="card text-sm text-mute" role="status">
+        Akun ini belum terhubung ke data siswa. Hubungi Tata Usaha untuk membantu pencocokan data.
+    </div>
+@else
 @unless ($dibuka)
     <div class="mb-4 rounded-2xl border border-line bg-white px-4 py-3 text-sm text-mute" role="status">
         Periode update data sedang ditutup. Konfirmasi bisa dilakukan saat periode dibuka.
@@ -34,4 +39,5 @@
         <a href="{{ route('siswa.pengajuan') }}" class="btn btn-ghost">Ada yang berubah? Ajukan perubahan</a>
     </div>
 </form>
+@endunless
 @endsection

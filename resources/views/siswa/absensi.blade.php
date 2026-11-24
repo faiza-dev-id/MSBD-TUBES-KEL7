@@ -12,7 +12,7 @@
     ];
 @endphp
 
-<div class="mb-5 grid gap-3 sm:grid-cols-4">
+<div class="mb-5 grid gap-3 sm:grid-cols-5">
     @foreach ([
         'hadir' => ['Hadir', 'leaf'],
         'izin'  => ['Izin', 'sun'],
@@ -24,6 +24,12 @@
             <div class="mt-1 text-2xl font-bold">{{ $rekap[$kode] ?? 0 }}</div>
         </div>
     @endforeach
+    @if ($persentaseKehadiran !== null)
+        <div class="card !p-4">
+            <div class="text-xs text-mute">Persentase hadir</div>
+            <div class="mt-1 text-2xl font-bold">{{ number_format($persentaseKehadiran, 2, ',', '.') }}%</div>
+        </div>
+    @endif
 </div>
 
 <div class="card">

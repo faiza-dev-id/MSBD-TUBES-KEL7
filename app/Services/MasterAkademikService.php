@@ -90,17 +90,20 @@ class MasterAkademikService
 
     public function simpanKomponen(array $d, ?KomponenPenilaian $k = null): KomponenPenilaian
     {
-        $totalLain = (float) KomponenPenilaian::query()
-            ->when($k, fn ($q) => $q->where('id_komponen', '!=', $k->id_komponen))
-            ->sum('bobot_persen');
+        return DB::transaction(function () use ($d, $k) {
+            $this->kunciKonfigurasi('komponen-penilaian');
+            $totalLain = (float) KomponenPenilaian::query()
+                ->when($k, fn ($q) => $q->where('id_komponen', '!=', $k->id_komponen))
+                ->sum('bobot_persen');
 
-        if ($totalLain + (float) $d['bobot_persen'] > 100) {
-            throw ValidationException::withMessages([
-                'bobot_persen' => sprintf('Total bobot melebihi 100%% (komponen lain sudah %.2f%%).', $totalLain),
-            ]);
-        }
+            if ($totalLain + (float) $d['bobot_persen'] > 100) {
+                throw ValidationException::withMessages([
+                    'bobot_persen' => sprintf('Total bobot melebihi 100%% (komponen lain sudah %.2f%%).', $totalLain),
+                ]);
+            }
 
-        return $k ? tap($k)->update($d) : KomponenPenilaian::create($d);
+            return $k ? tap($k)->update($d) : KomponenPenilaian::create($d);
+        });
     }
 
     public function ringkasanBobot(): array
@@ -112,19 +115,133 @@ class MasterAkademikService
 
     public function simpanPredikat(array $d, ?SkalaPredikat $p = null): SkalaPredikat
     {
-        $bentrok = SkalaPredikat::query()
-            ->when($p, fn ($q) => $q->where('id_predikat', '!=', $p->id_predikat))
-            ->where('nilai_min', '<=', $d['nilai_maks'])
-            ->where('nilai_maks', '>=', $d['nilai_min'])
-            ->first();
+        return DB::transaction(function () use ($d, $p) {
+            $this->kunciKonfigurasi('skala-predikat');
+            $rentang = SkalaPredikat::query()
+                ->when($p, fn ($q) => $q->where('id_predikat', '!=', $p->id_predikat))
+                ->get()
+                ->map(fn (SkalaPredikat $item) => $item->only(['huruf', 'nilai_min', 'nilai_maks']))
+                ->all();
+            $rentang[] = $d;
+            $this->validasiRentangLengkap($rentang);
 
-        if ($bentrok) {
-            throw ValidationException::withMessages([
-                'nilai_min' => "Rentang bertumpang tindih dengan predikat {$bentrok->huruf}.",
-            ]);
+            return $p ? tap($p)->update($d) : SkalaPredikat::create($d);
+        });
+    }
+
+    public function simpanRentangPredikat(array $input): void
+    {
+        DB::transaction(function () use ($input) {
+            $this->kunciKonfigurasi('skala-predikat');
+            $existing = SkalaPredikat::query()->lockForUpdate()->get()->keyBy('id_predikat');
+            $rows = [];
+            $ids = [];
+
+            foreach ($input as $row) {
+                $id = isset($row['id_predikat']) ? (int) $row['id_predikat'] : null;
+                if ($id !== null && ! $existing->has($id)) {
+                    throw ValidationException::withMessages(['rentang' => 'Predikat yang dipilih tidak ditemukan. Muat ulang halaman.']);
+                }
+                if ($id !== null) {
+                    $ids[] = $id;
+                }
+                if (! empty($row['hapus'])) {
+                    continue;
+                }
+
+                if ($id === null && collect(['huruf', 'nilai_min', 'nilai_maks', 'deskripsi'])
+                    ->every(fn ($key) => ! isset($row[$key]) || trim((string) $row[$key]) === '')) {
+                    continue;
+                }
+
+                if (empty($row['huruf']) || ! isset($row['nilai_min'], $row['nilai_maks'])
+                    || ! is_numeric($row['nilai_min']) || ! is_numeric($row['nilai_maks'])) {
+                    throw ValidationException::withMessages(['rentang' => 'Setiap skala harus memiliki predikat serta nilai minimum dan maksimum.']);
+                }
+
+                $rows[] = [
+                    'id_predikat' => $id,
+                    'huruf' => trim($row['huruf']),
+                    'nilai_min' => $row['nilai_min'],
+                    'nilai_maks' => $row['nilai_maks'],
+                    'deskripsi' => $row['deskripsi'] ?? null,
+                    'hapus' => false,
+                ];
+            }
+
+            if (count($ids) !== count(array_unique($ids))
+                || array_diff($existing->keys()->all(), $ids) !== []) {
+                throw ValidationException::withMessages(['rentang' => 'Daftar skala berubah. Muat ulang halaman sebelum menyimpan.']);
+            }
+
+            foreach ($input as $row) {
+                if (empty($row['hapus']) || empty($row['id_predikat'])) {
+                    continue;
+                }
+                if (DB::table('detail_rapor')->where('id_predikat', $row['id_predikat'])->exists()) {
+                    throw ValidationException::withMessages(['rentang' => 'Predikat yang sudah dipakai pada rapor tidak dapat dihapus.']);
+                }
+            }
+
+            $this->validasiRentangLengkap($rows);
+
+            $huruf = array_map(fn ($row) => mb_strtolower($row['huruf']), $rows);
+            if (count($huruf) !== count(array_unique($huruf))) {
+                throw ValidationException::withMessages(['rentang' => 'Setiap label predikat harus unik.']);
+            }
+
+            foreach ($input as $row) {
+                if (! empty($row['hapus']) && ! empty($row['id_predikat'])) {
+                    $existing->get((int) $row['id_predikat'])->delete();
+                }
+            }
+
+            foreach ($rows as $row) {
+                $id = $row['id_predikat'];
+                unset($row['id_predikat'], $row['hapus']);
+                if ($id !== null) {
+                    $existing->get($id)->update($row);
+                } else {
+                    SkalaPredikat::create($row);
+                }
+            }
+        });
+    }
+
+    private function validasiRentangLengkap(array $rows): void
+    {
+        if ($rows === []) {
+            throw ValidationException::withMessages(['nilai_min' => 'Skala harus mencakup nilai 0 sampai 100.']);
         }
 
-        return $p ? tap($p)->update($d) : SkalaPredikat::create($d);
+        usort($rows, fn ($a, $b) => (int) round((float) $a['nilai_min'] * 100) <=> (int) round((float) $b['nilai_min'] * 100));
+        $batasSebelumnya = null;
+
+        foreach ($rows as $row) {
+            $min = (int) round((float) $row['nilai_min'] * 100);
+            $maks = (int) round((float) $row['nilai_maks'] * 100);
+            if ($min < 0 || $maks > 10000 || $min > $maks) {
+                throw ValidationException::withMessages(['nilai_min' => 'Rentang nilai harus berada di antara 0 dan 100.']);
+            }
+            if ($batasSebelumnya === null && $min !== 0) {
+                throw ValidationException::withMessages(['nilai_min' => 'Skala predikat harus dimulai dari 0.']);
+            }
+            if ($batasSebelumnya !== null && $min !== $batasSebelumnya + 1) {
+                throw ValidationException::withMessages(['nilai_min' => 'Skala predikat tidak boleh tumpang-tindih atau memiliki celah.']);
+            }
+            $batasSebelumnya = $maks;
+        }
+
+        if ($batasSebelumnya !== 10000) {
+            throw ValidationException::withMessages(['nilai_maks' => 'Skala predikat harus berakhir pada 100.']);
+        }
+    }
+
+    private function kunciKonfigurasi(string $nama): void
+    {
+        if (DB::getDriverName() === 'pgsql') {
+            DB::selectOne('SELECT pg_advisory_xact_lock(hashtext(?))', ['msbd:'.$nama]);
+        }
     }
 
     /* ---------- Penghapusan aman ---------- */
@@ -132,7 +249,7 @@ class MasterAkademikService
     /** Tolak hapus jika masih dipakai tabel lain; kembalikan pesan, atau null jika boleh. */
     public function alasanTidakBisaDihapus(string $jenis, int $id): ?string
     {
-        $ada = fn (string $tabel, string $kolom) => DB::table($tabel)->where($kolom, $id)->exists();
+        $ada = fn (string $tabel, string $kolom) => DB::table($tabel)->selectRaw('1')->where($kolom, $id)->exists();
 
         $pakai = match ($jenis) {
             'tahun_ajaran' => $ada('semester', 'id_tahun_ajaran') || $ada('kelas', 'id_tahun_ajaran') || $ada('periode_update', 'id_tahun_ajaran'),

@@ -1,5 +1,6 @@
 <?php
 
+use App\Services\ActiveSiakadDataPreparation;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -114,3 +115,7 @@ Artisan::command('db:cek-role', function () {
 
     return 1;
 })->purpose('Verify pgsql role connections and read-only access in local development');
+
+Artisan::command('siakad:prepare-active-data {--execute}', function (ActiveSiakadDataPreparation $preparation) {
+    return $preparation->run($this, (bool) $this->option('execute'));
+})->purpose('Dry-run or apply the reviewed active SIAKAD data preparation');

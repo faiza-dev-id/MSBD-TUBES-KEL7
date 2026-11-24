@@ -256,11 +256,23 @@ it('reuses the daily attendance session and updates the student status on resubm
     ]);
 });
 
-it('does not expose the removed homeroom report submission endpoint', function () {
+it('keeps homeroom reports inaccessible to student accounts', function () {
+    DB::table('role')->insert([
+        'id_role' => 3,
+        'nama_role' => 'siswa',
+        'kode_role' => 'siswa',
+    ]);
+    DB::table('pengguna')->insert([
+        'id_pengguna' => 3,
+        'id_role' => 3,
+        'username' => 'siswa01',
+        'password_hash' => 'hash',
+    ]);
+
     $this->withSession([
-        'id_pengguna' => 1,
-        'username' => 'wali01',
-        'role' => 'wali_kelas',
-    ])->post('/guru/rapor')
+        'id_pengguna' => 3,
+        'username' => 'siswa01',
+        'role' => 'siswa',
+    ])->get(route('guru.rapor'))
         ->assertNotFound();
 });

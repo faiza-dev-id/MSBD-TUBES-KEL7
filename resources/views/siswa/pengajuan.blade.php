@@ -3,6 +3,11 @@
 @section('heading', 'Ajukan Perubahan Data')
 @section('sub', 'Pilih data yang berubah dan lampirkan bukti. Nilai baru akan menggantikan data saat ini setelah disetujui Wali Kelas.')
 @section('content')
+@unless ($terhubung)
+    <div class="card text-sm text-mute" role="status">
+        Akun ini belum terhubung ke data siswa. Hubungi Tata Usaha sebelum mengajukan perubahan.
+    </div>
+@else
 @if (! $periode['dibuka'])
     <div class="mb-4 rounded-xl border border-warn/40 bg-warn/10 px-4 py-3 text-sm text-warn">Periode update data sedang ditutup. Kamu belum bisa mengirim pengajuan baru, tapi status pengajuan sebelumnya tetap bisa dilihat.</div>
 @endif
@@ -49,4 +54,5 @@
         </ul>
     </div>
 </div>
+@endunless
 @endsection

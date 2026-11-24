@@ -26,6 +26,7 @@
     <x-hero
         judul="Periode update data tahunan sedang dibuka"
         :sub="'Sampai ' . ($periode['tutup'] ?? '-') . '. Konfirmasi bahwa datamu tidak berubah, atau ajukan perubahan.'"
+        :gambar="$fotoSekolah"
     >
         <a href="{{ route('siswa.konfirmasi') }}"
            class="btn !bg-white !text-flame hover:!bg-tint">
@@ -68,7 +69,7 @@
     />
 </div>
 
-<div class="mb-6 grid gap-3 sm:grid-cols-2">
+<div class="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
     <x-tile
         :href="route('siswa.profil')"
         judul="Profil Saya"
@@ -83,6 +84,14 @@
         ket="Ajukan perubahan beserta bukti"
         ikon="edit"
         warna="grape"
+    />
+
+    <x-tile
+        :href="route('siswa.rapor')"
+        judul="Lihat Nilai/Rapor"
+        ket="Lihat hasil belajar per semester"
+        ikon="book"
+        warna="leaf"
     />
 </div>
 

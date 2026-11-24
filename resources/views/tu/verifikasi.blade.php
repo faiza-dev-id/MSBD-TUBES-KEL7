@@ -27,7 +27,7 @@
             'tanggal_lahir' => 'Tanggal lahir',
             'anak_ke' => 'Anak ke',
             'status_keluarga' => 'Status dalam keluarga',
-            'agama' => 'Kode agama',
+            'agama' => 'Agama',
             'berkebutuhan_khusus' => 'Kebutuhan khusus',
             'no_kk' => 'Nomor Kartu Keluarga',
             'no_hp' => 'Nomor HP',
@@ -39,7 +39,6 @@
             'penerima_kps' => 'Penerima KPS/PKH/KIP',
             'no_kps' => 'Nomor KPS/KKS/PKH/KIP',
             'kewarganegaraan' => 'Kewarganegaraan',
-            'negara' => 'Negara',
             'layak_pip' => 'Layak diusulkan PIP',
             'alasan_pip' => 'Alasan PIP',
         ],
@@ -89,7 +88,7 @@
                                 $nilai = $detail[$key] ?? null;
                                 $tampilan = is_bool($nilai)
                                     ? ($nilai ? 'Ya' : 'Tidak')
-                                    : (is_scalar($nilai) && trim((string) $nilai) !== '' ? $nilai : '-');
+                                    : \App\Support\Referensi\OpsiPpdb::label($key, $nilai, $agamaOptions);
                             @endphp
                             <div>
                                 <dt class="text-xs text-mute">{{ $label }}</dt>
@@ -111,15 +110,15 @@
                             'tempat_lahir' => 'Tempat lahir',
                             'tanggal_lahir' => 'Tanggal lahir',
                             'pendidikan' => 'Pendidikan',
-                            'pekerjaan' => 'Kode pekerjaan',
-                            'penghasilan' => 'Kode penghasilan',
+                            'pekerjaan' => 'Pekerjaan',
+                            'penghasilan' => 'Penghasilan bulanan',
                             'kebutuhan' => 'Kebutuhan khusus',
                             'hp' => 'Nomor HP',
                             'alamat' => 'Alamat',
                         ] as $key => $label)
                             <div>
                                 <dt class="text-xs text-mute">{{ $label }}</dt>
-                            <dd class="font-medium break-words">{{ ($ortu[$key] ?? '') !== '' ? $ortu[$key] : '-' }}</dd>
+                            <dd class="font-medium break-words">{{ \App\Support\Referensi\OpsiPpdb::label($key, $ortu[$key] ?? null, $agamaOptions) }}</dd>
                             </div>
                         @endforeach
                     </dl>
@@ -138,7 +137,7 @@
                 <h3 class="font-semibold text-sm mb-2">Prestasi</h3>
                 @forelse ($detail['prestasi'] as $prestasi)
                     <p class="text-sm border-b border-line py-2 last:border-0">
-                        {{ $prestasi['nama'] ?: 'Prestasi tanpa nama' }} · jenis {{ $prestasi['jenis'] ?: '-' }} · tingkat {{ $prestasi['tingkat'] ?: '-' }} · tahun {{ $prestasi['tahun'] ?: '-' }} · penyelenggara {{ $prestasi['penyelenggara'] ?: '-' }}
+                        {{ $prestasi['nama'] ?: 'Prestasi tanpa nama' }} · jenis {{ \App\Support\Referensi\OpsiPpdb::label('prestasi_jenis', $prestasi['jenis'] ?? null) }} · tingkat {{ \App\Support\Referensi\OpsiPpdb::label('prestasi_tingkat', $prestasi['tingkat'] ?? null) }} · tahun {{ $prestasi['tahun'] ?: '-' }} · penyelenggara {{ $prestasi['penyelenggara'] ?: '-' }}
                     </p>
                 @empty
                     <p class="text-sm text-mute">Tidak ada data prestasi.</p>
@@ -149,7 +148,7 @@
                 <h3 class="font-semibold text-sm mb-2">Beasiswa</h3>
                 @forelse ($detail['beasiswa'] as $beasiswa)
                     <p class="text-sm border-b border-line py-2 last:border-0">
-                        {{ $beasiswa['keterangan'] ?: 'Tanpa keterangan' }} · jenis {{ $beasiswa['jenis'] ?: '-' }} · {{ $beasiswa['tahun_mulai'] ?: '-' }}–{{ $beasiswa['tahun_selesai'] ?: '-' }}
+                        {{ $beasiswa['keterangan'] ?: 'Tanpa keterangan' }} · jenis {{ \App\Support\Referensi\OpsiPpdb::label('beasiswa_jenis', $beasiswa['jenis'] ?? null) }} · {{ $beasiswa['tahun_mulai'] ?: '-' }}–{{ $beasiswa['tahun_selesai'] ?: '-' }}
                     </p>
                 @empty
                     <p class="text-sm text-mute">Tidak ada data beasiswa.</p>

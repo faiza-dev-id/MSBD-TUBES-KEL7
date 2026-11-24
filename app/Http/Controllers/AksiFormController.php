@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -366,7 +367,7 @@ class AksiFormController extends Controller
             'nilai' => ['nullable', 'array'],
             'nilai.*' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'catatan_wali' => ['nullable', 'string', 'max:2000'],
-            'status_rapor' => ['nullable', 'in:draft,final'],
+            'status_rapor' => ['nullable', 'in:draft'],
         ], [
             'id_kelas.required' => 'Pilih kelas terlebih dahulu.',
             'id_kelas.exists' => 'Kelas yang dipilih tidak ditemukan.',
@@ -465,7 +466,14 @@ class AksiFormController extends Controller
             $rapor = DB::table('rapor')
                 ->where('id_anggota', $anggota->id_keanggotaan)
                 ->where('id_semester', $semester->id_semester)
-                ->first(['id_rapor']);
+                ->lockForUpdate()
+                ->first(['id_rapor', 'status_rapor']);
+
+            if ($rapor?->status_rapor === 'final') {
+                throw ValidationException::withMessages([
+                    'rapor' => 'Nilai tidak dapat diubah setelah rapor dikunci.',
+                ]);
+            }
 
             $isi = [
                 'id_penyusun' => session('id_pengguna'),
@@ -516,6 +524,62 @@ class AksiFormController extends Controller
             ->with('success', 'Rapor siswa berhasil disimpan.');
     }
 
+    public function raporFinalisasi(Request $request)
+    {
+        $data = $request->validate([
+            'id_rapor' => ['required', 'integer', 'min:1'],
+        ]);
+        $idGuru = Guru::where('id_pengguna', session('id_pengguna'))->value('id_guru');
+
+        if (! $idGuru) {
+            return $this->gagal('Akunmu belum terhubung ke data wali kelas. Hubungi Tata Usaha.');
+        }
+
+        DB::transaction(function () use ($data, $idGuru) {
+            $rapor = DB::table('rapor as r')
+                ->join('keanggotaan_kelas as kk', 'kk.id_keanggotaan', '=', 'r.id_anggota')
+                ->where('r.id_rapor', $data['id_rapor'])
+                ->lock('FOR UPDATE OF r')
+                ->first([
+                    'r.id_rapor',
+                    'r.id_semester',
+                    'r.status_rapor',
+                    'kk.id_kelas',
+                ]);
+
+            abort_unless($rapor, 404);
+            abort_unless(
+                DB::table('penugasan_wali_kelas')
+                    ->where('id_guru', $idGuru)
+                    ->where('id_kelas', $rapor->id_kelas)
+                    ->where('id_semester', $rapor->id_semester)
+                    ->exists(),
+                403
+            );
+
+            if ($rapor->status_rapor === 'final') {
+                throw ValidationException::withMessages([
+                    'id_rapor' => 'Rapor ini sudah dikunci.',
+                ]);
+            }
+
+            if (! DB::table('detail_rapor')->where('id_rapor', $rapor->id_rapor)->exists()) {
+                throw ValidationException::withMessages([
+                    'id_rapor' => 'Isi nilai rapor sebelum menguncinya.',
+                ]);
+            }
+
+            DB::statement(
+                'CALL public.sp_finalisasi_rapor(?, ?)',
+                [$rapor->id_rapor, 'final']
+            );
+        });
+
+        return redirect()
+            ->route('guru.rapor')
+            ->with('success', 'Rapor siswa berhasil dikunci.');
+    }
+
     /**
      * Simpan nilai mentah (tugas, keterampilan, ujian) untuk seluruh siswa
      * pada satu kelas dan satu mata pelajaran sekaligus.
@@ -532,7 +596,7 @@ class AksiFormController extends Controller
             'catatan_siswa' => ['nullable', 'array'],
             'catatan_siswa.*' => ['nullable', 'string', 'max:2000'],
             'status_siswa' => ['nullable', 'array'],
-            'status_siswa.*' => ['nullable', 'in:draft,final'],
+            'status_siswa.*' => ['nullable', 'in:draft'],
         ], [
             'id_kelas.required' => 'Pilih kelas terlebih dahulu.',
             'id_kelas.exists' => 'Kelas yang dipilih tidak ditemukan.',
@@ -639,12 +703,19 @@ class AksiFormController extends Controller
                 $catatan = $adaCatatan ? trim((string) ($catatanRows[$idSiswa] ?? '')) : null;
                 $catatan = $catatan === '' ? null : $catatan;
                 $status = $statusRows[$idSiswa] ?? null;
-                $status = in_array($status, ['draft', 'final'], true) ? $status : null;
+                $status = $status === 'draft' ? 'draft' : null;
 
                 $rapor = DB::table('rapor')
                     ->where('id_anggota', $anggotaRow->id_keanggotaan)
                     ->where('id_semester', $semester->id_semester)
-                    ->first(['id_rapor']);
+                    ->lockForUpdate()
+                    ->first(['id_rapor', 'status_rapor']);
+
+                if ($rapor?->status_rapor === 'final') {
+                    throw ValidationException::withMessages([
+                        'nilai_mentah' => 'Nilai tidak dapat diubah setelah rapor dikunci.',
+                    ]);
+                }
 
                 if ($tugas === null && $keterampilan === null && $ujian === null) {
                     DB::table('nilai_siswa')
@@ -926,11 +997,19 @@ class AksiFormController extends Controller
         }
 
         try {
-            $status = DB::transaction(function () use ($data, $id) {
+            $jenisMutasi = null;
+            $status = DB::transaction(function () use ($data, $id, &$jenisMutasi) {
                 $mutasi = DB::table('mutasi_siswa')
                     ->where('id_mutasi', $id)
                     ->lockForUpdate()
-                    ->first();
+                    ->first([
+                        'id_mutasi',
+                        'id_siswa',
+                        'id_pengaju',
+                        'jenis',
+                        'status',
+                        'tanggal_efektif',
+                    ]);
 
                 if (! $mutasi) {
                     throw ValidationException::withMessages(['keputusan' => 'Pengajuan mutasi tidak ditemukan.']);
@@ -938,6 +1017,7 @@ class AksiFormController extends Controller
                 if ($mutasi->status !== 'menunggu') {
                     throw ValidationException::withMessages(['keputusan' => 'Pengajuan mutasi ini sudah diputuskan.']);
                 }
+                $jenisMutasi = $mutasi->jenis;
                 if (! in_array($mutasi->jenis, ['pindah_keluar', 'mengundurkan_diri', 'dikeluarkan', 'putus_sekolah', 'meninggal_dunia'], true)) {
                     abort(403);
                 }
@@ -977,7 +1057,7 @@ class AksiFormController extends Controller
                         ->where('id_siswa', $mutasi->id_siswa)
                         ->where('status', 'aktif')
                         ->update([
-                            'status' => $mutasi->jenis === 'pindah_keluar' ? 'pindah' : $mutasi->jenis,
+                            'status' => $this->statusKeanggotaanMutasi($mutasi->jenis),
                             'tanggal_selesai' => $mutasi->tanggal_efektif ?: now()->toDateString(),
                         ]);
                 }
@@ -1003,14 +1083,34 @@ class AksiFormController extends Controller
                 return $status;
             });
         } catch (QueryException $e) {
-            report($e);
+            $sqlState = (string) ($e->errorInfo[0] ?? $e->getCode());
+            Log::error('Keputusan mutasi gagal diproses.', [
+                'mutasi_id' => $id,
+                'jenis_mutasi' => $jenisMutasi,
+                'sqlstate' => $sqlState,
+            ]);
 
-            return $this->gagal('Mutasi tidak dapat diproses karena data terkait tidak lengkap.');
+            $pesan = match (true) {
+                str_starts_with($sqlState, '23') => 'Data mutasi bertentangan dengan aturan integritas. Periksa data siswa dan riwayat kelas.',
+                $sqlState === '42501' => 'Hak akses database tidak mencukupi untuk memproses mutasi. Hubungi administrator.',
+                default => 'Mutasi tidak dapat diproses saat ini. Silakan coba kembali atau hubungi Tata Usaha.',
+            };
+
+            return $this->gagal($pesan);
         }
 
         return redirect()
             ->route($this->ruteMutasi())
             ->with('success', $status === 'disetujui' ? 'Mutasi disetujui.' : 'Mutasi ditolak.');
+    }
+
+    private function statusKeanggotaanMutasi(string $jenis): string
+    {
+        return match ($jenis) {
+            'pindah_keluar' => 'pindah',
+            'mengundurkan_diri', 'dikeluarkan', 'putus_sekolah', 'meninggal_dunia' => 'keluar',
+            default => throw new \LogicException('Jenis mutasi tidak memiliki pemetaan status keanggotaan.'),
+        };
     }
 
     public function mutasiRevisi(Request $request, int $id, PengaturanService $pengaturan)
@@ -2072,13 +2172,13 @@ class AksiFormController extends Controller
                     continue;
                 }
 
-                $guru = DB::table('guru')
+                $guruId = DB::table('guru')
                     ->whereRaw('LOWER(nama_guru) = LOWER(?)', [$namaGuru])
                     ->orderBy('id_guru')
-                    ->first();
+                    ->value('id_guru');
 
-                if ($guru) {
-                    $jadwal[$i]['id_guru'] = (int) $guru->id_guru;
+                if ($guruId) {
+                    $jadwal[$i]['id_guru'] = (int) $guruId;
 
                     continue;
                 }

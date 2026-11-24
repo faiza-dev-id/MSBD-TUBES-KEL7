@@ -128,6 +128,10 @@ Route::prefix('siswa')
         Route::get('/kehadiran', [PageController::class, 'absensiSiswa'])
             ->name('absensi');
 
+        Route::get('/rapor/{id?}', [PageController::class, 'raporSiswa'])
+            ->whereNumber('id')
+            ->name('rapor');
+
     });
 
 // =====================================================
@@ -165,6 +169,15 @@ Route::prefix('guru')
 
         Route::post('/absensi', [AksiFormController::class, 'absensiSimpan'])
             ->name('absensi.simpan');
+
+        Route::get('/rapor', [PageController::class, 'guruRapor'])
+            ->name('rapor');
+
+        Route::post('/rapor', [AksiFormController::class, 'raporSimpan'])
+            ->name('rapor.simpan');
+
+        Route::post('/rapor/finalisasi', [AksiFormController::class, 'raporFinalisasi'])
+            ->name('rapor.finalisasi');
 
     });
 
@@ -304,6 +317,8 @@ Route::prefix('akademik')
     ->name('akademik.')
     ->middleware('role:tu')
     ->group(function () {
+        Route::put('/konfigurasi/predikat/rentang', [KonfigurasiController::class, 'simpanRentangPredikat'])
+            ->name('konfigurasi.predikat.simpan');
         Route::get('/konfigurasi/{tab?}', [KonfigurasiController::class, 'index'])
             ->name('konfigurasi');
         Route::post('/konfigurasi/{tab}', [KonfigurasiController::class, 'store'])

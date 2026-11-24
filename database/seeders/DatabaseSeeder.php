@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             ReferensiDataSeeder::class,
             WilayahSeeder::class,
+            MasterPenilaianSeeder::class,
             DemoDataSeeder::class,
             DemoRoleAccountsSeeder::class,
         ]);

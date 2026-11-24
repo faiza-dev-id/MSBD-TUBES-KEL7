@@ -13,6 +13,10 @@ beforeEach(function () {
     DB::table('status_siswa')->insert([
         ['id_status_siswa' => 1, 'kode_status' => 'aktif', 'nama_status' => 'Aktif', 'boleh_diubah_siswa' => false],
         ['id_status_siswa' => 2, 'kode_status' => 'mutasi', 'nama_status' => 'Mutasi', 'boleh_diubah_siswa' => false],
+        ['id_status_siswa' => 3, 'kode_status' => 'mengundurkan_diri', 'nama_status' => 'Mengundurkan Diri', 'boleh_diubah_siswa' => false],
+        ['id_status_siswa' => 4, 'kode_status' => 'dikeluarkan', 'nama_status' => 'Dikeluarkan', 'boleh_diubah_siswa' => false],
+        ['id_status_siswa' => 5, 'kode_status' => 'putus_sekolah', 'nama_status' => 'Putus Sekolah', 'boleh_diubah_siswa' => false],
+        ['id_status_siswa' => 6, 'kode_status' => 'meninggal_dunia', 'nama_status' => 'Meninggal Dunia', 'boleh_diubah_siswa' => false],
     ]);
 
     $migration = require database_path('migrations/2026_11_16_022124_add_mutation_workflow_fields_to_mutasi_siswa_table.php');
@@ -195,13 +199,41 @@ it('records the principal rejection note and notifies the requesting TU', functi
     ]);
 });
 
+it('allows the principal to reject all outgoing mutation types without changing student status', function () {
+    foreach (['pindah_keluar', 'mengundurkan_diri', 'dikeluarkan', 'putus_sekolah', 'meninggal_dunia'] as $jenis) {
+        $idSiswa = siswaAktifMutasiWorkflow();
+        $idMutasi = mutasiMenungguWorkflow($idSiswa, $jenis);
+
+        $this->withSession(sesiMutasiWorkflow('kepsek'))
+            ->post(route('kepsek.mutasi.putuskan', $idMutasi), [
+                'keputusan' => 'tolak',
+                'catatan_keputusan' => 'Pengajuan ditolak dalam pengujian.',
+            ])
+            ->assertRedirect(route('kepsek.mutasi'))
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('mutasi_siswa', [
+            'id_mutasi' => $idMutasi,
+            'status' => 'ditolak',
+        ]);
+        $this->assertDatabaseHas('siswa', [
+            'id_siswa' => $idSiswa,
+            'id_status_siswa' => 1,
+        ]);
+        $this->assertDatabaseHas('keanggotaan_kelas', [
+            'id_siswa' => $idSiswa,
+            'status' => 'aktif',
+        ]);
+    }
+});
+
 it('updates student status and class history when the principal approves exit cases', function () {
     $cases = [
         'pindah_keluar' => ['mutasi', 'pindah'],
-        'mengundurkan_diri' => ['mengundurkan_diri', 'mengundurkan_diri'],
-        'dikeluarkan' => ['dikeluarkan', 'dikeluarkan'],
-        'putus_sekolah' => ['putus_sekolah', 'putus_sekolah'],
-        'meninggal_dunia' => ['meninggal_dunia', 'meninggal_dunia'],
+        'mengundurkan_diri' => ['mengundurkan_diri', 'keluar'],
+        'dikeluarkan' => ['dikeluarkan', 'keluar'],
+        'putus_sekolah' => ['putus_sekolah', 'keluar'],
+        'meninggal_dunia' => ['meninggal_dunia', 'keluar'],
     ];
 
     foreach ($cases as $jenis => [$kodeStatus, $statusAnggota]) {

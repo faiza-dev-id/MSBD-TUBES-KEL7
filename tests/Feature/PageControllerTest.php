@@ -175,7 +175,7 @@ class PageControllerTest extends TestCase
             ->assertDontSee('data-hari-tab="7"', false);
     }
 
-    public function test_student_report_page_is_removed_from_navigation_and_route(): void
+    public function test_student_navigation_exposes_rapor_route_but_unlinked_accounts_are_rejected(): void
     {
         $idRole = $this->createRole('siswa');
         $idPengguna = $this->createAccount('siswa-test', $idRole);
@@ -184,10 +184,10 @@ class PageControllerTest extends TestCase
         $this->withSession($session)
             ->get(route('siswa.dashboard'))
             ->assertOk()
-            ->assertDontSee('/siswa/rapor');
+            ->assertSee('/siswa/rapor');
 
         $this->withSession($session)
-            ->get('/siswa/rapor')
+            ->get(route('siswa.rapor'))
             ->assertNotFound();
     }
 
@@ -276,19 +276,15 @@ class PageControllerTest extends TestCase
             ->assertSee('SMP Negeri 1 Bandung');
     }
 
-    public function test_homeroom_report_page_is_removed_from_navigation_and_route(): void
+    public function test_homeroom_navigation_exposes_rapor_route(): void
     {
         [, $session] = $this->createWaliKelas();
 
         $this->withSession($session)
             ->get(route('guru.kelas'))
             ->assertOk()
-            ->assertDontSee('/guru/rapor')
-            ->assertDontSee('Rapor Siswa');
-
-        $this->withSession($session)
-            ->get('/guru/rapor')
-            ->assertNotFound();
+            ->assertSee('/guru/rapor')
+            ->assertSee('Rapor Siswa');
     }
 
     public function test_student_profile_displays_parent_data_labels_instead_of_codes(): void
@@ -301,7 +297,13 @@ class PageControllerTest extends TestCase
             'ibu_no_telepon', 'ibu_email', 'ibu_alamat', 'wali', 'wali_no_telepon', 'wali_email',
             'wali_alamat',
         ], '-');
+        $student['ayah_email'] = 'ayah@example.test';
+        $student['ibu_email'] = 'ibu@example.test';
+        $student['wali_email'] = 'wali@example.test';
         $ppdb = [
+            'agama' => '01',
+            'negara' => 'Negara yang disembunyikan',
+            'keluar_karena' => 'Keluar yang disembunyikan',
             'ortu' => [
                 [
                     'nama' => 'Ayah',
@@ -317,15 +319,103 @@ class PageControllerTest extends TestCase
         $html = view('siswa.profil', [
             's' => $student,
             'ppdb' => $ppdb,
+            'agamaOptions' => ['01' => 'Islam'],
             'dokumen' => collect(),
+            'terhubung' => true,
         ])->render();
 
         $this->assertStringContainsString('D4/S1', $html);
         $this->assertStringContainsString('PNS/TNI/Polri', $html);
         $this->assertStringContainsString('1 juta - 1.999.999', $html);
         $this->assertStringContainsString('Tunarungu', $html);
+        $this->assertStringContainsString('Islam', $html);
+        $this->assertStringContainsString('wali@example.test', $html);
+        $this->assertStringNotContainsString('ayah@example.test', $html);
+        $this->assertStringNotContainsString('ibu@example.test', $html);
+        $this->assertStringNotContainsString('Negara yang disembunyikan', $html);
+        $this->assertStringNotContainsString('Data siswa keluar', $html);
         $this->assertStringNotContainsString('>09</dd>', $html);
         $this->assertStringNotContainsString('>05</dd>', $html);
+    }
+
+    public function test_tu_student_detail_displays_labels_and_hides_parent_email_and_country(): void
+    {
+        view()->share('errors', new ViewErrorBag);
+
+        $html = view('tu.siswa-detail', [
+            'siswa' => (object) [
+                'id_siswa' => 1,
+                'nama_lengkap' => 'Siswa Uji',
+                'nis' => 'NIS-1',
+                'nisn' => '1234567890',
+                'nik' => null,
+                'jenis_kelamin' => 'P',
+                'tempat_lahir' => null,
+                'tanggal_lahir' => null,
+                'email' => null,
+                'no_telepon' => null,
+            ],
+            'alamat' => null,
+            'orangTua' => collect([
+                (object) ['hubungan' => 'ayah', 'nama_lengkap' => 'Ayah Uji', 'no_telepon' => null, 'email' => 'ayah@example.test', 'alamat' => null],
+            ]),
+            'ppdb' => (object) [
+                'nama_calon_siswa' => 'Siswa Uji',
+                'hobi' => 'A',
+                'cita_cita' => 'B',
+                'negara' => 'Negara rahasia',
+            ],
+            'ppdbAlamat' => null,
+            'ppdbPeriodik' => (object) ['tempat_tinggal' => '3', 'moda_transportasi' => '01'],
+            'ppdbOrangTua' => collect(),
+            'ppdbPrestasi' => collect(),
+            'ppdbBeasiswa' => collect(),
+            'ppdbKeluar' => (object) ['alasan_keluar' => 'Data keluar tetap terlihat oleh TU'],
+            'dokumen' => collect(),
+        ])->render();
+
+        $this->assertStringContainsString('Olahraga', $html);
+        $this->assertStringContainsString('TNI/POLRI', $html);
+        $this->assertStringContainsString('Jalan kaki', $html);
+        $this->assertStringContainsString('Data keluar tetap terlihat oleh TU', $html);
+        $this->assertStringNotContainsString('Negara rahasia', $html);
+        $this->assertStringNotContainsString('ayah@example.test', $html);
+    }
+
+    public function test_tu_ppdb_verification_displays_reference_labels_without_country(): void
+    {
+        view()->share('errors', new ViewErrorBag);
+
+        $html = view('tu.verifikasi', [
+            'row' => ['nama' => 'Siswa Uji', 'nisn' => '1234567890', 'tgl' => '01 Jan 2026', 'id' => 1],
+            'detail' => [
+                'nomor_dokumen_1' => '',
+                'nomor_dokumen_2' => '',
+                'agama' => '01',
+                'hobi' => 'A',
+                'cita_cita' => 'B',
+                'berkebutuhan_khusus' => '01',
+                'negara' => 'Negara rahasia',
+                'ortu' => [
+                    ['pendidikan' => '09', 'pekerjaan' => '05', 'penghasilan' => '3', 'kebutuhan' => '02'],
+                ],
+                'prestasi' => [['nama' => 'Olimpiade', 'jenis' => '1', 'tingkat' => '2', 'tahun' => '2025', 'penyelenggara' => 'Sekolah']],
+                'beasiswa' => [['keterangan' => 'Beasiswa uji', 'jenis' => '01', 'tahun_mulai' => '2025', 'tahun_selesai' => '2026']],
+            ],
+            'agamaOptions' => ['01' => 'Islam'],
+            'berkas' => [],
+            'alasan' => [],
+        ])->render();
+
+        $this->assertStringContainsString('Agama', $html);
+        $this->assertStringContainsString('Islam', $html);
+        $this->assertStringContainsString('Olahraga', $html);
+        $this->assertStringContainsString('Tunanetra', $html);
+        $this->assertStringContainsString('D4/S1', $html);
+        $this->assertStringContainsString('PNS/TNI/Polri', $html);
+        $this->assertStringContainsString('Sains', $html);
+        $this->assertStringContainsString('Anak berprestasi', $html);
+        $this->assertStringNotContainsString('Negara rahasia', $html);
     }
 
     private function createSchema(): void

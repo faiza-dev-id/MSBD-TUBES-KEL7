@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Kelas;
 use App\Models\PendaftaranPpdb;
 use App\Support\AuditContext;
+use App\Support\Referensi\OpsiPpdb;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
@@ -34,17 +35,7 @@ class PpdbService
         'Surat Keterangan Pindah',
     ];
 
-    public const KEBUTUHAN_KHUSUS = [
-        '00' => 'Tidak',
-        '01' => 'Tunanetra',
-        '02' => 'Tunarungu',
-        '03' => 'Tunawicara',
-        '04' => 'Tunagrahita',
-        '05' => 'Tunadaksa',
-        '06' => 'Tunalaras',
-        '07' => 'Tunaganda',
-        '08' => 'Autisme',
-    ];
+    public const KEBUTUHAN_KHUSUS = OpsiPpdb::KEBUTUHAN_KHUSUS;
 
     private const AGAMA_NAMA = [
         '01' => ['islam'],

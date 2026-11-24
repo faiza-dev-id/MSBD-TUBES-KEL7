@@ -15,8 +15,8 @@
     );
 
     $isian = fn ($baris) => collect(get_object_vars($baris))
-        ->reject(fn ($v, $k) => $v === null || $v === '' || str_starts_with($k, 'id_') || in_array($k, ['token_draf', 'dibuat_pada', 'diubah_pada', 'created_at', 'updated_at'], true))
-        ->mapWithKeys(fn ($v, $k) => [ucfirst(str_replace('_', ' ', $k)) => $v]);
+        ->reject(fn ($v, $k) => $v === null || $v === '' || $k === 'negara' || str_starts_with($k, 'id_') || in_array($k, ['token_draf', 'dibuat_pada', 'diubah_pada', 'created_at', 'updated_at'], true))
+        ->mapWithKeys(fn ($v, $k) => [ucfirst(str_replace('_', ' ', $k)) => \App\Support\Referensi\OpsiPpdb::label($k, $v)]);
 @endphp
 
 <div class="grid items-start gap-4 lg:grid-cols-2">
@@ -192,7 +192,9 @@
             <div class="border-b border-line py-2.5 text-sm last:border-0">
                 <b>{{ $ortu->hubungan ?? 'Orang tua / wali' }}: {{ $ortu->nama_lengkap ?? '-' }}</b>
                 <div class="text-mute mt-1">Telepon: {{ $ortu->no_telepon ?: '-' }}</div>
-                <div class="text-mute">Email: {{ $ortu->email ?: '-' }}</div>
+                @if (!in_array(mb_strtolower((string) $ortu->hubungan), ['ayah', 'ibu'], true))
+                    <div class="text-mute">Email: {{ $ortu->email ?: '-' }}</div>
+                @endif
                 <div class="text-mute">Alamat: {{ $ortu->alamat ?: '-' }}</div>
             </div>
         @empty

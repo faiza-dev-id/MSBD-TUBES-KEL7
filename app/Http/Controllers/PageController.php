@@ -16,7 +16,6 @@ use App\Services\KenaikanKelasService;
 use App\Services\PengajuanPerubahanService;
 use App\Services\PengaturanService;
 use App\Services\PpdbService;
-use App\Support\DummyData;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Request;
@@ -76,7 +75,7 @@ class PageController extends Controller
                 'miring' => 'Unggul',
                 'akhir' => ', Mandiri & Berkarakter',
                 'deskripsi' => 'Portal informasi resmi sekolah: pendidikan modern yang memadukan keunggulan akademik, karakter, dan teknologi digital.',
-                'gambar' => $this->gambarPublik('images/hero-1.jpg'),
+                'gambar' => $this->gambarPublik('images/sekolah.jpeg'),
                 'tombol' => [
                     ['label' => 'Daftar PPDB', 'url' => route('ppdb')],
                     ['label' => 'Cek status pendaftaran', 'url' => route('ppdb.status')],
@@ -87,7 +86,7 @@ class PageController extends Controller
                 'miring' => 'Baru',
                 'akhir' => ' sedang dibuka',
                 'deskripsi' => 'Isi formulir secara online, unggah berkas, lalu pantau hasil verifikasi dari Tata Usaha kapan saja.',
-                'gambar' => $this->gambarPublik('images/hero-2.jpg'),
+                'gambar' => $this->gambarPublik('images/sekolah.jpeg'),
                 'tombol' => [
                     ['label' => 'Mulai mendaftar', 'url' => route('ppdb')],
                     ['label' => 'Masuk ke SIAKAD', 'url' => route('login')],
@@ -326,26 +325,28 @@ class PageController extends Controller
             ],
             'pengajuan' => $this->pengajuanMilikSiswa($siswa?->id_siswa),
             'periode' => $this->periodeUpdateBerjalan(),
+            'fotoSekolah' => $this->gambarPublik('images/sekolah.jpeg'),
         ]);
     }
 
     public function profil(PpdbService $ppdb): View
     {
         $siswa = $this->siswaSesi();
+        $idPendaftaran = $siswa ? $this->idPendaftaranSiswa($siswa) : null;
 
-        abort_unless($siswa, 404);
-
-        $idPendaftaran = $this->idPendaftaranSiswa($siswa);
-
-        $dokumen = DB::table('dokumen_siswa')
-            ->where('id_siswa', $siswa->id_siswa)
-            ->orderByDesc('diunggah_pada')
-            ->get(['jenis_dokumen', 'nama_file_asli', 'status_verifikasi', 'diunggah_pada']);
+        $dokumen = $siswa
+            ? DB::table('dokumen_siswa')
+                ->where('id_siswa', $siswa->id_siswa)
+                ->orderByDesc('diunggah_pada')
+                ->get(['jenis_dokumen', 'nama_file_asli', 'status_verifikasi', 'diunggah_pada'])
+            : collect();
 
         return view('siswa.profil', [
             's' => $this->siswaTampilan(),
             'ppdb' => $idPendaftaran ? $ppdb->dataPendaftaran((int) $idPendaftaran) : null,
+            'agamaOptions' => $ppdb->agamaOptions(),
             'dokumen' => $dokumen,
+            'terhubung' => (bool) $siswa,
         ]);
     }
 
@@ -364,6 +365,7 @@ class PageController extends Controller
             'pengajuan' => $this->daftarPengajuanSiswa($siswa?->id_siswa),
             'periode' => $this->periodeBerjalan(),
             'fieldDapatDiubah' => $fieldDapatDiubah,
+            'terhubung' => (bool) $siswa,
         ]);
     }
 
@@ -372,6 +374,7 @@ class PageController extends Controller
         return view('siswa.konfirmasi', [
             's' => $this->siswaTampilan(),
             'periode' => $this->periodeBerjalan(),
+            'terhubung' => (bool) $this->siswaSesi(),
         ]);
     }
 
@@ -1100,8 +1103,28 @@ class PageController extends Controller
         $siswa = $this->siswaSesi();
         $rekap = ['hadir' => 0, 'izin' => 0, 'sakit' => 0, 'alpha' => 0];
         $riwayat = [];
+        $persentaseKehadiran = null;
 
         if ($siswa) {
+            if (DB::getDriverName() === 'pgsql') {
+                $ringkasan = DB::table('vw_rekap_absensi_siswa')
+                    ->where('id_siswa', $siswa->id_siswa)
+                    ->selectRaw('COALESCE(SUM(hadir), 0) AS hadir, COALESCE(SUM(sakit), 0) AS sakit, COALESCE(SUM(izin), 0) AS izin, COALESCE(SUM(alpa), 0) AS alpha')
+                    ->first();
+
+                $rekap = [
+                    'hadir' => (int) $ringkasan->hadir,
+                    'izin' => (int) $ringkasan->izin,
+                    'sakit' => (int) $ringkasan->sakit,
+                    'alpha' => (int) $ringkasan->alpha,
+                ];
+
+                $persentaseKehadiran = (float) DB::selectOne(
+                    'SELECT public.fn_persen_kehadiran(?) AS persentase',
+                    [$siswa->id_siswa]
+                )->persentase;
+            }
+
             $rows = DB::table('detail_absensi as da')
                 ->join('sesi_absensi as sa', 'sa.id_sesi', '=', 'da.id_sesi')
                 ->join('status_kehadiran as sh', 'sh.id_status_hadir', '=', 'da.id_status_hadir')
@@ -1117,7 +1140,7 @@ class PageController extends Controller
             foreach ($rows as $r) {
                 $kode = $this->kodeKehadiran($r->kode);
 
-                if (isset($rekap[$kode])) {
+                if (DB::getDriverName() !== 'pgsql' && isset($rekap[$kode])) {
                     $rekap[$kode]++;
                 }
 
@@ -1132,75 +1155,98 @@ class PageController extends Controller
             }
         }
 
-        return view('siswa.absensi', compact('rekap', 'riwayat'));
+        return view('siswa.absensi', compact('rekap', 'riwayat', 'persentaseKehadiran'));
     }
 
-    public function raporSiswa()
+    public function raporSiswa(?int $id = null)
     {
         $siswa = $this->siswaSesi();
-        $semester = $this->semesterAktif();
-        $kelas = null;
-        $rapor = null;
+        abort_unless($siswa, 404);
+
+        $raporList = DB::table('rapor as r')
+            ->join('keanggotaan_kelas as kk', 'kk.id_keanggotaan', '=', 'r.id_anggota')
+            ->join('semester as sm', 'sm.id_semester', '=', 'r.id_semester')
+            ->join('tahun_ajaran as ta', 'ta.id_tahun_ajaran', '=', 'sm.id_tahun_ajaran')
+            ->leftJoin('kelas as k', 'k.id_kelas', '=', 'kk.id_kelas')
+            ->where('kk.id_siswa', $siswa->id_siswa)
+            ->where('r.status_rapor', 'final')
+            ->orderByDesc('sm.tanggal_mulai')
+            ->orderByDesc('r.tgl_dibuat')
+            ->get([
+                'r.id_rapor',
+                'r.id_anggota',
+                'r.id_semester',
+                'r.rata_rata',
+                'r.jumlah_sakit',
+                'r.jumlah_izin',
+                'r.jumlah_alpa',
+                'r.catatan_wali',
+                'sm.nama_semester',
+                'ta.nama_tahun_ajaran',
+                'k.nama_kelas',
+            ]);
+
+        $rapor = $id
+            ? $raporList->firstWhere('id_rapor', $id)
+            : $raporList->first();
+        abort_if($id && ! $rapor, 404);
+
+        $rataRata = null;
+        $predikatRataRata = null;
         $detail = [];
 
-        if ($siswa && $semester) {
-            $anggota = DB::table('keanggotaan_kelas as kk')
-                ->join('kelas as k', 'k.id_kelas', '=', 'kk.id_kelas')
-                ->where('kk.id_siswa', $siswa->id_siswa)
-                ->where('kk.id_semester', $semester->id_semester)
-                ->orderByDesc('kk.id_keanggotaan')
-                ->select('kk.id_keanggotaan', 'k.nama_kelas')
-                ->first();
+        if ($rapor) {
+            $rataRata = DB::table('vw_nilai_rata_siswa')
+                ->where('id_anggota', $rapor->id_anggota)
+                ->where('id_semester', $rapor->id_semester)
+                ->avg('nilai_rata_rata');
 
-            if ($anggota) {
-                $kelas = $anggota->nama_kelas;
-                $rapor = DB::table('rapor')
-                    ->where('id_anggota', $anggota->id_keanggotaan)
-                    ->where('id_semester', $semester->id_semester)
-                    ->where('status_rapor', 'final')
-                    ->first([
-                        'id_rapor',
-                        'status_rapor',
-                        'rata_rata',
-                        'jumlah_sakit',
-                        'jumlah_izin',
-                        'jumlah_alpa',
-                        'catatan_wali',
-                    ]);
-
-                if ($rapor) {
-                    $detail = DB::table('detail_rapor as dr')
-                        ->join('mata_pelajaran as m', 'm.id_mata_pelajaran', '=', 'dr.id_mapel')
-                        ->leftJoin('skala_predikat as sp', 'sp.id_predikat', '=', 'dr.id_predikat')
-                        ->where('dr.id_rapor', $rapor->id_rapor)
-                        ->orderBy('m.nama_mapel')
-                        ->get(['m.nama_mapel', 'dr.nilai_akhir', 'sp.huruf'])
-                        ->map(fn ($d) => [
-                            'mapel' => $d->nama_mapel,
-                            'nilai' => rtrim(rtrim(number_format((float) $d->nilai_akhir, 2, '.', ''), '0'), '.'),
-                            'predikat' => $d->huruf ?? '-',
-                        ])
-                        ->all();
-                }
+            if ($rataRata === null && $rapor->rata_rata !== null) {
+                $rataRata = (float) $rapor->rata_rata;
             }
+
+            if ($rataRata !== null) {
+                $rataRata = round((float) $rataRata, 2);
+                $predikatRataRata = DB::selectOne(
+                    'SELECT public.fn_predikat_nilai(?) AS predikat',
+                    [$rataRata]
+                )->predikat;
+            }
+
+            $detail = DB::table('detail_rapor as dr')
+                ->join('mata_pelajaran as m', 'm.id_mata_pelajaran', '=', 'dr.id_mapel')
+                ->leftJoin('skala_predikat as sp', 'sp.id_predikat', '=', 'dr.id_predikat')
+                ->where('dr.id_rapor', $rapor->id_rapor)
+                ->orderBy('m.nama_mapel')
+                ->get(['m.nama_mapel', 'dr.nilai_akhir', 'sp.huruf'])
+                ->map(fn ($d) => [
+                    'mapel' => $d->nama_mapel,
+                    'nilai' => rtrim(rtrim(number_format((float) $d->nilai_akhir, 2, '.', ''), '0'), '.'),
+                    'predikat' => $d->huruf ?? '-',
+                ])
+                ->all();
         }
 
-        return view('siswa.rapor', compact('semester', 'kelas', 'rapor', 'detail'));
+        return view('siswa.rapor', compact('raporList', 'rapor', 'rataRata', 'predikatRataRata', 'detail'));
     }
 
     // ---- TU ----
     public function tuDashboard(Request $request)
     {
+        $statistikPpdb = DB::getDriverName() === 'pgsql'
+            ? DB::table('vw_statistik_ppdb')->pluck('jumlah', 'status_pendaftaran')
+            : collect();
+
         $statistik = [
-            'menunggu' => DB::table('pendaftaran_ppdb')
-                ->where('status_pendaftaran', 'menunggu')
-                ->count(),
-            'perlu_perbaikan' => DB::table('pendaftaran_ppdb')
-                ->where('status_pendaftaran', 'perlu_perbaikan')
-                ->count(),
-            'disahkan' => DB::table('pendaftaran_ppdb')
-                ->where('status_pendaftaran', 'diterima')
-                ->count('id_pendaftaran'),
+            'menunggu' => DB::getDriverName() === 'pgsql'
+                ? (int) $statistikPpdb->get('menunggu', 0)
+                : DB::table('pendaftaran_ppdb')->where('status_pendaftaran', 'menunggu')->count(),
+            'perlu_perbaikan' => DB::getDriverName() === 'pgsql'
+                ? (int) $statistikPpdb->get('perlu_perbaikan', 0)
+                : DB::table('pendaftaran_ppdb')->where('status_pendaftaran', 'perlu_perbaikan')->count(),
+            'disahkan' => DB::getDriverName() === 'pgsql'
+                ? (int) $statistikPpdb->get('diterima', 0)
+                : DB::table('pendaftaran_ppdb')->where('status_pendaftaran', 'diterima')->count('id_pendaftaran'),
             'pengajuan' => DB::table('pengajuan_perubahan')
                 ->where('status_pengajuan', 'menunggu')
                 ->count('id_pengajuan'),
@@ -1267,6 +1313,7 @@ class PageController extends Controller
             'berkas' => $berkas,
             'alasan' => $alasan,
             'detail' => $ppdb->dataPendaftaran((int) $pendaftaran->id_pendaftaran),
+            'agamaOptions' => $ppdb->agamaOptions(),
         ]);
     }
 
@@ -1295,7 +1342,7 @@ class PageController extends Controller
 
     public function kelulusan()
     {
-        return view('tu.kelulusan', ['pendaftar' => DummyData::kelulusan()]);
+        return view('tu.kelulusan', ['pendaftar' => []]);
     }
 
     public function dokumenSiswa(int $id)
@@ -1404,7 +1451,7 @@ class PageController extends Controller
 
     public function resetSandi()
     {
-        return view('tu.reset-sandi', ['pengguna' => DummyData::pengguna()]);
+        return view('tu.reset-sandi', ['pengguna' => []]);
     }
 
     public function dataSiswa()
@@ -1514,32 +1561,36 @@ class PageController extends Controller
         $periode = DB::table('periode_update as p')
             ->leftJoin('tahun_ajaran as t', 't.id_tahun_ajaran', '=', 'p.id_tahun_ajaran')
             ->orderByDesc('p.tanggal_mulai')
-            ->get(['p.id_periode_update', 'p.tanggal_mulai', 'p.tanggal_selesai', 'p.status', 't.nama_tahun_ajaran', 'p.nama_periode'])
+            ->select('p.id_periode_update', 'p.tanggal_mulai', 'p.tanggal_selesai', 'p.status', 't.nama_tahun_ajaran', 'p.nama_periode')
+            ->when(
+                DB::getDriverName() === 'pgsql',
+                fn ($query) => $query->addSelect(DB::raw('public.fn_persen_konfirmasi_periode(p.id_periode_update) AS persentase_konfirmasi'))
+            )
+            ->get()
             ->map(fn ($p) => [
                 'id' => $p->id_periode_update,
                 'tahun' => $p->nama_tahun_ajaran ?? $p->nama_periode,
                 'buka' => Carbon::parse($p->tanggal_mulai)->locale('id')->translatedFormat('d M Y'),
                 'tutup' => Carbon::parse($p->tanggal_selesai)->locale('id')->translatedFormat('d M Y'),
                 'status' => $p->status === 'aktif' ? 'Dibuka' : 'Ditutup',
+                'persentase_konfirmasi' => isset($p->persentase_konfirmasi) ? (float) $p->persentase_konfirmasi : null,
             ])
             ->all();
 
         return view('tu.periode', [
-            'periode' => $periode ?: DummyData::periodeUpdate(),
+            'periode' => $periode,
             'tahunAjaran' => $this->daftarTahunAjaran(),
         ]);
     }
 
     public function kelas()
     {
-        return view('tu.kelas', ['kelas' => DummyData::kelas()]);
+        return view('tu.kelas', ['kelas' => []]);
     }
 
     public function kelasDetail(int $id)
     {
-        $row = collect(DummyData::kelas())->firstWhere('id', $id) ?? abort(404);
-
-        return view('tu.kelas-detail', ['row' => $row, 'siswa' => DummyData::siswaKelas()]);
+        abort(404);
     }
 
     public function kenaikan(Request $request, KenaikanKelasService $kenaikan)
@@ -1575,29 +1626,23 @@ class PageController extends Controller
     // ---- DATA MASTER (TU) ----
     public function referensi(string $tab = 'agama')
     {
-        $semua = DummyData::referensi();
-        abort_unless(isset($semua[$tab]), 404);
-
-        return view('admin.referensi', ['tab' => $tab, 'semua' => $semua]);
+        abort(404);
     }
 
     public function checklistRef()
     {
-        return view('admin.checklist', ['checklist' => DummyData::checklist(), 'alasan' => DummyData::alasanPengembalian()]);
+        return view('admin.checklist', ['checklist' => [], 'alasan' => []]);
     }
 
     public function aturan()
     {
-        return view('admin.aturan-field', ['field' => DummyData::aturanField()]);
+        return view('admin.aturan-field', ['field' => []]);
     }
 
     // ---- AKADEMIK (TU) ----
     public function konfigurasi(string $tab = 'tahun-ajaran')
     {
-        $semua = DummyData::akademik();
-        abort_unless(isset($semua[$tab]), 404);
-
-        return view('akademik.konfigurasi', ['tab' => $tab, 'semua' => $semua]);
+        abort(404);
     }
 
     public function jadwal(Request $request)
@@ -1616,18 +1661,6 @@ class PageController extends Controller
                 'id_tahun_ajaran' => $s->id_tahun_ajaran !== null ? (int) $s->id_tahun_ajaran : null,
             ])
             ->all();
-
-        if (! $semesterList) {
-            $semesterList = collect(DummyData::akademik()['semester']['baris'])
-                ->values()
-                ->map(fn ($s) => [
-                    'id' => 0,
-                    'nama' => $s[0] ?? '-',
-                    'tahun' => $s[1] ?? '-',
-                    'id_tahun_ajaran' => null,
-                ])
-                ->all();
-        }
 
         $idSemester = (int) $request->query('semester', $semesterAktif->id_semester ?? ($semesterList[0]['id'] ?? 0));
         $semesterTerpilih = collect($semesterList)->firstWhere('id', $idSemester) ?? ($semesterList[0] ?? null);
@@ -1664,10 +1697,6 @@ class PageController extends Controller
                 'jumlah' => 0,
             ])
             ->all();
-
-        if (! $kelas) {
-            $kelas = DummyData::kelas();
-        }
 
         // Urutkan kelas sesuai urutan natural (1-20, dsb.)
         usort($kelas, function ($a, $b) {
@@ -2260,12 +2289,12 @@ class PageController extends Controller
 
     public function staf()
     {
-        return view('admin.staf', DummyData::guruStaf());
+        return view('admin.staf', ['guru' => [], 'staf' => []]);
     }
 
     public function pengaturan()
     {
-        return view('admin.pengaturan', ['set' => DummyData::pengaturan()]);
+        return view('admin.pengaturan', ['set' => []]);
     }
 
     public function logLogin()
@@ -2318,7 +2347,15 @@ class PageController extends Controller
         $s = $this->siswaSesi();
 
         if (! $s) {
-            return DummyData::siswa();
+            return array_fill_keys([
+                'nama_lengkap', 'nis', 'nisn', 'nik', 'no_kk', 'jenis_kelamin',
+                'tempat_lahir', 'tanggal_lahir', 'agama', 'no_hp', 'email',
+                'sekolah_asal', 'kelas', 'status', 'alamat', 'alamat_rt',
+                'alamat_rw', 'alamat_kelurahan', 'alamat_kecamatan', 'alamat_kota',
+                'alamat_provinsi', 'alamat_kode_pos', 'ayah', 'ayah_no_telepon',
+                'ayah_email', 'ayah_alamat', 'ibu', 'ibu_no_telepon', 'ibu_email',
+                'ibu_alamat', 'wali', 'wali_no_telepon', 'wali_email', 'wali_alamat',
+            ], '-');
         }
 
         $idPendaftaran = $this->idPendaftaranSiswa($s);
@@ -2424,7 +2461,7 @@ class PageController extends Controller
             ->first();
 
         if (! $periode) {
-            return DummyData::periodeAktif() + ['id' => null];
+            return ['dibuka' => false, 'id' => null, 'tahun' => '-', 'tutup' => '-'];
         }
 
         $tahun = DB::table('tahun_ajaran')
@@ -2605,13 +2642,6 @@ class PageController extends Controller
             ->orderByDesc('tanggal_mulai')
             ->get(['id_tahun_ajaran', 'nama_tahun_ajaran']);
 
-        if ($rows->isEmpty()) {
-            return [
-                ['id' => null, 'nama' => '2026/2027'],
-                ['id' => null, 'nama' => '2027/2028'],
-            ];
-        }
-
         return $rows->map(fn ($r) => [
             'id' => $r->id_tahun_ajaran,
             'nama' => $r->nama_tahun_ajaran,
@@ -2620,10 +2650,6 @@ class PageController extends Controller
 
     private function daftarPengajuanSiswa(?int $idSiswa): array
     {
-        if (! DB::table('pengajuan_perubahan')->exists()) {
-            return DummyData::pengajuanSiswa();
-        }
-
         $query = DB::table('pengajuan_perubahan as pp')
             ->join('detail_pengajuan as dp', 'dp.id_pengajuan', '=', 'pp.id_pengajuan')
             ->leftJoin('siswa as s', 's.id_siswa', '=', 'pp.id_siswa')
@@ -2814,11 +2840,17 @@ class PageController extends Controller
     /** Semester aktif; bila belum ada, semester terbaru dipakai untuk tampilan. */
     private function semesterAktif(): ?object
     {
-        return DB::table('semester')
-            ->where('is_aktif', true)
-            ->orderByDesc('tanggal_mulai')
-            ->orderByDesc('id_semester')
-            ->first()
+        $idSemesterAktif = DB::getDriverName() === 'pgsql'
+            ? DB::selectOne('SELECT public.fn_semester_aktif() AS id_semester')?->id_semester
+            : DB::table('semester')
+                ->where('is_aktif', true)
+                ->orderByDesc('tanggal_mulai')
+                ->orderByDesc('id_semester')
+                ->value('id_semester');
+
+        return ($idSemesterAktif
+            ? DB::table('semester')->where('id_semester', $idSemesterAktif)->first()
+            : null)
             ?? DB::table('semester')
                 ->orderByDesc('tanggal_mulai')
                 ->orderByDesc('id_semester')

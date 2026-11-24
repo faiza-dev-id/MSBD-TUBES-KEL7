@@ -9,25 +9,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen">
-<header class="sticky top-0 z-30 h-16 flex items-center gap-3 px-4 lg:px-6 text-white bg-linear-to-r from-flame to-sky shadow-md">
-    <x-logo size="w-10 h-10" />
-    <div class="leading-tight min-w-0">
-        <div class="font-serif font-semibold truncate">{{ config('sekolah.nama') }}</div>
-        <div class="hidden sm:block text-xs text-white/80 truncate">{{ config('sekolah.sistem') }}</div>
-    </div>
-    <nav class="ml-auto flex items-center gap-1.5 text-sm">
-        <a href="{{ route('home') }}" class="hidden sm:block px-3 py-1.5 rounded-full hover:bg-white/15">Beranda</a>
-        <a href="{{ route('ppdb') }}" class="hidden sm:block px-3 py-1.5 rounded-full hover:bg-white/15">Daftar PPDB</a>
-        <a href="{{ route('ppdb.status') }}" class="hidden sm:block px-3 py-1.5 rounded-full hover:bg-white/15">Cek Status</a>
-        <a href="{{ route('login') }}" class="px-4 py-1.5 rounded-full bg-white text-flame font-semibold">Masuk</a>
-    </nav>
-</header>
-
-<nav class="sm:hidden flex gap-2 px-4 py-2 bg-white border-b border-line text-sm font-medium">
-    <a href="{{ route('home') }}" class="flex-1 text-center px-3 py-2 rounded-full {{ request()->routeIs('home') ? 'bg-tint text-flame font-semibold' : 'text-mute' }}">Beranda</a>
-    <a href="{{ route('ppdb') }}" class="flex-1 text-center px-3 py-2 rounded-full {{ request()->routeIs('ppdb') ? 'bg-tint text-flame font-semibold' : 'text-mute' }}">Daftar PPDB</a>
-    <a href="{{ route('ppdb.status') }}" class="flex-1 text-center px-3 py-2 rounded-full {{ request()->routeIs('ppdb.status') ? 'bg-tint text-flame font-semibold' : 'text-mute' }}">Cek Status</a>
-</nav>
+<x-public-header />
 
 <main class="max-w-4xl mx-auto px-4 sm:px-8 py-8 pb-16">
     <div class="mb-7">
@@ -36,5 +18,6 @@
     </div>
     @yield('content')
 </main>
+@stack('scripts')
 </body>
 </html>

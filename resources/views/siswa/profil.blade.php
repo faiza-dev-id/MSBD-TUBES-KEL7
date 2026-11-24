@@ -6,27 +6,9 @@
 @php
     $ppdb = $ppdb ?? null;
     $dokumen = $dokumen ?? collect();
-    $pilihan = [
-        'hobi' => ['A' => 'Olahraga', 'B' => 'Kesenian', 'C' => 'Membaca', 'D' => 'Menulis', 'E' => 'Traveling', 'F' => 'Lainnya'],
-        'cita_cita' => ['A' => 'PNS', 'B' => 'TNI/POLRI', 'C' => 'Wali Kelas/Dosen', 'D' => 'Dokter', 'E' => 'Politikus', 'F' => 'Wiraswasta', 'G' => 'Seniman', 'H' => 'Lainnya'],
-        'berkebutuhan_khusus' => \App\Services\PpdbService::KEBUTUHAN_KHUSUS,
-        'tempat_tinggal' => ['1' => 'Bersama orang tua', '2' => 'Wali', '3' => 'Kos', '4' => 'Asrama', '5' => 'Panti asuhan', '6' => 'Lainnya'],
-        'moda_transportasi' => ['01' => 'Jalan kaki', '02' => 'Kendaraan pribadi', '03' => 'Kendaraan umum', '04' => 'Jemputan sekolah', '05' => 'Kereta api', '06' => 'Ojek', '07' => 'Becak', '08' => 'Perahu penyeberangan', '09' => 'Lainnya'],
-        'penerima_kps' => ['YA' => 'Ya', 'TIDAK' => 'Tidak'],
-        'layak_pip' => ['YA' => 'Ya', 'TIDAK' => 'Tidak'],
-    ];
-    $formatNilai = fn ($key, $value) => $value === null || $value === ''
-        ? '-'
-        : ($pilihan[$key][$value] ?? $value);
-    $pilihanOrangTua = [
-        'pendidikan' => ['01' => 'Tidak sekolah', '02' => 'Putus SD', '03' => 'SD Sederajat', '04' => 'SMP Sederajat', '05' => 'SMA Sederajat', '06' => 'D1', '07' => 'D2', '08' => 'D3', '09' => 'D4/S1', '10' => 'S2', '11' => 'S3'],
-        'pekerjaan' => ['01' => 'Tidak bekerja', '02' => 'Nelayan', '03' => 'Petani', '04' => 'Peternak', '05' => 'PNS/TNI/Polri', '06' => 'Karyawan swasta', '07' => 'Pedagang kecil', '08' => 'Pedagang besar', '09' => 'Wiraswasta', '10' => 'Wirausaha', '11' => 'Buruh', '12' => 'Pensiunan', '13' => 'lain-lain'],
-        'penghasilan' => ['1' => 'Kurang dari 500.000', '2' => '500.000 - 999.999', '3' => '1 juta - 1.999.999', '4' => '2 juta - 4.999.999', '5' => '5 juta - 20 juta', '6' => 'Lebih dari 20 juta'],
-        'kebutuhan' => \App\Services\PpdbService::KEBUTUHAN_KHUSUS,
-    ];
-    $formatNilaiOrangTua = fn ($key, $value) => $value === null || $value === ''
-        ? '-'
-        : ($pilihanOrangTua[$key][$value] ?? $value);
+    $agamaOptions = $agamaOptions ?? [];
+    $formatNilai = fn ($key, $value) => \App\Support\Referensi\OpsiPpdb::label($key, $value, $agamaOptions);
+    $formatNilaiOrangTua = fn ($key, $value) => \App\Support\Referensi\OpsiPpdb::label($key, $value, $agamaOptions);
     $bidangPpdb = [
         'Informasi pendaftaran' => [
             'nomor_pendaftaran' => 'Nomor pendaftaran',
@@ -51,7 +33,7 @@
             'no_kk' => 'Nomor Kartu Keluarga',
             'tempat_lahir' => 'Tempat lahir',
             'tanggal_lahir' => 'Tanggal lahir',
-            'agama' => 'Kode agama PPDB',
+            'agama' => 'Agama',
             'email' => 'Email',
             'no_hp' => 'Nomor HP',
             'anak_ke' => 'Anak ke',
@@ -60,7 +42,6 @@
             'cita_cita' => 'Cita-cita',
             'berkebutuhan_khusus' => 'Kebutuhan khusus',
             'kewarganegaraan' => 'Kewarganegaraan',
-            'negara' => 'Negara',
         ],
         'Alamat' => [
             'jalan' => 'Jalan',
@@ -96,11 +77,6 @@
             'persetujuan_ortu' => 'Persetujuan orang tua',
             'pernyataan' => 'Pernyataan pendaftar',
         ],
-        'Data siswa keluar (jika diisi)' => [
-            'keluar_karena' => 'Keluar karena',
-            'tanggal_keluar' => 'Tanggal keluar',
-            'alasan_keluar' => 'Alasan keluar',
-        ],
     ];
     $labelOrangTua = ['ayah' => 'Ayah', 'ibu' => 'Ibu', 'wali' => 'Wali'];
     $bidangOrangTua = [
@@ -117,6 +93,11 @@
     ];
 @endphp
 
+@unless ($terhubung)
+    <div class="card text-sm text-mute" role="status">
+        Akun ini belum terhubung ke data siswa. Hubungi Tata Usaha untuk membantu pencocokan data.
+    </div>
+@else
 <section class="card mb-4">
     <div class="flex flex-wrap items-start justify-between gap-4">
         <div>
@@ -163,13 +144,11 @@
             'Ayah' => [
                 'Nama lengkap' => $s['ayah'],
                 'Nomor telepon' => $s['ayah_no_telepon'],
-                'Email' => $s['ayah_email'],
                 'Alamat' => $s['ayah_alamat'],
             ],
             'Ibu' => [
                 'Nama lengkap' => $s['ibu'],
                 'Nomor telepon' => $s['ibu_no_telepon'],
-                'Email' => $s['ibu_email'],
                 'Alamat' => $s['ibu_alamat'],
             ],
             'Wali' => [
@@ -261,4 +240,5 @@
         </table>
     </div>
 </section>
+@endunless
 @endsection

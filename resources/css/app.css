@@ -9,18 +9,18 @@
     --font-sans: 'Public Sans', ui-sans-serif, system-ui, sans-serif;
     --font-serif: 'Poppins', 'Public Sans', ui-sans-serif, system-ui, sans-serif; /* dipakai untuk judul */
 
-    --color-navy: #0f3b66;        /* biru tua: judul, panel gelap */
-    --color-navy-soft: #1a5a96;   /* biru tua lebih terang */
-    --color-flame: #1a7cc0;       /* biru utama: tombol, menu aktif */
-    --color-flame-dark: #14639c;  /* biru utama saat hover */
-    --color-sky: #3fb0ea;         /* biru langit: aksen, gradasi */
-    --color-tint: #e6f3fb;        /* biru sangat muda: latar menu aktif */
-    --color-paper: #eef5fb;       /* latar halaman */
+    --color-navy: #090e68;        /* biru tua: judul, panel gelap */
+    --color-navy-soft: #151f85;   /* biru tua lebih terang */
+    --color-flame: #2469ce;       /* biru utama: tombol, menu aktif */
+    --color-flame-dark: #1b52a7;  /* biru utama saat hover */
+    --color-sky: #71b3f4;         /* biru muda: aksen */
+    --color-tint: #eaf1ff;        /* biru sangat muda: latar menu aktif */
+    --color-paper: #f3f5fa;       /* latar halaman */
     --color-card: #ffffff;        /* latar kartu */
 
     --color-ink: #16263a;
     --color-mute: #5d6f85;
-    --color-line: #d9e5f0;
+    --color-line: #dce2f0;
     --color-ok: #2f7d4f;
     --color-warn: #b7791f;
     --color-bad: #b23a3a;

@@ -2,10 +2,18 @@
 @section('title', 'Masuk')
 
 @section('content')
+@php
+    $fotoSekolah = is_file(public_path('images/sekolah.jpeg'))
+        ? asset('images/sekolah.jpeg')
+        : null;
+@endphp
 <div class="relative min-h-screen grid place-items-center px-4 py-10 sm:py-14 overflow-hidden">
-    {{-- Hiasan latar --}}
-    <div aria-hidden="true" class="absolute top-0 left-[10%] w-24 sm:w-28 h-12 sm:h-14 rounded-b-full bg-flame"></div>
-    <div aria-hidden="true" class="absolute bottom-0 right-0 w-28 sm:w-36 h-32 sm:h-40 rounded-t-full bg-flame"></div>
+    @if ($fotoSekolah)
+        <img src="{{ $fotoSekolah }}" alt="" class="absolute inset-0 size-full object-cover">
+        <div aria-hidden="true" class="absolute inset-0 bg-navy/75"></div>
+    @else
+        <div aria-hidden="true" class="absolute inset-0 bg-linear-to-br from-navy via-navy-soft to-flame"></div>
+    @endif
 
     {{-- Tombol kembali ke beranda --}}
     <a href="{{ route('home') }}" class="absolute top-4 left-4 z-20 inline-flex items-center gap-2 rounded-full bg-white/90 px-4 py-2 text-sm font-semibold text-navy shadow-lg shadow-navy/10 ring-1 ring-line transition hover:bg-white">
@@ -14,9 +22,9 @@
     </a>
 
     <div class="relative z-10 w-full max-w-3xl">
-        <h1 class="mb-8 text-center font-serif text-3xl sm:text-5xl font-bold uppercase tracking-wide text-flame">{{ config('sekolah.nama') }}</h1>
+        <h1 class="mb-8 text-center font-serif text-3xl font-bold uppercase tracking-wide text-white sm:text-5xl">{{ config('sekolah.nama') }}</h1>
 
-        <div class="grid md:grid-cols-2 bg-white rounded-3xl shadow-2xl shadow-navy/20 overflow-hidden">
+        <div class="grid overflow-hidden rounded-3xl bg-white shadow-2xl shadow-navy/20 md:grid-cols-2">
 
             {{-- FORM LOGIN --}}
             <div class="p-7 sm:p-9">
@@ -106,7 +114,7 @@
             </div>
 
             {{-- PANEL BIRU --}}
-            <div class="hidden md:flex relative flex-col justify-center items-center text-center p-10 overflow-hidden bg-linear-to-b from-sky to-flame">
+            <div class="relative hidden flex-col items-center justify-center overflow-hidden bg-linear-to-b from-navy-soft to-flame p-10 text-center md:flex">
                 <div aria-hidden="true" class="absolute top-0 left-8 w-20 h-20 rounded-b-full bg-white/40"></div>
                 <div aria-hidden="true" class="absolute bottom-0 right-0 w-20 h-44 rounded-t-full bg-navy"></div>
                 <div aria-hidden="true" class="absolute bottom-0 right-24 w-14 h-24 rounded-t-full bg-navy/85"></div>

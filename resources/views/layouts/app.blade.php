@@ -6,8 +6,8 @@
     $akademikMenu = ['Akademik', [['Konfigurasi Akademik', 'akademik.konfigurasi'], ['Jadwal Pelajaran', 'akademik.jadwal']]];
 
     $menu = match ($role) {
-        'siswa'  => [['Utama', [['Beranda', 'siswa.dashboard']]], ['Akademik', [['Jadwal Pelajaran', 'siswa.jadwal'], ['Kehadiran', 'siswa.absensi']]], ['Data Saya', [['Profil Saya', 'siswa.profil'], ['Konfirmasi Data', 'siswa.konfirmasi'], ['Ubah Data', 'siswa.pengajuan']]], $akun],
-        'wali_kelas' => [['Wali Kelas', [['Daftar Siswa Kelas', 'guru.kelas'], ['Kelengkapan Data', 'guru.kelengkapan'], ['Validasi Pengajuan', 'guru.pengajuan'], ['Catatan Wali Kelas', 'guru.catatan'], ['Absensi Kelas', 'guru.absensi']]], $akun],
+        'siswa'  => [['Utama', [['Beranda', 'siswa.dashboard']]], ['Akademik', [['Jadwal Pelajaran', 'siswa.jadwal'], ['Kehadiran', 'siswa.absensi'], ['Rapor Siswa', 'siswa.rapor']]], ['Data Saya', [['Profil Saya', 'siswa.profil'], ['Konfirmasi Data', 'siswa.konfirmasi'], ['Ubah Data', 'siswa.pengajuan']]], $akun],
+        'wali_kelas' => [['Wali Kelas', [['Daftar Siswa Kelas', 'guru.kelas'], ['Kelengkapan Data', 'guru.kelengkapan'], ['Validasi Pengajuan', 'guru.pengajuan'], ['Catatan Wali Kelas', 'guru.catatan'], ['Absensi Kelas', 'guru.absensi'], ['Rapor Siswa', 'guru.rapor']]], $akun],
         'tu'     => [
             ['Utama', [['Meja TU', 'tu.dashboard']]],
             ['PPDB', [['Antrean Verifikasi', 'tu.antrean']]],
@@ -29,9 +29,9 @@
     // ikon tiap menu (nama ikon ada di components/icon.blade.php)
     $ikon = [
         'siswa.dashboard' => 'home', 'siswa.profil' => 'idcard', 'siswa.konfirmasi' => 'check', 'siswa.pengajuan' => 'edit',
-        'siswa.jadwal' => 'calendar', 'siswa.absensi' => 'check',
+        'siswa.jadwal' => 'calendar', 'siswa.absensi' => 'check', 'siswa.rapor' => 'book',
         'guru.kelas' => 'users', 'guru.kelengkapan' => 'clipboard', 'guru.catatan' => 'book',
-        'guru.pengajuan' => 'file', 'guru.absensi' => 'check',
+        'guru.pengajuan' => 'file', 'guru.absensi' => 'check', 'guru.rapor' => 'book',
         'tu.dashboard' => 'home', 'tu.antrean' => 'clipboard', 'tu.siswa' => 'folder', 'tu.periode' => 'clock', 'tu.reset' => 'key',
         'tu.mutasi' => 'trend', 'kepsek.mutasi' => 'trend',
         'tu.kelas' => 'cap', 'tu.kenaikan' => 'trend',
@@ -43,7 +43,7 @@
     ];
 
     $namaUser  = session('nama', 'Pengguna');
-    $labelRole = \App\Support\DummyData::roles()[$role]['label'] ?? '';
+    $labelRole = request()->user()?->role?->nama_role ?? str_replace('_', ' ', ucfirst((string) $role));
 
     // Jumlah notifikasi belum dibaca (0 bila belum login atau query gagal).
     $notifBelum = 0;
@@ -70,38 +70,41 @@
 <body class="min-h-screen">
 
 {{-- TOPBAR --}}
-<header class="sticky top-0 z-30 h-16 flex items-center gap-3 px-4 lg:px-6 text-white bg-linear-to-r from-flame to-sky shadow-md">
-    <button id="sbBtn" type="button" aria-label="Buka menu" class="lg:hidden -ml-1 p-2 rounded-lg hover:bg-white/15 cursor-pointer">
-        <x-icon name="menu" size="w-6 h-6" />
-    </button>
-    <button id="sbToggle" type="button" aria-label="Tutup menu" aria-controls="sb" aria-expanded="true" class="hidden lg:inline-flex -ml-1 p-2 rounded-lg hover:bg-white/15 cursor-pointer">
-        <x-icon name="menu" size="w-6 h-6" />
-    </button>
-    <x-logo size="w-10 h-10" />
-    <div class="leading-tight min-w-0">
-        <div class="font-serif font-semibold truncate">{{ config('sekolah.nama') }}</div>
-        <div class="hidden sm:block text-xs text-white/80 truncate">{{ config('sekolah.sistem') }}</div>
-    </div>
-    <div class="ml-auto flex items-center gap-3">
+<header class="sticky top-0 z-30 bg-navy text-white shadow-md">
+    <div class="relative mx-auto flex h-16 max-w-[1920px] items-center gap-3 px-4 lg:px-6">
+        <button id="sbBtn" type="button" aria-label="Buka menu" class="lg:hidden -ml-1 rounded-lg p-2 hover:bg-white/10 cursor-pointer">
+            <x-icon name="menu" size="w-6 h-6" />
+        </button>
+        <button id="sbToggle" type="button" aria-label="Tutup menu" aria-controls="sb" aria-expanded="true" class="hidden lg:inline-flex -ml-1 rounded-lg p-2 hover:bg-white/10 cursor-pointer">
+            <x-icon name="menu" size="w-6 h-6" />
+        </button>
+        <x-logo size="w-10 h-10" />
+        <div class="min-w-0 leading-tight">
+            <div class="truncate font-serif font-semibold">{{ config('sekolah.nama') }}</div>
+            <div class="hidden truncate text-xs text-white/75 sm:block">{{ config('sekolah.sistem') }}</div>
+        </div>
+        <div class="absolute left-1/2 hidden -translate-x-1/2 xl:block">
+            <x-academic-clock />
+        </div>
+        <div class="ml-auto flex shrink-0 items-center gap-2 sm:gap-3">
         <a href="{{ route('notifikasi') }}" aria-label="Notifikasi ({{ $notifBelum }} belum dibaca)"
-           class="relative p-2 rounded-lg hover:bg-white/15 cursor-pointer">
+           class="relative rounded-lg p-2 hover:bg-white/10 cursor-pointer">
             <x-icon name="bell" size="w-6 h-6" />
             @if ($notifBelum > 0)
-                <span class="absolute -top-0.5 -right-0.5 min-w-5 h-5 px-1 rounded-full bg-bad text-white text-[10px] font-bold grid place-items-center ring-2 ring-white/80">
+                <span class="absolute -top-0.5 -right-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-bad px-1 text-[10px] font-bold text-white ring-2 ring-navy">
                     {{ $notifBelum > 99 ? '99+' : $notifBelum }}
                 </span>
             @endif
         </a>
-        <time data-waktu-real-time datetime="{{ now()->toIso8601String() }}" class="hidden text-right text-xs text-white/85 lg:block" aria-label="Hari, tanggal, dan waktu terkini">
-            {{ now()->timezone('Asia/Jakarta')->locale('id')->translatedFormat('l, d F Y H:i:s') }}
-        </time>
-        <div class="hidden sm:block text-right leading-tight">
-            <div class="text-sm font-semibold truncate max-w-48">{{ $namaUser }}</div>
-            <div class="text-xs text-white/80">{{ $labelRole }}</div>
+        <div class="hidden text-right leading-tight sm:block">
+            <div class="max-w-48 truncate text-sm font-semibold">{{ $namaUser }}</div>
+            <div class="text-xs text-white/75">{{ $labelRole }}</div>
         </div>
-        <div class="w-10 h-10 rounded-full bg-white text-flame grid place-items-center font-serif font-bold shadow">
+        <div class="grid size-10 place-items-center rounded-full bg-white font-serif font-bold text-navy shadow">
             {{ mb_strtoupper(mb_substr($namaUser, 0, 1)) }}
         </div>
+        </div>
+    </div>
     </div>
 </header>
 
@@ -109,15 +112,15 @@
 
 <div class="lg:flex">
     {{-- SIDEBAR --}}
-    <aside id="sb" class="fixed inset-y-0 left-0 z-50 w-72 flex flex-col bg-white border-r border-line
+    <aside id="sb" class="fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-white/10 bg-navy
                           -translate-x-full transition-transform duration-200
                           lg:translate-x-0 lg:sticky lg:top-16 lg:z-20 lg:w-64 lg:h-[calc(100vh-4rem)] lg:self-start lg:shrink-0">
-        <div class="lg:hidden flex items-center justify-between h-16 px-4 border-b border-line">
+        <div class="flex h-16 items-center justify-between border-b border-white/10 px-4 lg:hidden">
             <div class="flex items-center gap-2 min-w-0">
-                <x-logo size="w-9 h-9" class="!bg-tint" />
-                <span class="font-serif font-semibold text-navy truncate">{{ config('sekolah.singkat') }}</span>
+                <x-logo size="w-9 h-9" />
+                <span class="truncate font-serif font-semibold text-white">{{ config('sekolah.singkat') }}</span>
             </div>
-            <button id="sbClose" type="button" aria-label="Tutup menu" class="p-2 rounded-lg text-mute hover:bg-paper cursor-pointer">
+            <button id="sbClose" type="button" aria-label="Tutup menu" class="rounded-lg p-2 text-white/75 hover:bg-white/10 cursor-pointer">
                 <x-icon name="close" />
             </button>
         </div>
@@ -125,14 +128,14 @@
         <nav id="sbNav" class="flex-1 overflow-y-auto px-3 py-4">
             @foreach ($menu as [$judul, $items])
                 <div class="mt-5 first:mt-0">
-                    <div class="px-3 mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-mute/70">{{ $judul }}</div>
+                    <div class="mb-1.5 px-3 text-[11px] font-semibold uppercase tracking-wider text-white/55">{{ $judul }}</div>
                     @foreach ($items as [$label, $route])
                         @php $aktif = request()->routeIs($route.'*'); @endphp
                         <a href="{{ route($route) }}"
-                           class="group flex items-center gap-3 px-2.5 py-2 rounded-xl text-sm transition
-                                  {{ $aktif ? 'bg-tint text-navy font-semibold' : 'font-medium text-ink/80 hover:bg-paper hover:text-navy' }}">
-                            <span class="grid place-items-center w-9 h-9 shrink-0 rounded-lg transition
-                                         {{ $aktif ? 'bg-flame text-white shadow-sm' : 'bg-tint text-flame group-hover:bg-flame group-hover:text-white' }}">
+                           class="group flex items-center gap-3 rounded-xl border border-transparent px-2.5 py-2 text-sm transition
+                                  {{ $aktif ? 'border-white/15 bg-white/15 font-semibold text-white' : 'font-medium text-white/80 hover:bg-white/10 hover:text-white' }}">
+                            <span class="grid size-9 shrink-0 place-items-center rounded-lg transition
+                                         {{ $aktif ? 'bg-white/15 text-white shadow-sm' : 'bg-white/10 text-sky group-hover:bg-white/15 group-hover:text-white' }}">
                                 <x-icon :name="$ikon[$route] ?? 'dot'" size="w-5 h-5" />
                             </span>
                             <span class="truncate">{{ $label }}</span>
@@ -142,9 +145,9 @@
             @endforeach
         </nav>
 
-        <div class="p-3 border-t border-line">
+        <div class="border-t border-white/10 p-3">
             <form method="POST" action="{{ route('logout') }}">@csrf
-                <button class="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-semibold text-bad bg-bad/5 hover:bg-bad/10 cursor-pointer transition">
+                <button class="flex w-full items-center justify-center gap-2 rounded-xl bg-white/10 px-3 py-2.5 text-sm font-semibold text-white hover:bg-white/15 cursor-pointer transition">
                     <x-icon name="logout" size="w-4 h-4" /> Keluar
                 </button>
             </form>
