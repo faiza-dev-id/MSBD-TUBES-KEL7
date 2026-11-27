@@ -5,7 +5,7 @@
 @section('sub', 'Ringkasan aktivitas pengguna dengan bahasa sederhana.')
 
 @section('content')
-<form method="GET" class="card mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-6 items-end">
+<form method="GET" class="card mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 items-end">
     <div>
         <label class="label">Pengubah</label>
         <input class="input" name="cari" value="{{ $f['cari'] ?? '' }}" placeholder="Username">
@@ -41,7 +41,7 @@
         <input class="input" type="date" name="sampai" value="{{ $f['sampai'] ?? '' }}">
     </div>
 
-    <div class="flex gap-2 sm:col-span-2 lg:col-span-1">
+    <div class="flex gap-2">
         <button class="btn btn-flame flex-1 whitespace-nowrap">Terapkan</button>
         <a href="{{ route('admin.audit') }}" class="btn btn-ghost flex-1 whitespace-nowrap">Reset</a>
     </div>

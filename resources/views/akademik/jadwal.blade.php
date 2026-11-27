@@ -16,17 +16,17 @@
         && count($mapel) > 0;
 @endphp
 
-<div class="space-y-2 mb-4">
-    <div class="rounded-lg border border-warn/40 bg-warn/10 px-4 py-3 text-sm text-warn">
+<div class="space-y-3 mb-4">
+    <div class="card bg-white !border-warn/40 text-sm text-warn">
         <b>Petunjuk:</b> Isi mata pelajaran pada jam yang ditentukan (1-8). Untuk jam istirahat tidak perlu diisi. Guru mata pelajaran bersifat opsional (jika dikosongkan otomatis memakai wali kelas).
     </div>
     @if (!$mapel)
-        <div class="rounded-lg border border-warn/40 bg-warn/10 px-4 py-3 text-sm text-warn">
+        <div class="card bg-white !border-warn/40 text-sm text-warn">
             Belum ada mata pelajaran aktif. <a href="{{ route('akademik.konfigurasi', 'mapel') }}" class="font-semibold underline">Tambahkan mata pelajaran</a> terlebih dahulu agar jadwal bisa disimpan.
         </div>
     @endif
     @if (!$guru)
-        <div class="rounded-lg border border-warn/40 bg-warn/10 px-4 py-3 text-sm text-warn">
+        <div class="card bg-white !border-warn/40 text-sm text-warn">
             Belum ada data guru pada sistem. Nama guru mata pelajaran tetap bisa diisi manual saat menyimpan jadwal.
         </div>
     @endif

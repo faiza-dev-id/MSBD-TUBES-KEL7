@@ -4,9 +4,9 @@
 @section('sub', 'Pantau siapa yang sudah mengonfirmasi atau mengajukan perubahan selama periode update.')
 @section('content')
 @if (!($semester ?? null))
-    <div class="mb-4 rounded-xl border border-warn/40 bg-warn/10 px-4 py-3 text-sm text-warn">Belum ada semester aktif.</div>
+    <div class="card bg-white !border-warn/40 text-sm text-warn">Belum ada semester aktif.</div>
 @elseif (empty($kelasWali))
-    <div class="mb-4 rounded-xl border border-line bg-surface px-4 py-3 text-sm text-mute">Kamu tidak menjadi wali kelas pada semester aktif.</div>
+    <div class="card bg-white text-sm text-mute">Kamu tidak menjadi wali kelas pada semester aktif.</div>
 @else
     @if (count($kelasWali) > 1)
         <form method="GET" class="mb-4 flex items-end gap-2">
@@ -35,7 +35,7 @@
     @endphp
 
     @if (!($periode ?? null))
-        <div class="mb-4 rounded-xl border border-line bg-surface px-4 py-3 text-sm text-mute">Tidak ada periode update yang sedang aktif, sehingga status konfirmasi belum dapat ditampilkan.</div>
+        <div class="card mb-4 bg-white text-sm text-mute">Tidak ada periode update yang sedang aktif, sehingga status konfirmasi belum dapat ditampilkan.</div>
     @endif
 
     <div class="grid grid-cols-3 gap-3 mb-6">

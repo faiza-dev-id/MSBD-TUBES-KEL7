@@ -46,22 +46,6 @@
                 >
                     @csrf
 
-                    {{-- Pesan sukses --}}
-                    @if (session('success'))
-                        <div class="mb-4 rounded-xl border border-green-500/40 bg-green-50 px-4 py-3 text-sm text-green-700">
-                            {{ session('success') }}
-                        </div>
-                    @endif
-
-                    {{-- Error validasi umum --}}
-                    @if ($errors->any())
-                        <div class="mb-4 rounded-xl border border-bad/40 bg-bad/10 px-4 py-3 text-sm text-bad">
-                            @foreach ($errors->all() as $error)
-                                <p>{{ $error }}</p>
-                            @endforeach
-                        </div>
-                    @endif
-
                     <div class="space-y-4">
 
                         {{-- Username --}}

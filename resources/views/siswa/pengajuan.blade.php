@@ -9,7 +9,7 @@
     </div>
 @else
 @if (! $periode['dibuka'])
-    <div class="mb-4 rounded-xl border border-warn/40 bg-warn/10 px-4 py-3 text-sm text-warn">Periode update data sedang ditutup. Kamu belum bisa mengirim pengajuan baru, tapi status pengajuan sebelumnya tetap bisa dilihat.</div>
+    <div class="card mb-4 bg-white !border-warn/40 text-sm text-warn">Periode update data sedang ditutup. Kamu belum bisa mengirim pengajuan baru, tapi status pengajuan sebelumnya tetap bisa dilihat.</div>
 @endif
 <div class="grid lg:grid-cols-[1.2fr_1fr] gap-4 items-start">
     <form class="card space-y-4 {{ $periode['dibuka'] ? '' : 'opacity-50' }}" method="POST" action="{{ route('siswa.pengajuan.simpan') }}" enctype="multipart/form-data" data-validasi data-form-pengajuan @if (! $periode['dibuka']) inert @endif>

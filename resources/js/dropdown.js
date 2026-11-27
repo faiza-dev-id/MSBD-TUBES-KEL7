@@ -47,11 +47,7 @@ function pasang(sel) {
 
         const opsi = Array.from(sel.options);
         const panel = document.createElement('div');
-<<<<<<< HEAD
         panel.className = 'dd-panel fixed z-[70] rounded-xl border border-line bg-white shadow-xl shadow-navy/15 overflow-hidden overscroll-contain';
-=======
-        panel.className = 'dd-panel fixed z-[70] rounded-xl border border-line bg-white shadow-xl shadow-navy/15 overflow-hidden';
->>>>>>> 6a24c13d92434dd542b0eb33d68cae8f3cf6c622
         panel.setAttribute('data-lenis-prevent', '');
 
         let cari = null;

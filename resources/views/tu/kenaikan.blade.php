@@ -48,7 +48,7 @@
     @endphp
 
     @if (!empty($rencana['peringatan']))
-        <div class="mb-4 rounded-2xl border border-sun/40 bg-sun/10 px-4 py-3 text-sm text-sun-dark" role="status">
+        <div class="card mb-4 bg-white !border-sun/50 text-sm text-sun-dark" role="status">
             <ul class="list-disc pl-5 space-y-1">
                 @foreach ($rencana['peringatan'] as $p)
                     <li>{{ $p }}</li>

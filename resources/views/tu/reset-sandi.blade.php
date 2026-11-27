@@ -4,7 +4,7 @@
 @section('sub', 'Hanya untuk akun Siswa, Guru, dan Wali Kelas. Sandi sementara tampil satu kali, serahkan langsung ke pemilik akun.')
 @section('content')
 @if (isset($hasil))
-    <div class="mb-4 rounded-xl border border-ok/40 bg-ok/10 px-4 py-3 text-sm text-ok">
+    <div class="card mb-4 bg-white !border-ok/40 text-sm text-ok">
         Sandi sementara untuk <b>{{ $hasil['nama'] }}</b> ({{ $hasil['username'] }}):
         <span class="font-mono text-base font-bold select-all">{{ $hasil['sandi'] }}</span><br>
         <span class="text-xs">Tampil sekali saja dan tidak disimpan. Minta pemiliknya segera menggantinya lewat menu Ganti Sandi.</span>

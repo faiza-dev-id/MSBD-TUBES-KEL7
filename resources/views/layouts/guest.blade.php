@@ -10,5 +10,6 @@
 </head>
 <body class="theme-background min-h-screen" style="--theme-foto: url('{{ asset('images/sekolah.jpeg') }}')">
     @yield('content')
+    <x-toast-notification />
 </body>
 </html>

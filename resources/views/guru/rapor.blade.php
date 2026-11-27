@@ -103,7 +103,7 @@
                 </form>
             @endif
         @else
-            <div class="card border-ok/30 bg-ok/5 text-sm text-ok" role="status">
+            <div class="card bg-white !border-ok/30 text-sm text-ok" role="status">
                 Rapor sudah dikunci. Perubahan nilai ditolak.
             </div>
         @endif

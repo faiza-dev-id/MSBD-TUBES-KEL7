@@ -4,9 +4,9 @@
 @section('sub', 'Periksa perubahan data siswa di kelas yang kamu walikan, lalu setujui atau tolak pengajuan.')
 @section('content')
 @if (!($semester ?? null))
-    <div class="mb-4 rounded-xl border border-warn/40 bg-warn/10 px-4 py-3 text-sm text-warn">Belum ada semester aktif.</div>
+    <div class="card bg-white !border-warn/40 text-sm text-warn">Belum ada semester aktif.</div>
 @elseif (empty($kelasWali))
-    <div class="mb-4 rounded-xl border border-line bg-surface px-4 py-3 text-sm text-mute">Kamu tidak menjadi wali kelas pada semester aktif.</div>
+    <div class="card bg-white text-sm text-mute">Kamu tidak menjadi wali kelas pada semester aktif.</div>
 @else
     @if (count($kelasWali) > 1)
         <form method="GET" class="mb-4 flex items-end gap-2">

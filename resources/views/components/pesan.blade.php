@@ -1,9 +1,3 @@
-@if (session('success'))
-    <div class="mb-4 rounded-xl border border-ok/40 bg-ok/10 px-4 py-3 text-sm text-ok" role="status">{{ session('success') }}</div>
-@endif
-@if (session('error') || session('galat'))
-    <div class="mb-4 rounded-xl border border-bad/40 bg-bad/10 px-4 py-3 text-sm text-bad" role="alert">{{ session('error') ?? session('galat') }}</div>
-@endif
 @if ($errors->any())
     <div class="mb-4 rounded-xl border border-bad/40 bg-bad/10 px-4 py-3 text-sm text-bad" role="alert">
         <b>Periksa kembali isianmu:</b>
