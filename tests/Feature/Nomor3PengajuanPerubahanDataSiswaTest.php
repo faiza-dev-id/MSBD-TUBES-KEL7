@@ -614,6 +614,25 @@ class Nomor3PengajuanPerubahanDataSiswaTest extends TestCase
         $this->assertNull(DB::table('siswa')->where('id_siswa', 1)->value('nik'));
     }
 
+    public function test_jenis_kelamin_tidak_dapat_diajukan_melalui_form_siswa(): void
+    {
+        DB::table('ref_field_data')->where('id_field', 3)->update(['boleh_diubah_siswa' => true]);
+
+        $this->from(route('siswa.pengajuan'))
+            ->withSession([
+                'id_pengguna' => 10,
+                'username' => 'siswaA',
+                'role' => 'siswa',
+                'nama' => 'Siswa A',
+            ])->post(route('siswa.pengajuan.simpan'), [
+                'id_field' => 3,
+                'nilai_baru' => 'P',
+            ])->assertRedirect(route('siswa.pengajuan'))
+            ->assertSessionHasErrors(['id_field' => 'Jenis kelamin tidak dapat diajukan untuk diubah.']);
+
+        $this->assertDatabaseCount('pengajuan_perubahan', 0);
+    }
+
     public function test_field_yang_tidak_diizinkan_atau_tidak_boleh_diubah_ditolak(): void
     {
         $this->expectException(ValidationException::class);

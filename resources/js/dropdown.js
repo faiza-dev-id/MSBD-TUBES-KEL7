@@ -48,6 +48,7 @@ function pasang(sel) {
         const opsi = Array.from(sel.options);
         const panel = document.createElement('div');
         panel.className = 'dd-panel fixed z-[70] rounded-xl border border-line bg-white shadow-xl shadow-navy/15 overflow-hidden';
+        panel.setAttribute('data-lenis-prevent', '');
 
         let cari = null;
         if (opsi.length > 8) {
@@ -63,6 +64,7 @@ function pasang(sel) {
         const ul = document.createElement('ul');
         ul.className = 'max-h-60 overflow-y-auto p-1';
         ul.setAttribute('role', 'listbox');
+        ul.setAttribute('data-lenis-prevent', '');
         panel.appendChild(ul);
 
         let daftar = [], aktif = -1;
