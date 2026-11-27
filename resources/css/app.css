@@ -9,8 +9,8 @@
     --font-sans: 'Public Sans', ui-sans-serif, system-ui, sans-serif;
     --font-serif: 'Poppins', 'Public Sans', ui-sans-serif, system-ui, sans-serif; /* dipakai untuk judul */
 
-    --color-navy: #090e68;        /* biru tua: judul, panel gelap */
-    --color-navy-soft: #151f85;   /* biru tua lebih terang */
+    --color-navy: #143354;        /* biru tua: judul, panel gelap */
+    --color-navy-soft: #1E4976;   /* biru tua lebih terang */
     --color-flame: #2469ce;       /* biru utama: tombol, menu aktif */
     --color-flame-dark: #1b52a7;  /* biru utama saat hover */
     --color-sky: #71b3f4;         /* biru muda: aksen */

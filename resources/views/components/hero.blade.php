@@ -2,8 +2,8 @@
      <x-hero judul="..." sub="..."> <a class="btn ...">...</a> </x-hero>   warna: blue (biasa) atau abu (tidak aktif) --}}
 @props(['judul', 'sub' => null, 'warna' => 'blue', 'gambar' => null])
 @php
-    $bg = ['blue' => 'from-navy via-flame to-sky shadow-flame/25', 'abu' => 'from-slate-700 via-slate-500 to-slate-400 shadow-slate-500/20'][$warna] ?? 'from-navy via-flame to-sky';
-    $latar = $gambar ? 'bg-navy shadow-navy/25' : "bg-linear-to-br $bg";
+    $bg = ['blue' => 'from-[#143354] to-[#1E4976] shadow-flame/25', 'abu' => 'from-slate-700 via-slate-500 to-slate-400 shadow-slate-500/20'][$warna] ?? 'from-[#143354] to-[#1E4976]';
+    $latar = $gambar ? 'bg-[#143354] shadow-navy/25' : "bg-gradient-to-r $bg";
 @endphp
 <section {{ $attributes->merge(['class' => "relative mb-6 overflow-hidden rounded-3xl p-6 text-white shadow-lg sm:p-8 $latar"]) }}>
     @if ($gambar)

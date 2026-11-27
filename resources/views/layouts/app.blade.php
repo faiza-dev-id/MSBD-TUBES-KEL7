@@ -70,7 +70,7 @@
 <body class="theme-background min-h-screen" style="--theme-foto: url('{{ asset('images/sekolah.jpeg') }}')">
 
 {{-- TOPBAR --}}
-<header class="sticky top-0 z-30 bg-navy text-white shadow-md">
+<header class="sticky top-0 z-30 bg-[#143354] text-white shadow-md">
     <div class="relative mx-auto flex h-16 max-w-[1920px] items-center gap-3 px-4 lg:px-6">
         <button id="sbBtn" type="button" aria-label="Buka menu" class="lg:hidden -ml-1 rounded-lg p-2 hover:bg-white/10 cursor-pointer">
             <x-icon name="menu" size="w-6 h-6" />
@@ -112,10 +112,10 @@
 
 <div class="lg:flex">
     {{-- SIDEBAR --}}
-    <aside id="sb" class="fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-white/10 bg-navy
+    <aside id="sb" class="fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-[#255485] bg-[#143354]
                           -translate-x-full transition-transform duration-200
                           lg:translate-x-0 lg:sticky lg:top-16 lg:z-20 lg:w-64 lg:h-[calc(100vh-4rem)] lg:self-start lg:shrink-0">
-        <div class="flex h-16 items-center justify-between border-b border-white/10 px-4 lg:hidden">
+        <div class="flex h-16 items-center justify-between border-b border-[#255485] px-4 lg:hidden">
             <div class="flex items-center gap-2 min-w-0">
                 <x-logo size="w-9 h-9" />
                 <span class="truncate font-serif font-semibold text-white">{{ config('sekolah.singkat') }}</span>
@@ -132,8 +132,8 @@
                     @foreach ($items as [$label, $route])
                         @php $aktif = request()->routeIs($route.'*'); @endphp
                         <a href="{{ route($route) }}"
-                           class="group flex items-center gap-3 rounded-xl border border-transparent px-2.5 py-2 text-sm transition
-                                  {{ $aktif ? 'border-white/15 bg-white/15 font-semibold text-white' : 'font-medium text-white/80 hover:bg-white/10 hover:text-white' }}">
+                           class="group flex items-center gap-3 rounded-xl border-l-4 border-transparent px-2.5 py-2 text-sm transition
+                                  {{ $aktif ? 'border-[#38BDF8] bg-[#1E4976] font-semibold text-white' : 'font-medium text-white/80 hover:bg-white/10 hover:text-white' }}">
                             <span class="grid size-9 shrink-0 place-items-center rounded-lg transition
                                          {{ $aktif ? 'bg-white/15 text-white shadow-sm' : 'bg-white/10 text-sky group-hover:bg-white/15 group-hover:text-white' }}">
                                 <x-icon :name="$ikon[$route] ?? 'dot'" size="w-5 h-5" />
@@ -145,9 +145,9 @@
             @endforeach
         </nav>
 
-        <div class="border-t border-white/10 p-3">
+        <div class="border-t border-[#255485] p-3">
             <form method="POST" action="{{ route('logout') }}">@csrf
-                <button class="flex w-full items-center justify-center gap-2 rounded-xl bg-white/10 px-3 py-2.5 text-sm font-semibold text-white hover:bg-white/15 cursor-pointer transition">
+                <button class="flex w-full items-center justify-center gap-2 rounded-xl bg-[#1E4976] px-3 py-2.5 text-sm font-semibold text-[#EF4444] hover:bg-[#255485] cursor-pointer transition">
                     <x-icon name="logout" size="w-4 h-4" /> Keluar
                 </button>
             </form>

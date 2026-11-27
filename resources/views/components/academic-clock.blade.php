@@ -3,7 +3,7 @@
     $now = now('Asia/Jakarta');
     $labelAkademik = collect([$context['semester'], $context['tahun_ajaran']])->filter()->implode(' · ');
 @endphp
-<div class="rounded-xl border border-white/15 bg-white/10 px-4 py-2 text-center shadow-inner backdrop-blur-sm">
+<div class="rounded-xl border border-[#255485] bg-[#1E4976] px-4 py-2 text-center shadow-inner backdrop-blur-sm">
     @if ($labelAkademik !== '')
         <div class="text-xs font-semibold tracking-wide text-white/90">{{ $labelAkademik }}</div>
     @endif
