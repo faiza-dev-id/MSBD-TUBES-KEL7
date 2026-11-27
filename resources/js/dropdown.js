@@ -47,7 +47,11 @@ function pasang(sel) {
 
         const opsi = Array.from(sel.options);
         const panel = document.createElement('div');
+<<<<<<< HEAD
         panel.className = 'dd-panel fixed z-[70] rounded-xl border border-line bg-white shadow-xl shadow-navy/15 overflow-hidden overscroll-contain';
+=======
+        panel.className = 'dd-panel fixed z-[70] rounded-xl border border-line bg-white shadow-xl shadow-navy/15 overflow-hidden';
+>>>>>>> 6a24c13d92434dd542b0eb33d68cae8f3cf6c622
         panel.setAttribute('data-lenis-prevent', '');
 
         let cari = null;
@@ -65,6 +69,7 @@ function pasang(sel) {
         ul.className = 'max-h-60 overflow-y-auto overscroll-contain p-1';
         ul.setAttribute('data-lenis-prevent', '');
         ul.setAttribute('role', 'listbox');
+        ul.setAttribute('data-lenis-prevent', '');
         panel.appendChild(ul);
 
         let daftar = [], aktif = -1;

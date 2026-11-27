@@ -71,10 +71,10 @@ class PageController extends Controller
     {
         $slides = [
             [
-                'awal' => 'Membangun Generasi',
-                'miring' => 'Unggul',
-                'akhir' => ', Mandiri & Berkarakter',
-                'deskripsi' => 'Portal informasi resmi sekolah: pendidikan modern yang memadukan keunggulan akademik, karakter, dan teknologi digital.',
+                'awal' => 'Gerbang PPDB',
+                'miring' => '& Layanan Data Siswa',
+                'akhir' => '',
+                'deskripsi' => 'Portal informasi resmi sekolah: pendaftaran peserta didik baru, cek status seleksi, dan layanan informasi akademik resmi SMA Methodist 2 Medan.',
                 'gambar' => $this->gambarPublik('images/sekolah.jpeg'),
                 'tombol' => [
                     ['label' => 'Daftar PPDB', 'url' => route('ppdb')],
@@ -357,6 +357,10 @@ class PageController extends Controller
         $fieldDapatDiubah = DB::table('ref_field_data')
             ->where('boleh_diubah_siswa', true)
             ->whereIn('nama_tabel', ['siswa', 'alamat_siswa', 'orang_tua_wali'])
+            ->where(function ($query) {
+                $query->where('nama_tabel', '!=', 'siswa')
+                    ->orWhere('nama_kolom', '!=', 'jenis_kelamin');
+            })
             ->orderBy('label_field')
             ->get(['id_field', 'nama_tabel', 'nama_kolom', 'label_field', 'perlu_bukti']);
 
@@ -2668,7 +2672,10 @@ class PageController extends Controller
             $query->where('pp.id_siswa', $idSiswa);
         }
 
-        return $query->get()->map(fn ($p) => $this->barisPengajuan($p))->all();
+        return $query->get()
+            ->reject(fn ($p) => in_array(strtolower((string) $p->nama_field), ['jenis_kelamin', 'jenis kelamin'], true))
+            ->map(fn ($p) => $this->barisPengajuan($p))
+            ->all();
     }
 
     private function barisPengajuan(object $p): array

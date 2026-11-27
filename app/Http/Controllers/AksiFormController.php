@@ -107,6 +107,10 @@ class AksiFormController extends Controller
             return $this->gagal('Data yang dipilih tidak dapat diajukan untuk diubah.', 'id_field');
         }
 
+        if ($field->nama_tabel === 'siswa' && $field->nama_kolom === 'jenis_kelamin') {
+            return $this->gagal('Jenis kelamin tidak dapat diajukan untuk diubah.', 'id_field');
+        }
+
         if (! in_array((string) $field->nama_tabel, ['siswa', 'alamat_siswa', 'orang_tua_wali'], true)) {
             return $this->gagal('Data yang dipilih tidak dapat diajukan untuk diubah.', 'id_field');
         }

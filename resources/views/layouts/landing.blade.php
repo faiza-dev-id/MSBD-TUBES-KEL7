@@ -8,7 +8,7 @@
     @fonts
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-screen bg-paper">
+<body class="theme-background min-h-screen bg-paper" style="--theme-foto: url('{{ asset('images/sekolah.jpeg') }}')">
 <x-public-header />
 
 <main>

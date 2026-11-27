@@ -97,6 +97,34 @@ nav[role="navigation"] p {
     color: var(--color-mute);
 }
 
+.theme-background {
+    background-color: var(--color-paper);
+    background-image:
+        linear-gradient(180deg, rgba(234, 241, 255, .86) 0%, rgba(243, 245, 250, .9) 60%, rgba(243, 245, 250, .95) 100%),
+        var(--theme-foto, none);
+    background-position: center, center;
+    background-size: cover, cover;
+    background-repeat: no-repeat, no-repeat;
+    background-attachment: scroll, scroll;
+}
+
+@media (min-width: 64rem) {
+    .theme-background {
+        background-attachment: fixed, fixed;
+    }
+}
+
+@media print {
+    .theme-background {
+        background-image: none !important;
+        background-color: #fff !important;
+        background-attachment: scroll !important;
+    }
+    [data-latar-foto] {
+        display: none !important;
+    }
+}
+
 /* Kartu muncul pelan satu per satu (otomatis nonaktif bila perangkat meminta gerak dikurangi) */
 @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 .rise { animation: rise .45s ease-out both; }
