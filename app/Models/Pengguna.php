@@ -48,6 +48,41 @@ class Pengguna extends User
         return $this->belongsTo(Role::class, 'id_role', 'id_role');
     }
 
+    /**
+     * Cari akun untuk login berdasarkan username, atau NISN untuk akun siswa.
+     */
+    public static function findForLogin(string $identitas): ?self
+    {
+        $identitas = trim($identitas);
+
+        if ($identitas === '') {
+            return null;
+        }
+
+        $user = static::with('role')
+            ->where('username', $identitas)
+            ->first();
+
+        if ($user) {
+            return $user;
+        }
+
+        $idPengguna = Siswa::query()
+            ->where('nisn', $identitas)
+            ->whereNotNull('id_pengguna')
+            ->value('id_pengguna');
+
+        if (! $idPengguna) {
+            return null;
+        }
+
+        $user = static::with('role')
+            ->where('id_pengguna', $idPengguna)
+            ->first();
+
+        return $user?->role?->kode() === 'siswa' ? $user : null;
+    }
+
     public function hasPermission(string $code): bool
     {
         $role = $this->role;

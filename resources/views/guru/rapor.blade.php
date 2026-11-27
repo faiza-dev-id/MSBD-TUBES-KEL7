@@ -76,6 +76,7 @@
                 @csrf
                 <input type="hidden" name="id_kelas" value="{{ $kelas['id'] }}">
                 <input type="hidden" name="id_mapel" value="{{ $idMapel }}">
+                <input type="hidden" name="id_siswa" value="{{ $idSiswaTerpilih }}">
 
                 <div class="grid gap-4 sm:grid-cols-3">
                     @foreach (['tugas' => 'Tugas', 'keterampilan' => 'Keterampilan', 'ujian' => 'Ujian'] as $jenis => $label)
@@ -99,6 +100,8 @@
                       data-konfirmasi="Rapor ini akan dikunci dan nilai tidak dapat diubah. Lanjutkan?">
                     @csrf
                     <input type="hidden" name="id_rapor" value="{{ $rapor->id_rapor }}">
+                    <input type="hidden" name="id_siswa" value="{{ $idSiswaTerpilih }}">
+                    <input type="hidden" name="id_mapel" value="{{ $idMapel }}">
                     <button class="btn bg-ok hover:bg-ok/90">Kunci rapor</button>
                 </form>
             @endif

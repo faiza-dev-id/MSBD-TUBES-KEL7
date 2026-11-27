@@ -579,8 +579,13 @@ class AksiFormController extends Controller
             );
         });
 
+        $redirectParams = array_filter([
+            'siswa' => $request->integer('id_siswa') ?: null,
+            'mapel' => $request->integer('id_mapel') ?: null,
+        ]);
+
         return redirect()
-            ->route('guru.rapor')
+            ->route('guru.rapor', $redirectParams)
             ->with('success', 'Rapor siswa berhasil dikunci.');
     }
 
@@ -593,6 +598,7 @@ class AksiFormController extends Controller
         $data = $request->validate([
             'id_kelas' => ['required', 'integer', 'exists:kelas,id_kelas'],
             'id_mapel' => ['required', 'integer', 'exists:mata_pelajaran,id_mata_pelajaran'],
+            'id_siswa' => ['nullable', 'integer', 'exists:siswa,id_siswa'],
             'nilai_mentah' => ['nullable', 'array'],
             'nilai_mentah.*.tugas' => ['nullable', 'numeric', 'min:1', 'max:100'],
             'nilai_mentah.*.keterampilan' => ['nullable', 'numeric', 'min:1', 'max:100'],
@@ -878,20 +884,33 @@ class AksiFormController extends Controller
             }
         });
 
+        $idSiswaRedirect = $data['id_siswa'] ?? null;
+
+        if (! $idSiswaRedirect) {
+            $kandidatSiswa = array_values(array_unique(array_merge(
+                array_map('intval', array_keys($nilaiRows)),
+                array_map('intval', array_keys($catatanRows)),
+            )));
+
+            if (count($kandidatSiswa) === 1 && $kandidatSiswa[0] > 0) {
+                $idSiswaRedirect = $kandidatSiswa[0];
+            }
+        }
+
+        $redirectParams = array_filter([
+            'kelas' => $data['id_kelas'],
+            'mapel' => $data['id_mapel'],
+            'siswa' => $idSiswaRedirect,
+        ]);
+
         if ($diproses === 0) {
             return redirect()
-                ->route('guru.rapor', [
-                    'kelas' => $data['id_kelas'],
-                    'mapel' => $data['id_mapel'],
-                ])
+                ->route('guru.rapor', $redirectParams)
                 ->with('success', 'Tidak ada nilai baru yang perlu disimpan.');
         }
 
         return redirect()
-            ->route('guru.rapor', [
-                'kelas' => $data['id_kelas'],
-                'mapel' => $data['id_mapel'],
-            ])
+            ->route('guru.rapor', $redirectParams)
             ->with('success', 'Nilai rapor berhasil disimpan untuk seluruh siswa.');
     }
 

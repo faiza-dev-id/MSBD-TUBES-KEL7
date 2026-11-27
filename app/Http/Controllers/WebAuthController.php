@@ -36,9 +36,7 @@ class WebAuthController extends Controller
                 ->withInput($request->only('username'));
         }
 
-        $user = Pengguna::with('role')
-            ->where('username', $data['username'])
-            ->first();
+        $user = Pengguna::findForLogin($data['username']);
 
         $role = $user?->role?->kode();
         $tujuan = match ($role) {

@@ -5,7 +5,7 @@
         ['label' => 'Cek Status', 'route' => 'ppdb.status', 'active' => 'ppdb.status*'],
     ];
 @endphp
-<header class="sticky top-0 z-40 bg-navy text-white shadow-md">
+<header class="sticky top-0 z-40 bg-[#143354] text-white shadow-md">
     <div class="relative mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 lg:px-8">
         <a href="{{ route('home') }}" class="flex min-w-0 items-center gap-3">
             <x-logo size="w-10 h-10" />
@@ -23,7 +23,7 @@
             @foreach ($menu as $item)
                 <a href="{{ route($item['route']) }}"
                    @if (request()->routeIs($item['active'])) aria-current="page" @endif
-                   class="rounded-lg px-3 py-2 transition {{ request()->routeIs($item['active']) ? 'bg-white/15 text-white' : 'text-white/80 hover:bg-white/10 hover:text-white' }}">
+                   class="rounded-lg px-3 py-2 transition {{ request()->routeIs($item['active']) ? 'bg-[#1E4976] text-white' : 'text-white/80 hover:bg-white/10 hover:text-white' }}">
                     {{ $item['label'] }}
                 </a>
             @endforeach
@@ -33,16 +33,16 @@
         </nav>
 
         <button type="button" id="burger"
-                class="ml-auto grid size-10 place-items-center rounded-lg border border-white/25 text-white md:hidden"
+                class="ml-auto grid size-10 place-items-center rounded-lg border border-[#255485] text-white md:hidden"
                 aria-label="Buka menu" aria-expanded="false" aria-controls="menu-mobile">
             <x-icon name="menu" size="w-5 h-5" />
         </button>
     </div>
 
-    <nav id="menu-mobile" class="hidden border-t border-white/15 bg-navy px-4 py-3 md:hidden" aria-label="Menu seluler">
+    <nav id="menu-mobile" class="hidden border-t border-[#255485] bg-[#143354] px-4 py-3 md:hidden" aria-label="Menu seluler">
         @foreach ($menu as $item)
             <a href="{{ route($item['route']) }}"
-               class="block rounded-lg px-3 py-2.5 text-sm font-medium {{ request()->routeIs($item['active']) ? 'bg-white/15 text-white' : 'text-white/80' }}">
+               class="block rounded-lg px-3 py-2.5 text-sm font-medium {{ request()->routeIs($item['active']) ? 'bg-[#1E4976] text-white' : 'text-white/80' }}">
                 {{ $item['label'] }}
             </a>
         @endforeach

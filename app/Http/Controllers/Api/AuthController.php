@@ -13,7 +13,7 @@ class AuthController extends Controller
     public function login(Request $r)
     {
         $d = $r->validate(['username' => 'required|string|max:100', 'password' => 'required|string|max:255', 'device_name' => 'required|string|max:100']);
-        $u = Pengguna::where('username', $d['username'])->first();
+        $u = Pengguna::findForLogin($d['username']);
         $ok = $u && $u->is_aktif && Hash::check($d['password'], $u->password_hash);
         LogLogin::create(['id_pengguna' => $u?->id_pengguna, 'username_dicoba' => $d['username'], 'berhasil' => (bool) $ok, 'ip_address' => $r->ip(), 'user_agent' => substr((string) $r->userAgent(), 0, 255), 'waktu' => now()]);
         if (! $ok) {
