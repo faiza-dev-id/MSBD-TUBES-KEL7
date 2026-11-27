@@ -14,7 +14,7 @@
 @endphp
 
 @section('content')
-<section data-slider class="relative isolate overflow-hidden bg-navy text-white"
+<section data-slider data-reveal-up class="relative isolate overflow-hidden bg-navy text-white"
          aria-roledescription="carousel" aria-label="Sorotan sekolah">
     <h1 class="sr-only">{{ config('sekolah.nama') }}</h1>
 
@@ -45,12 +45,12 @@
                             </span>
                         @endif
 
-                        <h2 class="font-serif text-3xl font-bold leading-[1.12] !text-white sm:text-4xl lg:text-5xl">
+                        <h2 data-reveal-words class="font-serif text-3xl font-bold leading-[1.12] !text-white sm:text-4xl lg:text-5xl">
                             {{ $s['awal'] }}
                             <em class="font-normal text-sky">{{ $s['miring'] }}</em>{{ $s['akhir'] }}
                         </h2>
 
-                        <p class="mt-5 max-w-lg text-sm leading-relaxed text-white/85 sm:text-base">{{ $s['deskripsi'] }}</p>
+                        <p data-reveal-up class="mt-5 max-w-lg text-sm leading-relaxed text-white/85 sm:text-base">{{ $s['deskripsi'] }}</p>
 
                         <div class="mt-7 flex flex-wrap gap-3">
                             @foreach ($s['tombol'] as $t)
@@ -89,7 +89,7 @@
     <div class="border-t border-white/10 bg-navy/90">
         <dl class="mx-auto flex max-w-7xl flex-wrap justify-center gap-x-12 gap-y-4 px-4 py-4 text-sm lg:px-8">
             @foreach ($statistik as $st)
-                <div class="flex w-[calc(50%-1.5rem)] items-center gap-3 text-white/90 sm:w-auto">
+                <div data-motion-card data-reveal-up class="flex w-[calc(50%-1.5rem)] items-center gap-3 text-white/90 sm:w-auto">
                     <svg class="size-5 shrink-0 text-sky" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="{{ $ikon[$st['ikon']] ?? $ikon['buku'] }}"/>
                     </svg>

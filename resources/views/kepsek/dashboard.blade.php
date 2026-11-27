@@ -15,11 +15,11 @@
 </x-hero>
 
 <div class="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-5">
-    <x-stat :angka="$stat['siswa_aktif'] ?? 0" label="Siswa aktif" ikon="users" warna="blue" />
-    <x-stat :angka="$stat['total_pendaftar'] ?? 0" label="Total pendaftar" ikon="idcard" warna="grape" />
-    <x-stat :angka="$stat['disahkan'] ?? 0" label="Sudah disahkan" ikon="check" warna="leaf" />
-    <x-stat :angka="($stat['kelengkapan'] ?? null) !== null ? $stat['kelengkapan'] . '%' : '—'" label="Kelengkapan data" ikon="trend" warna="sun" />
-    <x-stat :angka="($stat['rata_verifikasi'] ?? null) !== null ? $stat['rata_verifikasi'] . ' hari' : '—'" label="Rata-rata waktu verifikasi" ikon="clock" warna="coral" />
+    <x-stat :angka="$stat['siswa_aktif'] ?? 0" label="Siswa aktif" ikon="users" warna="blue" motion />
+    <x-stat :angka="$stat['total_pendaftar'] ?? 0" label="Total pendaftar" ikon="idcard" warna="grape" motion />
+    <x-stat :angka="$stat['disahkan'] ?? 0" label="Sudah disahkan" ikon="check" warna="leaf" motion />
+    <x-stat :angka="($stat['kelengkapan'] ?? null) !== null ? $stat['kelengkapan'] . '%' : '—'" label="Kelengkapan data" ikon="trend" warna="sun" motion />
+    <x-stat :angka="($stat['rata_verifikasi'] ?? null) !== null ? $stat['rata_verifikasi'] . ' hari' : '—'" label="Rata-rata waktu verifikasi" ikon="clock" warna="coral" motion />
 </div>
 
 <div class="grid items-start gap-4 lg:grid-cols-2">

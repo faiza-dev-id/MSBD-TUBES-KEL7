@@ -53,6 +53,16 @@
     .sec-title { @apply font-serif text-base font-semibold text-navy pb-3 mb-4 border-b border-line; }
 }
 
+.siakad-reveal-word {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: bottom;
+}
+
+.siakad-reveal-word > span {
+    display: inline-block;
+}
+
 input[type="password"]::-ms-reveal,
 input[type="password"]::-ms-clear,
 input[type="password"]::-webkit-credentials-auto-fill-button {

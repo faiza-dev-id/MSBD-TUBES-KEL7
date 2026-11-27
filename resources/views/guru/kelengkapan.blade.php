@@ -39,9 +39,9 @@
     @endif
 
     <div class="grid grid-cols-3 gap-3 mb-6">
-        <x-stat :angka="$hitung['konfirmasi'] ?? 0" label="Sudah konfirmasi" />
-        <x-stat :angka="($hitung['menunggu'] ?? 0) + ($hitung['disetujui'] ?? 0) + ($hitung['ditolak'] ?? 0) + ($hitung['ubah'] ?? 0)" label="Pengajuan perubahan" />
-        <x-stat :angka="$hitung['belum'] ?? 0" label="Belum merespons" />
+        <x-stat :angka="$hitung['konfirmasi'] ?? 0" label="Sudah konfirmasi" motion />
+        <x-stat :angka="($hitung['menunggu'] ?? 0) + ($hitung['disetujui'] ?? 0) + ($hitung['ditolak'] ?? 0) + ($hitung['ubah'] ?? 0)" label="Pengajuan perubahan" motion />
+        <x-stat :angka="$hitung['belum'] ?? 0" label="Belum merespons" motion />
     </div>
     <div class="card">
         <div class="flex items-center justify-between gap-3 flex-wrap mb-3">

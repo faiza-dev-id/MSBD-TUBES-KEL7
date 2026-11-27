@@ -1,6 +1,6 @@
 {{-- Kartu angka. Cukup <x-stat angka="18" label="Menunggu diperiksa" />: ikon dan warna dipilih otomatis dari label.
      Bisa diatur sendiri: ikon="clock" warna="sun" ket="naik 3 dari kemarin". Warna: blue, sun, leaf, coral, grape. --}}
-@props(['angka', 'label', 'ikon' => null, 'warna' => null, 'ket' => null])
+@props(['angka', 'label', 'ikon' => null, 'warna' => null, 'ket' => null, 'motion' => false])
 @php
     $tones = [
         'blue'  => ['bg-flame/10 text-flame',    'from-sky to-flame',      'bg-flame/10'],
@@ -22,7 +22,7 @@
         }
     }
 @endphp
-<div class="card card-hover rise relative overflow-hidden !p-4 sm:!p-5">
+<div @if ($motion) data-motion-card @endif class="card card-hover {{ $motion ? '' : 'rise' }} relative overflow-hidden !p-4 sm:!p-5">
     <div class="absolute -right-6 -top-6 size-24 rounded-full {{ $glow }}"></div>
     <div class="relative flex items-center gap-3 sm:gap-4">
         <div class="grid size-11 sm:size-12 shrink-0 place-items-center rounded-2xl {{ $tile }}">

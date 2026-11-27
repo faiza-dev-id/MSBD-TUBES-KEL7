@@ -52,6 +52,7 @@
         label="Kelas saat ini"
         ikon="home"
         warna="blue"
+        motion
     />
 
     <x-stat
@@ -59,6 +60,7 @@
         label="Status siswa"
         ikon="shield"
         warna="leaf"
+        motion
     />
 
     <x-stat
@@ -66,6 +68,7 @@
         label="Pengajuan menunggu"
         ikon="clock"
         warna="sun"
+        motion
     />
 </div>
 
@@ -76,6 +79,7 @@
         ket="Lihat data yang tercatat di sekolah"
         ikon="user"
         warna="blue"
+        motion
     />
 
     <x-tile
@@ -84,6 +88,7 @@
         ket="Ajukan perubahan beserta bukti"
         ikon="edit"
         warna="grape"
+        motion
     />
 
     <x-tile
@@ -92,6 +97,7 @@
         ket="Lihat hasil belajar per semester"
         ikon="book"
         warna="leaf"
+        motion
     />
 </div>
 

@@ -1,4 +1,9 @@
 import Alpine from 'alpinejs';
+import 'lenis/dist/lenis.css';
+import Lenis from 'lenis';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { animate, inView, hover, stagger } from 'motion';
 import './dropdown';
 import './validasi';
 
@@ -178,3 +183,133 @@ document.querySelectorAll('[data-jadwal-mode-switch]').forEach((switcher) => {
 
     pilihMode('harian');
 });
+
+gsap.registerPlugin(ScrollTrigger);
+
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function markInternalScrollAreas() {
+    document.querySelectorAll('[class*="overflow-"]').forEach((element) => {
+        if (!(element instanceof HTMLElement)) return;
+
+        const { overflowY } = window.getComputedStyle(element);
+        const canScrollVertically = ['auto', 'scroll'].includes(overflowY)
+            && element.scrollHeight > element.clientHeight;
+
+        if (canScrollVertically) {
+            element.setAttribute('data-lenis-prevent', '');
+        }
+    });
+
+    document.querySelectorAll('dialog, [role="dialog"], [data-modal-body]').forEach((element) => {
+        element.setAttribute('data-lenis-prevent', '');
+    });
+}
+
+function initGsapTextAndScrollReveals() {
+    document.querySelectorAll('[data-reveal-words]').forEach((heading) => {
+        const walker = document.createTreeWalker(heading, NodeFilter.SHOW_TEXT);
+        const textNodes = [];
+
+        while (walker.nextNode()) {
+            if (walker.currentNode.textContent.trim()) textNodes.push(walker.currentNode);
+        }
+
+        textNodes.forEach((textNode) => {
+            const fragment = document.createDocumentFragment();
+
+            textNode.textContent.split(/(\s+)/u).forEach((part) => {
+                if (!part) return;
+                if (/^\s+$/u.test(part)) {
+                    fragment.append(document.createTextNode(part));
+                    return;
+                }
+
+                const word = document.createElement('span');
+                word.className = 'siakad-reveal-word';
+                const content = document.createElement('span');
+                content.textContent = part;
+                word.append(content);
+                fragment.append(word);
+            });
+
+            textNode.replaceWith(fragment);
+        });
+
+        const words = heading.querySelectorAll('.siakad-reveal-word > span');
+        if (words.length === 0) return;
+
+        gsap.fromTo(words, { y: 22, opacity: 0 }, {
+            y: 0,
+            opacity: 1,
+            stagger: 0.045,
+            duration: 0.6,
+            ease: 'power3.out',
+            scrollTrigger: {
+                trigger: heading,
+                start: 'top 85%',
+                once: true,
+            },
+        });
+    });
+
+    ScrollTrigger.batch('[data-reveal-up]', {
+        start: 'top 88%',
+        once: true,
+        onEnter: (elements) => {
+            gsap.fromTo(elements, { y: 24, opacity: 0 }, {
+                y: 0,
+                opacity: 1,
+                stagger: 0.08,
+                duration: 0.55,
+                ease: 'power2.out',
+            });
+        },
+    });
+}
+
+const initializedMotionCards = new WeakSet();
+
+function initMotionCards() {
+    const cards = Array.from(document.querySelectorAll('[data-motion-card]'));
+
+    cards.forEach((card) => {
+        if (initializedMotionCards.has(card)) return;
+        initializedMotionCards.add(card);
+
+        const siblingCards = Array.from(card.parentElement?.querySelectorAll('[data-motion-card]') ?? []);
+        const cardIndex = siblingCards.indexOf(card);
+        const delay = stagger(0.05)(cardIndex, siblingCards.length);
+
+        inView(card, (element) => {
+            animate(element, { opacity: [0, 1], y: [16, 0] }, {
+                delay,
+                duration: 0.4,
+            });
+        }, { once: true });
+
+        hover(card, () => {
+            animate(card, { y: -3 }, { duration: 0.2 });
+            return () => animate(card, { y: 0 }, { duration: 0.2 });
+        });
+    });
+}
+
+window.refreshSiakadAnimations = () => {
+    if (prefersReducedMotion) return;
+    markInternalScrollAreas();
+    initMotionCards();
+    ScrollTrigger.refresh();
+};
+
+markInternalScrollAreas();
+
+if (!prefersReducedMotion) {
+    const lenis = new Lenis({ duration: 1.05, smoothWheel: true });
+    lenis.on('scroll', ScrollTrigger.update);
+    gsap.ticker.add((time) => lenis.raf(time * 1000));
+    gsap.ticker.lagSmoothing(0);
+
+    initGsapTextAndScrollReveals();
+    initMotionCards();
+}

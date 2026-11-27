@@ -16,15 +16,15 @@
 </x-hero>
 
 <div class="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
-    <x-stat :angka="$statistik['menunggu']" label="Menunggu diperiksa" ikon="clock" warna="sun" />
-    <x-stat :angka="$statistik['perlu_perbaikan']" label="Perlu diperbaiki" ikon="edit" warna="coral" />
-    <x-stat :angka="$statistik['disahkan']" label="Disahkan" ikon="check" warna="leaf" />
-    <x-stat :angka="$statistik['pengajuan']" label="Pengajuan ubah data" ikon="file" warna="blue" />
+    <x-stat :angka="$statistik['menunggu']" label="Menunggu diperiksa" ikon="clock" warna="sun" motion />
+    <x-stat :angka="$statistik['perlu_perbaikan']" label="Perlu diperbaiki" ikon="edit" warna="coral" motion />
+    <x-stat :angka="$statistik['disahkan']" label="Disahkan" ikon="check" warna="leaf" motion />
+    <x-stat :angka="$statistik['pengajuan']" label="Pengajuan ubah data" ikon="file" warna="blue" motion />
 </div>
 
 <div class="mb-6 grid gap-3 sm:grid-cols-3">
-    <x-tile :href="route('tu.siswa')" judul="Data Induk Siswa" ket="Cari dan lihat data siswa" ikon="users" warna="blue" />
-    <x-tile :href="route('tu.periode')" judul="Periode Update" ket="Buka atau tutup update tahunan" ikon="calendar" warna="sun" />
+    <x-tile :href="route('tu.siswa')" judul="Data Induk Siswa" ket="Cari dan lihat data siswa" ikon="users" warna="blue" motion />
+    <x-tile :href="route('tu.periode')" judul="Periode Update" ket="Buka atau tutup update tahunan" ikon="calendar" warna="sun" motion />
 </div>
 
 <div class="card mb-4">
