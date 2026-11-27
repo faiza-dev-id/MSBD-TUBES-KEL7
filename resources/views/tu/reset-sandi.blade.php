@@ -11,9 +11,8 @@
     </div>
 @endif
 <div class="card">
-    <form method="GET" action="{{ route('tu.reset') }}" class="mb-3 flex flex-wrap gap-2">
+    <form method="GET" action="{{ route('tu.reset') }}" class="mb-3 flex flex-wrap gap-2" data-auto-filter>
         <input name="cari" value="{{ $cari }}" class="input !w-64" placeholder="Cari nama / username">
-        <button class="btn btn-flame">Cari</button>
         @if ($cari !== '') <a href="{{ route('tu.reset') }}" class="btn btn-ghost">Reset</a> @endif
     </form>
     <div class="overflow-x-auto">

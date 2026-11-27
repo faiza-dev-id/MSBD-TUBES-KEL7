@@ -1,5 +1,5 @@
 @props(['action', 'filter'])
-<form method="GET" action="{{ $action }}" class="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
+<form method="GET" action="{{ $action }}" class="mb-4 grid gap-3 sm:grid-cols-2" data-auto-filter>
     <div class="min-w-0">
         <label class="label" for="filter-tingkat">Tingkat</label>
         <select class="input" id="filter-tingkat" name="tingkat">
@@ -16,8 +16,5 @@
                 <option value="{{ $opsi }}" @selected($filter['jurusan'] === $opsi)>{{ $opsi }}</option>
             @endforeach
         </select>
-    </div>
-    <div class="flex items-end">
-        <button type="submit" class="btn btn-ghost w-full sm:w-auto">Terapkan</button>
     </div>
 </form>

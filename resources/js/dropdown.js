@@ -19,6 +19,11 @@ function pasang(sel) {
         + ' disabled:bg-paper disabled:text-mute/70 disabled:cursor-not-allowed';
     btn.setAttribute('aria-haspopup', 'listbox');
     btn.setAttribute('aria-expanded', 'false');
+    // Dipakai auto-filter.js untuk mengembalikan fokus ke tombol dropdown setelah
+    // halaman dimuat ulang oleh filter GET. Hanya untuk form filter bertanda.
+    if (sel.closest('form[data-auto-filter]') && (sel.name || sel.id)) {
+        btn.dataset.autoFilterFocus = sel.name || sel.id;
+    }
     const teks = document.createElement('span');
     teks.className = 'truncate';
     btn.appendChild(teks);
@@ -78,6 +83,10 @@ function pasang(sel) {
         }
         function pilih(o) {
             sel.value = o.value;
+            // <select> aslinya tetap menjadi sumber kebenaran form. Event change yang
+            // bubbles ini yang ditangkap auto-filter.js pada form GET berpenanda,
+            // sehingga memilih opsi langsung menerapkan filter. Form POST/Cari lain
+            // tidak memakai penanda itu dan tidak ikut terkirim.
             sel.dispatchEvent(new Event('input', { bubbles: true }));
             sel.dispatchEvent(new Event('change', { bubbles: true }));
             tutup();

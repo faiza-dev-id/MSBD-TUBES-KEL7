@@ -144,9 +144,17 @@
             @endif
 
             @if ($m['ada_lampiran'])
-                <a class="mt-3 inline-flex text-sm font-semibold text-flame-dark hover:underline" href="{{ route($lampiranRoute, $m['id']) }}">
+                @php
+                    $namaLampiran = $m['nama_lampiran'] ?: 'Lampiran mutasi';
+                    $tipeLampiran = strtolower(pathinfo($namaLampiran, PATHINFO_EXTENSION)) === 'pdf' ? 'pdf' : 'gambar';
+                    $urlLampiran = route($lampiranRoute, $m['id']);
+                    $urlUnduhLampiran = route($lampiranRoute, ['id' => $m['id'], 'download' => 1]);
+                @endphp
+                <button type="button"
+                        class="mt-3 inline-flex text-sm font-semibold text-flame-dark hover:underline cursor-pointer"
+                        @click='$dispatch("preview-berkas", { url: @json($urlLampiran), unduhUrl: @json($urlUnduhLampiran), nama: @json($namaLampiran), jenis: @json("Lampiran mutasi"), tipe: @json($tipeLampiran) })'>
                     Lihat lampiran{{ $m['nama_lampiran'] ? ': '.$m['nama_lampiran'] : '' }}
-                </a>
+                </button>
             @endif
 
             @if ($m['bisa_revisi'])

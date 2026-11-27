@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title', 'Meja TU')
 @section('heading', 'Meja Tata Usaha')
-@section('sub', 'Periksa berkas PPDB dan pantau kelengkapan data. Nyaman dibuka dari HP.')
+@section('sub', 'Periksa berkas PPDB dan pantau kelengkapan data.')
 @section('content')
 @php
     $pertama = collect($antrean)->firstWhere('status', 'menunggu');

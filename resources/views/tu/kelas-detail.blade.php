@@ -7,16 +7,15 @@
     <div class="card text-sm text-mute">Belum ada semester.</div>
 @else
 <div class="card">
-    <form method="GET" class="flex items-end justify-between gap-3 flex-wrap mb-3">
+    <form method="GET" class="flex items-end justify-between gap-3 flex-wrap mb-3" data-auto-filter>
         <div class="flex items-end gap-3 flex-wrap">
             <div><label class="label" for="semester">Semester</label>
-                <select class="input" id="semester" name="semester" onchange="this.form.submit()">
+                <select class="input" id="semester" name="semester">
                     @foreach ($semesters as $s)
                         <option value="{{ $s->id_semester }}" @selected($s->id_semester === $sem->id_semester)>{{ $s->nama_semester }} {{ $s->nama_tahun_ajaran }}{{ $s->is_aktif ? ' (aktif)' : '' }}</option>
                     @endforeach
                 </select></div>
             <input class="input !w-56" name="cari" value="{{ $cari }}" placeholder="Cari nama / NISN">
-            <button class="btn btn-flame">Cari</button>
         </div>
         <a class="btn btn-ghost" href="{{ route('tu.kelas.unduh', ['id' => $kelas->id_kelas, 'semester' => $sem->id_semester]) }}">Unduh daftar (CSV)</a>
     </form>

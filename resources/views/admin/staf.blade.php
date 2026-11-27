@@ -3,10 +3,9 @@
 @section('heading', 'Data Wali Kelas dan Staf')
 @section('sub', 'Data pegawai sekolah. Untuk mengubah data atau membuat akun, gunakan menu Pengguna.')
 @section('content')
-<form method="GET" class="card mb-4 flex flex-wrap items-end gap-3">
+<form method="GET" class="card mb-4 flex flex-wrap items-end gap-3" data-auto-filter>
     <div><label class="label">Cari</label>
         <input class="input !w-64" name="cari" value="{{ $cari }}" placeholder="Nama, NIP/jabatan, atau username"></div>
-    <button class="btn btn-flame">Cari</button>
     @if ($cari !== '') <a href="{{ route('admin.staf') }}" class="btn btn-ghost">Reset</a> @endif
 </form>
 <div class="space-y-4">

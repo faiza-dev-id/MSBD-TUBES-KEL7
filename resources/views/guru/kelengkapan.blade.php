@@ -9,7 +9,7 @@
     <div class="card bg-white text-sm text-mute">Kamu tidak menjadi wali kelas pada semester aktif.</div>
 @else
     @if (count($kelasWali) > 1)
-        <form method="GET" class="mb-4 flex items-end gap-2">
+        <form method="GET" class="mb-4 flex items-end gap-2" data-auto-filter>
             <div>
                 <label class="label" for="kelas">Kelas</label>
                 <select class="input !w-56" id="kelas" name="kelas">
@@ -18,7 +18,7 @@
                     @endforeach
                 </select>
             </div>
-            <button class="btn btn-ghost">Tampilkan</button>
+            <a href="{{ route('guru.kelengkapan') }}" class="btn btn-ghost">Reset</a>
         </form>
     @endif
 

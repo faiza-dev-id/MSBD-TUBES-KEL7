@@ -9,16 +9,27 @@
     <div class="card">
         <h2 class="sec-title">Dokumen tercatat</h2>
         @forelse ($dokumen as $d)
+            @php
+                $urlPreview = route('tu.dokumen.preview', ['idDokumen' => $d['id_dokumen']]);
+                $urlUnduh = route('tu.dokumen.preview', ['idDokumen' => $d['id_dokumen'], 'download' => 1]);
+            @endphp
             <div class="flex flex-wrap items-center justify-between gap-3 border-b border-line py-3 text-sm last:border-0">
                 <div class="min-w-0">
                     <b>{{ $d['jenis'] }}</b> <span class="text-mute">· {{ $d['format'] }}, {{ $d['ukuran'] }}</span>
                     <div class="text-xs text-mute">No. {{ $d['nomor'] }} · diunggah {{ $d['tgl'] }} · {{ $d['fisik'] ? 'fisik sudah diterima' : 'fisik belum diterima' }}</div>
                 </div>
                 @if (! empty($d['id_dokumen']))
-                    <form method="POST" action="{{ route('tu.siswa.dokumen.nonaktif', [$id, $d['id_dokumen']]) }}" data-konfirmasi="Nonaktifkan dokumen {{ $d['jenis'] }}?">
-                        @csrf @method('PATCH')
-                        <button class="btn btn-ghost !py-1.5 !text-bad">Nonaktifkan</button>
-                    </form>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button type="button"
+                                class="text-xs font-semibold text-flame-dark hover:underline cursor-pointer"
+                                @click='$dispatch("preview-berkas", { url: @json($urlPreview), unduhUrl: @json($urlUnduh), nama: @json($d["nama"] ?: "Berkas"), jenis: @json($d["jenis"]), tipe: @json($d["tipe"]) })'>
+                            Lihat
+                        </button>
+                        <form method="POST" action="{{ route('tu.siswa.dokumen.nonaktif', [$id, $d['id_dokumen']]) }}" data-konfirmasi="Nonaktifkan dokumen {{ $d['jenis'] }}?">
+                            @csrf @method('PATCH')
+                            <button class="btn btn-ghost !py-1.5 !text-bad">Nonaktifkan</button>
+                        </form>
+                    </div>
                 @endif
             </div>
         @empty

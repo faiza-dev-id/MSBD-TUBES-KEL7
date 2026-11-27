@@ -8,16 +8,16 @@
         Kamu belum ditetapkan sebagai wali kelas pada semester aktif. Hubungi Tata Usaha untuk penugasan wali kelas.
     </div>
 @else
-    <form method="GET" class="card mb-4 flex flex-wrap items-end gap-3">
+    <form method="GET" class="card mb-4 flex flex-wrap items-end gap-3" data-auto-filter>
         <div>
             <label class="label" for="kelas">Kelas</label>
             <input class="input" id="kelas" type="text" value="{{ $kelas['nama'] }}" readonly>
         </div>
         <div>
             <label class="label" for="tanggal">Tanggal</label>
-            <input class="input" type="date" id="tanggal" name="tanggal" value="{{ $tanggal }}" onchange="this.form.submit()">
+            <input class="input" type="date" id="tanggal" name="tanggal" value="{{ $tanggal }}">
         </div>
-        <noscript><button class="btn btn-flame">Tampilkan</button></noscript>
+        <a href="{{ route('guru.absensi') }}" class="btn btn-ghost">Reset</a>
     </form>
 
     @if (!$siswa)

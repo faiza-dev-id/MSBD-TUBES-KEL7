@@ -3,7 +3,7 @@
 @section('heading', 'Kenaikan Kelas Massal')
 @section('sub', 'Naikkan seluruh kelas sekaligus. Kelas tujuan dipetakan otomatis berdasarkan tingkat, jurusan, dan rombel pada semester ganjil tahun ajaran berikutnya.')
 @section('content')
-<form method="GET" action="{{ route('tu.kenaikan') }}" class="card mb-4 flex flex-wrap items-end gap-3">
+<form method="GET" action="{{ route('tu.kenaikan') }}" class="card mb-4 flex flex-wrap items-end gap-3" data-auto-filter>
     <div>
         <label class="label" for="tahun_ajaran">Tahun ajaran asal</label>
         <select class="input" id="tahun_ajaran" name="tahun_ajaran">
@@ -30,7 +30,6 @@
             @endforeach
         </select>
     </div>
-    <button class="btn btn-flame" type="submit">Terapkan</button>
     <a class="btn btn-ghost" href="{{ route('tu.kenaikan') }}">Reset</a>
 </form>
 

@@ -1,5 +1,5 @@
 @php
-    $daftarHari = [1 => 'Senin', 2 => 'Selasa', 3 => 'Rabu', 4 => 'Kamis', 5 => 'Jumat', 6 => 'Sabtu', 7 => 'Minggu'];
+    $daftarHari = [1 => 'Senin', 2 => 'Selasa', 3 => 'Rabu', 4 => 'Kamis', 5 => 'Jumat'];
     $rowHari = (int) ($row['hari'] ?? 1);
     $rowMulai = $row['jam_mulai'] ?? '';
     $rowSelesai = $row['jam_selesai'] ?? '';

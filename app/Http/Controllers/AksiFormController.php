@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Guru;
 use App\Models\Siswa;
 use App\Rules\SafeUploadFile;
+use App\Services\BerkasPreviewService;
 use App\Services\KenaikanKelasService;
 use App\Services\PengajuanPerubahanService;
 use App\Services\PengaturanService;
 use App\Services\PpdbService;
+use App\Services\RaporService;
 use App\Support\AuditCatat;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
@@ -361,7 +363,11 @@ class AksiFormController extends Controller
 
     public function raporSimpan(Request $request)
     {
-        if ($request->has('nilai_mentah') || $request->has('catatan_siswa') || $request->has('status_siswa')) {
+        $nilaiInput = $request->input('nilai');
+        $nilaiMassal = is_array($nilaiInput)
+            && collect($nilaiInput)->contains(fn ($baris) => is_array($baris));
+
+        if ($nilaiMassal || $request->has('nilai_mentah') || $request->has('catatan_siswa') || $request->has('status_siswa')) {
             return $this->raporSimpanBulk($request);
         }
 
@@ -465,8 +471,9 @@ class AksiFormController extends Controller
         }
 
         $mapelForm = array_map('intval', array_keys($semuaNilai));
+        $raporService = app(RaporService::class);
 
-        DB::transaction(function () use ($data, $semester, $anggota, $terisi, $rataRata, $rekap, $mapelForm) {
+        DB::transaction(function () use ($data, $semester, $anggota, $terisi, $rataRata, $rekap, $mapelForm, $raporService) {
             $rapor = DB::table('rapor')
                 ->where('id_anggota', $anggota->id_keanggotaan)
                 ->where('id_semester', $semester->id_semester)
@@ -507,9 +514,11 @@ class AksiFormController extends Controller
                     ->orderByDesc('nilai_min')
                     ->value('id_predikat');
 
-                DB::table('detail_rapor')->updateOrInsert(
-                    ['id_rapor' => $idRapor, 'id_mapel' => $idMapel],
-                    ['id_predikat' => $idPredikat, 'nilai_akhir' => round($nilai, 2)]
+                $raporService->simpanDetailRapor(
+                    (int) $idRapor,
+                    (int) $idMapel,
+                    $idPredikat !== null ? (int) $idPredikat : null,
+                    (float) $nilai
                 );
             }
 
@@ -531,62 +540,82 @@ class AksiFormController extends Controller
     public function raporFinalisasi(Request $request)
     {
         $data = $request->validate([
-            'id_rapor' => ['required', 'integer', 'min:1'],
+            'id_rapor' => ['required'],
+            'id_rapor.*' => ['integer', 'min:1'],
+        ], [
+            'id_rapor.required' => 'Pilih rapor yang akan dikunci.',
+            'id_rapor.*.integer' => 'ID rapor tidak valid.',
+            'id_rapor.*.min' => 'ID rapor tidak valid.',
         ]);
+
+        $daftarIdRapor = collect(is_array($data['id_rapor']) ? $data['id_rapor'] : [$data['id_rapor']])
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn ($id) => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
+
+        if (! $daftarIdRapor) {
+            return $this->gagal('Pilih rapor yang akan dikunci.');
+        }
+
         $idGuru = Guru::where('id_pengguna', session('id_pengguna'))->value('id_guru');
 
         if (! $idGuru) {
             return $this->gagal('Akunmu belum terhubung ke data wali kelas. Hubungi Tata Usaha.');
         }
 
-        DB::transaction(function () use ($data, $idGuru) {
-            $rapor = DB::table('rapor as r')
-                ->join('keanggotaan_kelas as kk', 'kk.id_keanggotaan', '=', 'r.id_anggota')
-                ->where('r.id_rapor', $data['id_rapor'])
-                ->lock('FOR UPDATE OF r')
-                ->first([
-                    'r.id_rapor',
-                    'r.id_semester',
-                    'r.status_rapor',
-                    'kk.id_kelas',
-                ]);
+        $terkunci = 0;
 
-            abort_unless($rapor, 404);
-            abort_unless(
-                DB::table('penugasan_wali_kelas')
-                    ->where('id_guru', $idGuru)
-                    ->where('id_kelas', $rapor->id_kelas)
-                    ->where('id_semester', $rapor->id_semester)
-                    ->exists(),
-                403
-            );
+        DB::transaction(function () use ($daftarIdRapor, $idGuru, &$terkunci) {
+            foreach ($daftarIdRapor as $idRapor) {
+                $rapor = DB::table('rapor as r')
+                    ->join('keanggotaan_kelas as kk', 'kk.id_keanggotaan', '=', 'r.id_anggota')
+                    ->where('r.id_rapor', $idRapor)
+                    ->lock('FOR UPDATE OF r')
+                    ->first([
+                        'r.id_rapor',
+                        'r.id_semester',
+                        'r.status_rapor',
+                        'kk.id_kelas',
+                    ]);
 
-            if ($rapor->status_rapor === 'final') {
-                throw ValidationException::withMessages([
-                    'id_rapor' => 'Rapor ini sudah dikunci.',
-                ]);
+                abort_unless($rapor, 404);
+                abort_unless(
+                    DB::table('penugasan_wali_kelas')
+                        ->where('id_guru', $idGuru)
+                        ->where('id_kelas', $rapor->id_kelas)
+                        ->where('id_semester', $rapor->id_semester)
+                        ->exists(),
+                    403
+                );
+
+                if ($rapor->status_rapor === 'final') {
+                    continue;
+                }
+
+                if (! DB::table('detail_rapor')->where('id_rapor', $rapor->id_rapor)->exists()) {
+                    continue;
+                }
+
+                DB::statement(
+                    'CALL public.sp_finalisasi_rapor(?, ?)',
+                    [$rapor->id_rapor, 'final']
+                );
+
+                $terkunci++;
             }
-
-            if (! DB::table('detail_rapor')->where('id_rapor', $rapor->id_rapor)->exists()) {
-                throw ValidationException::withMessages([
-                    'id_rapor' => 'Isi nilai rapor sebelum menguncinya.',
-                ]);
-            }
-
-            DB::statement(
-                'CALL public.sp_finalisasi_rapor(?, ?)',
-                [$rapor->id_rapor, 'final']
-            );
         });
 
         $redirectParams = array_filter([
-            'siswa' => $request->integer('id_siswa') ?: null,
             'mapel' => $request->integer('id_mapel') ?: null,
         ]);
 
         return redirect()
             ->route('guru.rapor', $redirectParams)
-            ->with('success', 'Rapor siswa berhasil dikunci.');
+            ->with('success', $terkunci > 0
+                ? "{$terkunci} rapor berhasil dikunci."
+                : 'Tidak ada rapor yang perlu dikunci.');
     }
 
     /**
@@ -599,10 +628,16 @@ class AksiFormController extends Controller
             'id_kelas' => ['required', 'integer', 'exists:kelas,id_kelas'],
             'id_mapel' => ['required', 'integer', 'exists:mata_pelajaran,id_mata_pelajaran'],
             'id_siswa' => ['nullable', 'integer', 'exists:siswa,id_siswa'],
+            'nilai' => ['nullable', 'array'],
+            'nilai.*' => ['nullable', 'array'],
+            'nilai.*.tugas' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'nilai.*.keterampilan' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'nilai.*.ujian' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'nilai_mentah' => ['nullable', 'array'],
-            'nilai_mentah.*.tugas' => ['nullable', 'numeric', 'min:1', 'max:100'],
-            'nilai_mentah.*.keterampilan' => ['nullable', 'numeric', 'min:1', 'max:100'],
-            'nilai_mentah.*.ujian' => ['nullable', 'numeric', 'min:1', 'max:100'],
+            'nilai_mentah.*' => ['nullable', 'array'],
+            'nilai_mentah.*.tugas' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'nilai_mentah.*.keterampilan' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'nilai_mentah.*.ujian' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'catatan_siswa' => ['nullable', 'array'],
             'catatan_siswa.*' => ['nullable', 'string', 'max:2000'],
             'status_siswa' => ['nullable', 'array'],
@@ -612,14 +647,23 @@ class AksiFormController extends Controller
             'id_kelas.exists' => 'Kelas yang dipilih tidak ditemukan.',
             'id_mapel.required' => 'Pilih mata pelajaran terlebih dahulu.',
             'id_mapel.exists' => 'Mata pelajaran yang dipilih tidak ditemukan.',
+            'nilai.*.tugas.numeric' => 'Nilai tugas harus berupa angka.',
+            'nilai.*.tugas.min' => 'Nilai tugas minimal 0.',
+            'nilai.*.tugas.max' => 'Nilai tugas maksimal 100.',
+            'nilai.*.keterampilan.numeric' => 'Nilai keterampilan harus berupa angka.',
+            'nilai.*.keterampilan.min' => 'Nilai keterampilan minimal 0.',
+            'nilai.*.keterampilan.max' => 'Nilai keterampilan maksimal 100.',
+            'nilai.*.ujian.numeric' => 'Nilai ujian harus berupa angka.',
+            'nilai.*.ujian.min' => 'Nilai ujian minimal 0.',
+            'nilai.*.ujian.max' => 'Nilai ujian maksimal 100.',
             'nilai_mentah.*.tugas.numeric' => 'Nilai tugas harus berupa angka.',
-            'nilai_mentah.*.tugas.min' => 'Nilai tugas minimal 1.',
+            'nilai_mentah.*.tugas.min' => 'Nilai tugas minimal 0.',
             'nilai_mentah.*.tugas.max' => 'Nilai tugas maksimal 100.',
             'nilai_mentah.*.keterampilan.numeric' => 'Nilai keterampilan harus berupa angka.',
-            'nilai_mentah.*.keterampilan.min' => 'Nilai keterampilan minimal 1.',
+            'nilai_mentah.*.keterampilan.min' => 'Nilai keterampilan minimal 0.',
             'nilai_mentah.*.keterampilan.max' => 'Nilai keterampilan maksimal 100.',
             'nilai_mentah.*.ujian.numeric' => 'Nilai ujian harus berupa angka.',
-            'nilai_mentah.*.ujian.min' => 'Nilai ujian minimal 1.',
+            'nilai_mentah.*.ujian.min' => 'Nilai ujian minimal 0.',
             'nilai_mentah.*.ujian.max' => 'Nilai ujian maksimal 100.',
             'catatan_siswa.*.max' => 'Catatan wali kelas maksimal 2000 karakter.',
             'status_siswa.*.in' => 'Status rapor tidak dikenali.',
@@ -678,10 +722,12 @@ class AksiFormController extends Controller
             return $this->gagal('Belum ada siswa aktif di kelas ini pada semester aktif.');
         }
 
-        $nilaiRows = $data['nilai_mentah'] ?? [];
+        $nilaiRows = $data['nilai'] ?? $data['nilai_mentah'] ?? [];
         $catatanRows = $data['catatan_siswa'] ?? [];
         $statusRows = $data['status_siswa'] ?? [];
+        $raporService = app(RaporService::class);
         $diproses = 0;
+        $dilewati = 0;
 
         DB::transaction(function () use (
             $data,
@@ -693,7 +739,9 @@ class AksiFormController extends Controller
             $nilaiRows,
             $catatanRows,
             $statusRows,
-            &$diproses
+            $raporService,
+            &$diproses,
+            &$dilewati
         ) {
             $komponenIds = array_values(array_filter($komponen, fn ($id) => $id !== null));
 
@@ -722,18 +770,18 @@ class AksiFormController extends Controller
                     ->first(['id_rapor', 'status_rapor']);
 
                 if ($rapor?->status_rapor === 'final') {
-                    throw ValidationException::withMessages([
-                        'nilai_mentah' => 'Nilai tidak dapat diubah setelah rapor dikunci.',
-                    ]);
+                    $dilewati++;
+
+                    continue;
                 }
 
                 if ($tugas === null && $keterampilan === null && $ujian === null) {
-                    DB::table('nilai_siswa')
-                        ->where('id_anggota', $anggotaRow->id_keanggotaan)
-                        ->where('id_mapel', $mapel->id_mata_pelajaran)
-                        ->where('id_semester', $semester->id_semester)
-                        ->whereIn('id_komponen', $komponenIds)
-                        ->delete();
+                    $raporService->hapusNilaiSiswa(
+                        (int) $anggotaRow->id_keanggotaan,
+                        (int) $mapel->id_mata_pelajaran,
+                        (int) $semester->id_semester,
+                        $komponenIds
+                    );
 
                     if ($rapor) {
                         $ubah = ['id_penyusun' => session('id_pengguna')];
@@ -746,16 +794,12 @@ class AksiFormController extends Controller
                             $ubah['status_rapor'] = $status;
                         }
 
-                        DB::table('detail_rapor')
-                            ->where('id_rapor', $rapor->id_rapor)
-                            ->where('id_mapel', $mapel->id_mata_pelajaran)
-                            ->delete();
+                        $raporService->hapusDetailRapor(
+                            (int) $rapor->id_rapor,
+                            (int) $mapel->id_mata_pelajaran
+                        );
 
-                        $rataRata = DB::table('detail_rapor')
-                            ->where('id_rapor', $rapor->id_rapor)
-                            ->avg('nilai_akhir');
-
-                        $ubah['rata_rata'] = $rataRata !== null ? round((float) $rataRata, 2) : null;
+                        $ubah['rata_rata'] = $raporService->rataRataRapor((int) $rapor->id_rapor);
 
                         DB::table('rapor')->where('id_rapor', $rapor->id_rapor)->update($ubah);
                     }
@@ -770,24 +814,25 @@ class AksiFormController extends Controller
                     'keterampilan' => $keterampilan,
                     'ujian' => $ujian,
                 ] as $jenis => $nilai) {
-                    $kunci = [
-                        'id_anggota' => $anggotaRow->id_keanggotaan,
-                        'id_mapel' => $mapel->id_mata_pelajaran,
-                        'id_semester' => $semester->id_semester,
-                        'id_komponen' => $komponen[$jenis],
-                    ];
-
                     if ($nilai === null) {
-                        DB::table('nilai_siswa')->where($kunci)->delete();
+                        $raporService->hapusNilaiSiswa(
+                            (int) $anggotaRow->id_keanggotaan,
+                            (int) $mapel->id_mata_pelajaran,
+                            (int) $semester->id_semester,
+                            [(int) $komponen[$jenis]]
+                        );
 
                         continue;
                     }
 
-                    DB::table('nilai_siswa')->updateOrInsert($kunci, [
-                        'id_penginput' => session('id_pengguna'),
-                        'nilai' => round($nilai, 2),
-                        'tgl_input' => now(),
-                    ]);
+                    $raporService->simpanNilaiSiswa(
+                        (int) $anggotaRow->id_keanggotaan,
+                        (int) $mapel->id_mata_pelajaran,
+                        (int) $semester->id_semester,
+                        (int) $komponen[$jenis],
+                        (int) session('id_pengguna'),
+                        (float) $nilai
+                    );
                 }
 
                 $nilaiAkhir = $this->nilaiAkhirKomponen([
@@ -808,16 +853,12 @@ class AksiFormController extends Controller
                             $ubah['status_rapor'] = $status;
                         }
 
-                        DB::table('detail_rapor')
-                            ->where('id_rapor', $rapor->id_rapor)
-                            ->where('id_mapel', $mapel->id_mata_pelajaran)
-                            ->delete();
+                        $raporService->hapusDetailRapor(
+                            (int) $rapor->id_rapor,
+                            (int) $mapel->id_mata_pelajaran
+                        );
 
-                        $rataRata = DB::table('detail_rapor')
-                            ->where('id_rapor', $rapor->id_rapor)
-                            ->avg('nilai_akhir');
-
-                        $ubah['rata_rata'] = $rataRata !== null ? round((float) $rataRata, 2) : null;
+                        $ubah['rata_rata'] = $raporService->rataRataRapor((int) $rapor->id_rapor);
 
                         DB::table('rapor')->where('id_rapor', $rapor->id_rapor)->update($ubah);
                     }
@@ -867,51 +908,36 @@ class AksiFormController extends Controller
                     ], 'id_rapor');
                 }
 
-                DB::table('detail_rapor')->updateOrInsert(
-                    ['id_rapor' => $idRapor, 'id_mapel' => $mapel->id_mata_pelajaran],
-                    ['id_predikat' => $idPredikat, 'nilai_akhir' => $nilaiAkhir]
+                $raporService->simpanDetailRapor(
+                    (int) $idRapor,
+                    (int) $mapel->id_mata_pelajaran,
+                    $idPredikat !== null ? (int) $idPredikat : null,
+                    (float) $nilaiAkhir
                 );
 
-                $rataRata = DB::table('detail_rapor')
-                    ->where('id_rapor', $idRapor)
-                    ->avg('nilai_akhir');
-
                 DB::table('rapor')->where('id_rapor', $idRapor)->update([
-                    'rata_rata' => $rataRata !== null ? round((float) $rataRata, 2) : null,
+                    'rata_rata' => $raporService->rataRataRapor((int) $idRapor),
                 ]);
 
                 $diproses++;
             }
         });
 
-        $idSiswaRedirect = $data['id_siswa'] ?? null;
-
-        if (! $idSiswaRedirect) {
-            $kandidatSiswa = array_values(array_unique(array_merge(
-                array_map('intval', array_keys($nilaiRows)),
-                array_map('intval', array_keys($catatanRows)),
-            )));
-
-            if (count($kandidatSiswa) === 1 && $kandidatSiswa[0] > 0) {
-                $idSiswaRedirect = $kandidatSiswa[0];
-            }
-        }
-
-        $redirectParams = array_filter([
-            'kelas' => $data['id_kelas'],
-            'mapel' => $data['id_mapel'],
-            'siswa' => $idSiswaRedirect,
-        ]);
-
         if ($diproses === 0) {
             return redirect()
-                ->route('guru.rapor', $redirectParams)
+                ->back()
                 ->with('success', 'Tidak ada nilai baru yang perlu disimpan.');
         }
 
-        return redirect()
-            ->route('guru.rapor', $redirectParams)
-            ->with('success', 'Nilai rapor berhasil disimpan untuk seluruh siswa.');
+        $redirect = redirect()
+            ->back()
+            ->with('success', 'Nilai siswa berhasil disimpan.');
+
+        if ($dilewati > 0) {
+            $redirect->with('info', "{$dilewati} rapor terkunci dilewati dan tidak diubah.");
+        }
+
+        return $redirect;
     }
 
     /* ================= TATA USAHA ================= */
@@ -1234,12 +1260,21 @@ class AksiFormController extends Controller
         return redirect()->route('tu.mutasi')->with('success', 'Pengajuan mutasi berhasil dibatalkan.');
     }
 
-    public function mutasiLampiran(int $id)
+    public function mutasiLampiran(Request $request, int $id, BerkasPreviewService $berkas)
     {
         $mutasi = DB::table('mutasi_siswa')->where('id_mutasi', $id)->first(['path_lampiran', 'nama_lampiran']);
-        abort_unless($mutasi?->path_lampiran && Storage::disk('private')->exists($mutasi->path_lampiran), 404);
 
-        return Storage::disk('private')->download($mutasi->path_lampiran, $mutasi->nama_lampiran ?: basename($mutasi->path_lampiran));
+        abort_unless($mutasi, 404);
+
+        $nama = $berkas->namaAman(
+            $mutasi->nama_lampiran ?: basename((string) $mutasi->path_lampiran)
+        );
+
+        if (empty($mutasi->path_lampiran)) {
+            return $berkas->tidakTersedia($nama);
+        }
+
+        return $berkas->response($request, (string) $mutasi->path_lampiran, $nama);
     }
 
     private function validasiDataMutasi(Request $request, PengaturanService $pengaturan): array
@@ -2038,7 +2073,7 @@ class AksiFormController extends Controller
             $slotDefinisi = PageController::daftarSlotJadwal();
             $baris = [];
             foreach ($request->input('matriks', []) as $hari => $slots) {
-                if (! is_array($slots)) {
+                if (! is_array($slots) || ! in_array((int) $hari, PageController::daftarNomorHariJadwal(), true)) {
                     continue;
                 }
                 foreach ($slots as $slotIdx => $cell) {
@@ -2077,7 +2112,7 @@ class AksiFormController extends Controller
         $validator = validator(['jadwal' => $baris], [
             'jadwal' => ['array'],
             'jadwal.*.id_jadwal' => ['nullable', 'integer'],
-            'jadwal.*.hari' => ['required', 'integer', 'between:1,7'],
+            'jadwal.*.hari' => ['required', 'integer', Rule::in(PageController::daftarNomorHariJadwal())],
             'jadwal.*.jam_mulai' => ['required', 'date_format:H:i'],
             'jadwal.*.jam_selesai' => ['required', 'date_format:H:i'],
             'jadwal.*.id_mata_pelajaran' => ['required', 'integer', 'exists:mata_pelajaran,id_mata_pelajaran'],
@@ -2086,7 +2121,7 @@ class AksiFormController extends Controller
             'jadwal.*.ruang' => ['nullable', 'string', 'max:50'],
         ], [
             'jadwal.*.hari.required' => 'Hari wajib dipilih pada setiap baris jadwal.',
-            'jadwal.*.hari.between' => 'Hari yang dipilih tidak valid.',
+            'jadwal.*.hari.in' => 'Hari yang dipilih tidak valid. Jadwal hanya berlaku Senin sampai Jumat.',
             'jadwal.*.jam_mulai.required' => 'Jam mulai wajib diisi pada setiap baris jadwal.',
             'jadwal.*.jam_mulai.date_format' => 'Format jam mulai harus HH:MM.',
             'jadwal.*.jam_selesai.required' => 'Jam selesai wajib diisi pada setiap baris jadwal.',

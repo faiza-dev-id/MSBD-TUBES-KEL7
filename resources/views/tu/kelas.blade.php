@@ -12,9 +12,9 @@
     $tanpaWali = $kelas->filter(fn ($k) => $k->id_guru === null)->pluck('nama_kelas');
     $waliGanda = $kelas->filter(fn ($k) => $k->id_guru !== null)->groupBy('nama_guru')->filter(fn ($g) => $g->count() > 1);
 @endphp
-<form method="GET" class="card mb-4 flex flex-wrap items-end gap-3">
+<form method="GET" class="card mb-4 flex flex-wrap items-end gap-3" data-auto-filter>
     <div><label class="label" for="semester">Semester</label>
-        <select class="input" id="semester" name="semester" onchange="this.form.submit()">
+        <select class="input" id="semester" name="semester">
             @foreach ($semesters as $s)
                 <option value="{{ $s->id_semester }}" @selected($s->id_semester === $sem->id_semester)>{{ $s->nama_semester }} {{ $s->nama_tahun_ajaran }}{{ $s->is_aktif ? ' (aktif)' : '' }}</option>
             @endforeach
@@ -33,7 +33,6 @@
                 <option value="{{ $kodeJurusan }}" @selected($filterJurusan === $kodeJurusan)>{{ $kodeJurusan }}</option>
             @endforeach
         </select></div>
-    <button class="btn btn-flame">Tampilkan</button>
     <a href="{{ route('tu.kelas', ['semester' => $sem->id_semester]) }}" class="btn btn-ghost">Reset filter</a>
 </form>
 

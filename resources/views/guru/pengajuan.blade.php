@@ -9,7 +9,7 @@
     <div class="card bg-white text-sm text-mute">Kamu tidak menjadi wali kelas pada semester aktif.</div>
 @else
     @if (count($kelasWali) > 1)
-        <form method="GET" class="mb-4 flex items-end gap-2">
+        <form method="GET" class="mb-4 flex items-end gap-2" data-auto-filter>
             <div>
                 <label class="label" for="kelas">Kelas</label>
                 <select class="input !w-56" id="kelas" name="kelas">
@@ -18,7 +18,7 @@
                     @endforeach
                 </select>
             </div>
-            <button class="btn btn-ghost">Tampilkan</button>
+            <a href="{{ route('guru.pengajuan') }}" class="btn btn-ghost">Reset</a>
         </form>
     @endif
 
@@ -44,8 +44,17 @@
                             <div class="rounded-md bg-bad/10 p-3"><div class="mb-1 text-xs text-mute">Data lama</div>{{ $detail['lama'] ?? '-' }}</div>
                             <div class="rounded-md bg-ok/10 p-3"><div class="mb-1 text-xs text-mute">Data baru</div>{{ $detail['baru'] ?? '-' }}</div>
                             @if ($detail['bukti'])
-                                <a class="text-sm font-semibold text-flame hover:underline sm:col-span-2"
-                                   href="{{ route('guru.pengajuan.bukti', [$p['id'], $detail['id']]) }}">Unduh bukti pendukung</a>
+                                @php
+                                    $namaBukti = basename((string) $detail['bukti']);
+                                    $tipeBukti = strtolower(pathinfo((string) $detail['bukti'], PATHINFO_EXTENSION)) === 'pdf' ? 'pdf' : 'gambar';
+                                    $urlBukti = route('guru.pengajuan.bukti', ['id' => $p['id'], 'idDetail' => $detail['id']]);
+                                    $urlUnduhBukti = route('guru.pengajuan.bukti', ['id' => $p['id'], 'idDetail' => $detail['id'], 'download' => 1]);
+                                @endphp
+                                <button type="button"
+                                        class="text-sm font-semibold text-flame hover:underline sm:col-span-2 cursor-pointer"
+                                        @click='$dispatch("preview-berkas", { url: @json($urlBukti), unduhUrl: @json($urlUnduhBukti), nama: @json($namaBukti), jenis: @json($detail["field"] ?: "Bukti pendukung"), tipe: @json($tipeBukti) })'>
+                                    Lihat bukti pendukung
+                                </button>
                             @endif
                         </div>
                     @endforeach

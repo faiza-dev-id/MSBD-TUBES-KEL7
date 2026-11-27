@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title', 'Jadwal Pelajaran')
 @section('heading', 'Penyusunan Jadwal Pelajaran')
-@section('sub', 'Pilih semester dan kelas, lalu isi mata pelajaran dan guru untuk tiap jam pelajaran dari Senin hingga Sabtu.')
+@section('sub', 'Pilih semester dan kelas, lalu isi mata pelajaran dan guru untuk tiap jam pelajaran dari Senin hingga Jumat.')
 @section('content')
 @php
     $daftarHari = $daftarHari ?? \App\Http\Controllers\PageController::daftarHariJadwal();
@@ -32,10 +32,10 @@
     @endif
 </div>
 
-<form method="GET" action="{{ route('akademik.jadwal') }}" class="card mb-4 flex flex-wrap items-end gap-3">
+<form method="GET" action="{{ route('akademik.jadwal') }}" class="card mb-4 flex flex-wrap items-end gap-3" data-auto-filter>
     <div>
         <label class="label" for="pilih_semester">Semester</label>
-        <select class="input !w-60" id="pilih_semester" name="semester" onchange="this.form.submit()">
+        <select class="input !w-60" id="pilih_semester" name="semester">
             @foreach ($semester as $s)
                 <option value="{{ $s['id'] }}" @selected((string) ($semesterTerpilih['id'] ?? '') === (string) $s['id'])>{{ $s['nama'] }} {{ $s['tahun'] }}</option>
             @endforeach
@@ -43,7 +43,7 @@
     </div>
     <div>
         <label class="label" for="pilih_kelas">Kelas</label>
-        <select class="input !w-44" id="pilih_kelas" name="kelas" onchange="this.form.submit()">
+        <select class="input !w-44" id="pilih_kelas" name="kelas">
             @foreach ($kelas as $k)
                 <option value="{{ $k['id'] }}" @selected((string) ($kelasTerpilih['id'] ?? '') === (string) $k['id'])>{{ $k['nama'] }}</option>
             @endforeach

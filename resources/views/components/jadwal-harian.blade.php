@@ -10,10 +10,10 @@
 ])
 
 @php
-    $singkatanHari = [1 => 'Sen', 2 => 'Sel', 3 => 'Rab', 4 => 'Kam', 5 => 'Jum', 6 => 'Sab', 7 => 'Min'];
+    $singkatanHari = [1 => 'Sen', 2 => 'Sel', 3 => 'Rab', 4 => 'Kam', 5 => 'Jum'];
     $awalMinggu = now('Asia/Jakarta')->startOfWeek(\Carbon\Carbon::MONDAY);
     $hariIni = (int) now('Asia/Jakarta')->dayOfWeekIso;
-    $hariFallback = $hariIni === 7 && array_key_exists(6, $hari) ? 6 : (int) array_key_first($hari);
+    $hariFallback = array_key_exists(5, $hari) ? 5 : (int) array_key_first($hari);
     $hariTerpilih = array_key_exists($hariIni, $hari) ? $hariIni : $hariFallback;
 @endphp
 

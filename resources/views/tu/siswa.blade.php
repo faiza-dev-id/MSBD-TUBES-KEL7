@@ -8,7 +8,7 @@
 @section('content')
 <div class="card mb-4">
     <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <form method="GET" action="{{ route('tu.siswa') }}" class="flex flex-wrap items-center gap-2">
+        <form method="GET" action="{{ route('tu.siswa') }}" class="flex flex-wrap items-center gap-2" data-auto-filter>
             <input
                 class="input !w-64"
                 type="search"
@@ -17,8 +17,6 @@
                 placeholder="Cari nama / NISN / NIS"
                 aria-label="Cari siswa"
             >
-            <button class="btn btn-ghost" type="submit">Cari</button>
-
             @if (request()->filled('cari'))
                 <a href="{{ route('tu.siswa') }}" class="text-sm font-semibold text-flame-dark hover:underline">
                     Hapus pencarian

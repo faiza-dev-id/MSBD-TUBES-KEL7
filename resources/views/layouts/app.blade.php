@@ -171,6 +171,7 @@
 </div>
 
 <x-toast-notification />
+<x-berkas-preview />
 <script>
 (function () {
     var sb = document.getElementById('sb'), ov = document.getElementById('ov');

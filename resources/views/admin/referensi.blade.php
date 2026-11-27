@@ -9,9 +9,8 @@
     @endforeach
 </div>
 
-<form method="GET" class="card mb-4 flex flex-wrap items-end gap-3">
-    <div><label class="label">Cari</label><input class="input !w-64" name="cari" value="{{ $cari }}" placeholder="Ketik lalu tekan Cari"></div>
-    <button class="btn btn-flame">Cari</button>
+<form method="GET" class="card mb-4 flex flex-wrap items-end gap-3" data-auto-filter>
+    <div><label class="label">Cari</label><input class="input !w-64" name="cari" value="{{ $cari }}" placeholder="Ketik untuk mencari"></div>
     @if ($cari !== '') <a href="{{ route('admin.referensi', $tab) }}" class="btn btn-ghost">Reset</a> @endif
 </form>
 

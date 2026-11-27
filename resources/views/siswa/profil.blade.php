@@ -228,13 +228,31 @@
 <section class="card">
     <h2 class="sec-title">Dokumen PPDB</h2>
     <div class="overflow-x-auto">
-        <table class="w-full min-w-[560px] text-sm">
-            <thead><tr class="border-b-2 border-line text-left text-xs text-mute"><th class="p-2">Jenis</th><th class="p-2">Nama berkas</th><th class="p-2">Status</th><th class="p-2">Tanggal unggah</th></tr></thead>
+        <table class="w-full min-w-[640px] text-sm">
+            <thead><tr class="border-b-2 border-line text-left text-xs text-mute"><th class="p-2">Jenis</th><th class="p-2">Nama berkas</th><th class="p-2">Status</th><th class="p-2">Tanggal unggah</th><th class="p-2">Aksi</th></tr></thead>
             <tbody>
                 @forelse ($dokumen as $item)
-                    <tr class="border-b border-line"><td class="p-2.5">{{ $item->jenis_dokumen }}</td><td class="p-2.5">{{ $item->nama_file_asli }}</td><td class="p-2.5">{{ $item->status_verifikasi ?? '-' }}</td><td class="p-2.5">{{ $item->diunggah_pada ?? '-' }}</td></tr>
+                    @php
+                        $namaBerkas = $item->nama_file_asli ?: basename((string) ($item->path_file ?? 'berkas'));
+                        $tipeBerkas = strtolower(pathinfo((string) ($item->path_file ?? ''), PATHINFO_EXTENSION)) === 'pdf' ? 'pdf' : 'gambar';
+                        $urlPreview = route('siswa.dokumen.preview', ['idDokumen' => $item->id_dokumen]);
+                        $urlUnduh = route('siswa.dokumen.preview', ['idDokumen' => $item->id_dokumen, 'download' => 1]);
+                    @endphp
+                    <tr class="border-b border-line">
+                        <td class="p-2.5">{{ $item->jenis_dokumen }}</td>
+                        <td class="p-2.5">{{ $item->nama_file_asli }}</td>
+                        <td class="p-2.5">{{ $item->status_verifikasi ?? '-' }}</td>
+                        <td class="p-2.5">{{ $item->diunggah_pada ?? '-' }}</td>
+                        <td class="p-2.5">
+                            <button type="button"
+                                    class="text-xs font-semibold text-flame-dark hover:underline cursor-pointer"
+                                    @click='$dispatch("preview-berkas", { url: @json($urlPreview), unduhUrl: @json($urlUnduh), nama: @json($namaBerkas), jenis: @json($item->jenis_dokumen), tipe: @json($tipeBerkas) })'>
+                                Lihat
+                            </button>
+                        </td>
+                    </tr>
                 @empty
-                    <tr><td colspan="4" class="p-4 text-center text-mute">Belum ada dokumen PPDB yang tercatat.</td></tr>
+                    <tr><td colspan="5" class="p-4 text-center text-mute">Belum ada dokumen PPDB yang tercatat.</td></tr>
                 @endforelse
             </tbody>
         </table>

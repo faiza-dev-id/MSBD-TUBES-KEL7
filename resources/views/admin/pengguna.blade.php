@@ -7,7 +7,7 @@
     <div class="flex items-center justify-between gap-3 flex-wrap mb-3">
         <form method="GET"
     action="{{ route('admin.pengguna') }}"
-    class="flex items-center gap-2 flex-wrap">
+    class="flex items-center gap-2 flex-wrap" data-auto-filter>
 
     <input
         type="text"
@@ -16,10 +16,6 @@
         placeholder="Cari nama / username / peran"
         value="{{ $cari ?? '' }}"
     >
-
-    <button type="submit" class="btn btn-ghost">
-        Cari
-    </button>
 
     @if (!empty($cari))
         <a href="{{ route('admin.pengguna') }}" class="btn btn-ghost">

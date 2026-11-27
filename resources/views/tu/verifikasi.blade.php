@@ -165,7 +165,11 @@
                         <div class="text-xs text-mute">{{ $b['nama'] }} · {{ $b['tgl'] }}</div>
                     </div>
                     @if (!empty($b['url']))
-                        <a href="{{ $b['url'] }}" target="_blank" rel="noopener" class="text-sm text-flame-dark font-semibold">Lihat berkas</a>
+                        <button type="button"
+                                class="text-sm font-semibold text-flame-dark hover:underline cursor-pointer"
+                                @click='$dispatch("preview-berkas", { url: @json($b["url"]), unduhUrl: @json($b["unduhUrl"]), nama: @json($b["nama"] ?: "Berkas"), jenis: @json($b["jenis"]), tipe: @json($b["tipe"]) })'>
+                            Lihat berkas
+                        </button>
                     @else
                         <span class="text-sm text-mute">Berkas tidak tersedia</span>
                     @endif

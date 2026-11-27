@@ -12,6 +12,7 @@ use App\Models\Pengguna;
 use App\Models\Role;
 use App\Models\Siswa;
 use App\Models\Staf;
+use App\Services\BerkasPreviewService;
 use App\Services\KenaikanKelasService;
 use App\Services\PengajuanPerubahanService;
 use App\Services\PengaturanService;
@@ -335,10 +336,10 @@ class PageController extends Controller
         $idPendaftaran = $siswa ? $this->idPendaftaranSiswa($siswa) : null;
 
         $dokumen = $siswa
-            ? DB::table('dokumen_siswa')
+            ? $this->dokumenSiswaQuery()
                 ->where('id_siswa', $siswa->id_siswa)
                 ->orderByDesc('diunggah_pada')
-                ->get(['jenis_dokumen', 'nama_file_asli', 'status_verifikasi', 'diunggah_pada'])
+                ->get(['id_dokumen', 'jenis_dokumen', 'nama_file_asli', 'path_file', 'status_verifikasi', 'diunggah_pada'])
             : collect();
 
         return view('siswa.profil', [
@@ -348,6 +349,40 @@ class PageController extends Controller
             'dokumen' => $dokumen,
             'terhubung' => (bool) $siswa,
         ]);
+    }
+
+    public function dokumenPreviewSiswa(
+        Request $request,
+        int $idDokumen,
+        BerkasPreviewService $berkas
+    ): Response {
+        $siswa = $this->siswaSesi();
+        abort_unless($siswa, 403);
+
+        $dokumen = $this->dokumenSiswaQuery()
+            ->where('id_dokumen', $idDokumen)
+            ->first(['id_siswa', 'id_pendaftaran', 'path_file', 'nama_file_asli', 'jenis_dokumen']);
+
+        abort_unless($dokumen, 404);
+
+        $idPendaftaran = $this->idPendaftaranSiswa($siswa);
+        $milikSiswa = $dokumen->id_siswa !== null
+            && (int) $dokumen->id_siswa === (int) $siswa->id_siswa;
+        $milikPendaftaran = $idPendaftaran !== null
+            && $dokumen->id_pendaftaran !== null
+            && (int) $dokumen->id_pendaftaran === $idPendaftaran;
+
+        abort_unless($milikSiswa || $milikPendaftaran, 403);
+
+        $nama = $berkas->namaAman(
+            $dokumen->nama_file_asli ?: basename((string) $dokumen->path_file)
+        );
+
+        if (empty($dokumen->path_file)) {
+            return $berkas->tidakTersedia($nama);
+        }
+
+        return $berkas->response($request, (string) $dokumen->path_file, $nama);
     }
 
     public function pengajuan()
@@ -397,6 +432,7 @@ class PageController extends Controller
                 ->join('guru as g', 'g.id_guru', '=', 'j.id_guru')
                 ->where('j.id_semester', $semester->id_semester)
                 ->where('j.id_guru', $guru->id_guru)
+                ->whereIn('j.hari', self::daftarNomorHariJadwal())
                 ->orderBy('j.hari')
                 ->orderBy('j.jam_mulai')
                 ->get([
@@ -409,7 +445,7 @@ class PageController extends Controller
                     'k.nama_kelas',
                 ]);
 
-            $hari = [1 => 'Senin', 2 => 'Selasa', 3 => 'Rabu', 4 => 'Kamis', 5 => 'Jumat', 6 => 'Sabtu', 7 => 'Minggu'];
+            $hari = self::daftarHariJadwal();
 
             foreach ($rows as $row) {
                 $nomorHari = (int) $row->hari;
@@ -523,7 +559,8 @@ class PageController extends Controller
         Request $request,
         int $id,
         int $idDetail,
-        PengajuanPerubahanService $pengajuanService
+        PengajuanPerubahanService $pengajuanService,
+        BerkasPreviewService $berkas
     ): Response {
         $detail = DB::table('detail_pengajuan as d')
             ->join('pengajuan_perubahan as pp', 'pp.id_pengajuan', '=', 'd.id_pengajuan')
@@ -541,9 +578,9 @@ class PageController extends Controller
             404
         );
 
-        abort_unless(Storage::disk('private')->exists($detail->bukti_path), 404);
+        $nama = $berkas->namaAman(basename((string) $detail->bukti_path));
 
-        return Storage::disk('private')->download($detail->bukti_path);
+        return $berkas->response($request, (string) $detail->bukti_path, $nama);
     }
 
     private function decodeNilai(?string $nilai): mixed
@@ -732,7 +769,7 @@ class PageController extends Controller
         return view('guru.absensi', compact('kelasWali', 'kelas', 'semester', 'tanggal', 'siswa', 'presensi'));
     }
 
-    /** Rapor siswa di kelas yang diwalikan (nilai diisi wali kelas). */
+    /** Rapor seluruh siswa di kelas yang diwalikan (nilai diisi sekaligus per mata pelajaran). */
     public function guruRapor(Request $request)
     {
         $guru = $this->guruSesi();
@@ -740,11 +777,7 @@ class PageController extends Controller
         $kelasWali = ($guru && $semester) ? $this->kelasWali((int) $guru->id_guru, (int) $semester->id_semester) : [];
         $kelas = $kelasWali[0] ?? null;
         $siswa = [];
-        $terpilih = null;
         $mapel = [];
-        $rapor = null;
-        $nilai = [];
-        $rekap = ['hadir' => 0, 'izin' => 0, 'sakit' => 0, 'alpha' => 0];
         $idMapel = 0;
         $mapelTerpilih = null;
         $komponenRapor = $this->komponenRapor();
@@ -754,6 +787,8 @@ class PageController extends Controller
         $nilaiTampil = [];
         $catatanSiswa = [];
         $statusSiswa = [];
+        $idRaporPerSiswa = [];
+        $idRaporSiapDikunci = [];
         $rekapKelas = ['hadir' => 0, 'izin' => 0, 'sakit' => 0, 'alpha' => 0];
 
         if ($kelas && $semester) {
@@ -762,7 +797,7 @@ class PageController extends Controller
                 ->where('kk.id_kelas', $kelas['id'])
                 ->where('kk.id_semester', $semester->id_semester)
                 ->where('kk.status', 'aktif')
-                ->orderBy('s.nama_lengkap')
+                ->orderBy('s.nama_lengkap', 'asc')
                 ->get(['kk.id_keanggotaan', 's.id_siswa', 's.nama_lengkap', 's.nisn'])
                 ->map(fn ($s) => [
                     'id' => $s->id_siswa,
@@ -772,13 +807,11 @@ class PageController extends Controller
                 ])
                 ->all();
 
-            $idSiswa = (int) $request->query('siswa', $siswa[0]['id'] ?? 0);
-            $terpilih = collect($siswa)->firstWhere('id', $idSiswa) ?? ($siswa[0] ?? null);
-
             $mapel = DB::table('jadwal_pelajaran as j')
                 ->join('mata_pelajaran as m', 'm.id_mata_pelajaran', '=', 'j.id_mata_pelajaran')
                 ->where('j.id_kelas', $kelas['id'])
                 ->where('j.id_semester', $semester->id_semester)
+                ->whereIn('j.hari', self::daftarNomorHariJadwal())
                 ->distinct()
                 ->orderBy('m.nama_mapel')
                 ->get(['m.id_mata_pelajaran', 'm.nama_mapel'])
@@ -797,6 +830,10 @@ class PageController extends Controller
             $idMapel = (int) $request->query('mapel', $mapel[0]['id'] ?? 0);
             $mapelTerpilih = collect($mapel)->firstWhere('id', $idMapel) ?? ($mapel[0] ?? null);
 
+            if ($mapelTerpilih) {
+                $idMapel = (int) $mapelTerpilih['id'];
+            }
+
             foreach ($siswa as $s) {
                 $nilaiMentah[$s['id']] = ['tugas' => null, 'keterampilan' => null, 'ujian' => null];
                 $nilaiAkhir[$s['id']] = null;
@@ -811,8 +848,6 @@ class PageController extends Controller
             foreach ($siswa as $s) {
                 $anggotaKeSiswa[(int) $s['id_keanggotaan']] = (int) $s['id'];
             }
-
-            $idRaporPerSiswa = [];
 
             if ($idAnggota) {
                 $rowsRapor = DB::table('rapor')
@@ -912,37 +947,23 @@ class PageController extends Controller
                 }
             }
 
-            if ($terpilih) {
-                $rapor = DB::table('rapor')
-                    ->where('id_anggota', $terpilih['id_keanggotaan'])
-                    ->where('id_semester', $semester->id_semester)
-                    ->first(['id_rapor']);
+            $idRaporDraft = [];
 
-                if ($rapor) {
-                    $nilai = DB::table('detail_rapor')
-                        ->where('id_rapor', $rapor->id_rapor)
-                        ->pluck('nilai_akhir', 'id_mapel')
-                        ->all();
+            foreach ($idRaporPerSiswa as $idSiswaRapor => $idRapor) {
+                if (($statusSiswa[$idSiswaRapor] ?? 'draft') !== 'final') {
+                    $idRaporDraft[] = (int) $idRapor;
                 }
+            }
 
-                $rekapRows = DB::table('detail_absensi as da')
-                    ->join('sesi_absensi as sa', 'sa.id_sesi', '=', 'da.id_sesi')
-                    ->join('status_kehadiran as sh', 'sh.id_status_hadir', '=', 'da.id_status_hadir')
-                    ->where('da.id_siswa', $terpilih['id'])
-                    ->where('sa.id_kelas', $kelas['id'])
-                    ->where('sa.id_semester', $semester->id_semester)
-                    ->select('sh.kode', DB::raw('COUNT(*) AS jumlah'))
-                    ->groupBy('sh.kode')
-                    ->pluck('jumlah', 'kode')
+            if ($idRaporDraft) {
+                $idRaporSiapDikunci = DB::table('detail_rapor')
+                    ->whereIn('id_rapor', $idRaporDraft)
+                    ->where('id_mapel', $idMapel)
+                    ->distinct()
+                    ->orderBy('id_rapor')
+                    ->pluck('id_rapor')
+                    ->map(fn ($id) => (int) $id)
                     ->all();
-
-                foreach ($rekapRows as $kode => $jumlah) {
-                    $kode = $this->kodeKehadiran($kode);
-
-                    if (isset($rekap[$kode])) {
-                        $rekap[$kode] += (int) $jumlah;
-                    }
-                }
             }
         }
 
@@ -951,11 +972,7 @@ class PageController extends Controller
             'kelas',
             'semester',
             'siswa',
-            'terpilih',
             'mapel',
-            'rapor',
-            'nilai',
-            'rekap',
             'idMapel',
             'mapelTerpilih',
             'komponenRapor',
@@ -965,6 +982,8 @@ class PageController extends Controller
             'nilaiTampil',
             'catatanSiswa',
             'statusSiswa',
+            'idRaporPerSiswa',
+            'idRaporSiapDikunci',
             'rekapKelas'
         ));
     }
@@ -993,8 +1012,13 @@ class PageController extends Controller
             3 => 'RABU',
             4 => 'KAMIS',
             5 => 'JUMAT',
-            6 => 'SABTU',
         ];
+    }
+
+    /** Nomor hari sekolah aktif (Senin–Jumat) untuk filter query dan validasi. */
+    public static function daftarNomorHariJadwal(): array
+    {
+        return array_keys(self::daftarHariJadwal());
     }
 
     public function jadwalSiswa()
@@ -1026,13 +1050,14 @@ class PageController extends Controller
 
             if ($anggota) {
                 $kelas = $anggota->nama_kelas;
-                $hari = [1 => 'Senin', 2 => 'Selasa', 3 => 'Rabu', 4 => 'Kamis', 5 => 'Jumat', 6 => 'Sabtu', 7 => 'Minggu'];
+                $hari = self::daftarHariJadwal();
 
                 $rows = DB::table('jadwal_pelajaran as j')
                     ->join('mata_pelajaran as m', 'm.id_mata_pelajaran', '=', 'j.id_mata_pelajaran')
                     ->join('guru as g', 'g.id_guru', '=', 'j.id_guru')
                     ->where('j.id_kelas', $anggota->id_kelas)
                     ->where('j.id_semester', $semester->id_semester)
+                    ->whereIn('j.hari', self::daftarNomorHariJadwal())
                     ->orderBy('j.hari')
                     ->orderBy('j.jam_mulai')
                     ->get(['j.hari', 'j.jam_mulai', 'j.jam_selesai', 'j.ruang', 'm.nama_mapel', 'g.nama_guru']);
@@ -1268,7 +1293,7 @@ class PageController extends Controller
         ]);
     }
 
-    public function verifikasi(int $id, PpdbService $ppdb)
+    public function verifikasi(int $id, PpdbService $ppdb, BerkasPreviewService $berkas)
     {
         $pendaftaran = DB::table('pendaftaran_ppdb')->where('id_pendaftaran', $id)->first();
 
@@ -1285,21 +1310,23 @@ class PageController extends Controller
             'status' => $this->statusTampilan($pendaftaran->status_pendaftaran),
         ];
 
-        $berkas = [];
+        $daftarBerkas = [];
 
         if ($pendaftaran) {
-            $berkas = DB::table('dokumen_siswa')
+            $daftarBerkas = DB::table('dokumen_siswa')
                 ->where('id_pendaftaran', $pendaftaran->id_pendaftaran)
                 ->orderBy('diunggah_pada')
                 ->get(['id_dokumen', 'jenis_dokumen', 'nama_file_asli', 'path_file', 'status_verifikasi', 'diunggah_pada'])
-                ->map(function ($d) {
+                ->map(function ($d) use ($berkas) {
                     $url = route('tu.dokumen.preview', ['idDokumen' => $d->id_dokumen]);
 
                     return [
                         'id' => $d->id_dokumen,
                         'jenis' => $d->jenis_dokumen,
-                        'nama' => $d->nama_file_asli,
+                        'nama' => $d->nama_file_asli ?: basename((string) $d->path_file),
                         'url' => $url,
+                        'unduhUrl' => $url.'?download=1',
+                        'tipe' => $berkas->tipe((string) $d->path_file),
                         'status' => $d->status_verifikasi,
                         'tgl' => Carbon::parse($d->diunggah_pada)->locale('id')->translatedFormat('d M Y'),
                     ];
@@ -1314,7 +1341,7 @@ class PageController extends Controller
 
         return view('tu.verifikasi', [
             'row' => $row,
-            'berkas' => $berkas,
+            'berkas' => $daftarBerkas,
             'alasan' => $alasan,
             'detail' => $ppdb->dataPendaftaran((int) $pendaftaran->id_pendaftaran),
             'agamaOptions' => $ppdb->agamaOptions(),
@@ -1395,8 +1422,10 @@ class PageController extends Controller
                 return [
                     'id_dokumen' => $d->id_dokumen,
                     'jenis' => $d->jenis_dokumen,
+                    'nama' => $d->nama_file_asli ?: basename((string) $path),
                     'nomor' => $nomor !== '' ? $nomor : '-',
                     'format' => $ext,
+                    'tipe' => strtolower(pathinfo((string) $path, PATHINFO_EXTENSION)) === 'pdf' ? 'pdf' : 'gambar',
                     'ukuran' => $ukuran,
                     'fisik' => $fisik,
                     'tgl' => Carbon::parse($d->diunggah_pada)->locale('id')->translatedFormat('d M Y'),
@@ -1418,39 +1447,24 @@ class PageController extends Controller
         ]);
     }
 
-    public function dokumenPreview(int $idDokumen)
-    {
+    public function dokumenPreview(
+        Request $request,
+        int $idDokumen,
+        BerkasPreviewService $berkas
+    ): Response {
         $dokumen = DB::table('dokumen_siswa')->where('id_dokumen', $idDokumen)->first();
 
-        if (! $dokumen || empty($dokumen->path_file)) {
-            abort(404);
+        abort_unless($dokumen, 404);
+
+        $nama = $berkas->namaAman(
+            $dokumen->nama_file_asli ?: basename((string) $dokumen->path_file)
+        );
+
+        if (empty($dokumen->path_file)) {
+            return $berkas->tidakTersedia($nama);
         }
 
-        $ext = strtolower(pathinfo((string) $dokumen->path_file, PATHINFO_EXTENSION));
-        if (! in_array($ext, ['pdf', 'jpg', 'jpeg', 'png'], true)) {
-            abort(404);
-        }
-
-        $storage = Storage::disk('private');
-
-        if (! $storage->exists($dokumen->path_file)) {
-            abort(404);
-        }
-
-        $file = $storage->path($dokumen->path_file);
-
-        if (! is_file($file)) {
-            abort(404);
-        }
-
-        $mime = match ($ext) {
-            'pdf' => 'application/pdf',
-            'jpg', 'jpeg' => 'image/jpeg',
-            'png' => 'image/png',
-            default => 'application/octet-stream',
-        };
-
-        return response()->file($file, ['Content-Type' => $mime]);
+        return $berkas->response($request, (string) $dokumen->path_file, $nama);
     }
 
     public function resetSandi()
@@ -1745,6 +1759,7 @@ class PageController extends Controller
                 ->leftJoin('guru as g', 'g.id_guru', '=', 'j.id_guru')
                 ->where('j.id_kelas', $idKelas)
                 ->where('j.id_semester', $idSemester)
+                ->whereIn('j.hari', self::daftarNomorHariJadwal())
                 ->orderBy('j.hari')
                 ->orderBy('j.jam_mulai')
                 ->get([
@@ -2438,9 +2453,18 @@ class PageController extends Controller
         ];
     }
 
+    /**
+     * role_siswa tidak memiliki SELECT pada dokumen_siswa, sehingga metadata
+     * dokumen dibaca lewat koneksi aplikasi. Kepemilikan tetap divalidasi di PHP.
+     */
+    private function dokumenSiswaQuery(): Builder
+    {
+        return DB::connection('pgsql_login')->table('dokumen_siswa');
+    }
+
     private function idPendaftaranSiswa(Siswa $siswa): ?int
     {
-        $idPendaftaran = DB::table('dokumen_siswa')
+        $idPendaftaran = $this->dokumenSiswaQuery()
             ->where('id_siswa', $siswa->id_siswa)
             ->whereNotNull('id_pendaftaran')
             ->orderByDesc('id_pendaftaran')

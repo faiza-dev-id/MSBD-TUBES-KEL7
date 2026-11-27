@@ -110,6 +110,10 @@ Route::prefix('siswa')
         Route::get('/profil', [PageController::class, 'profil'])
             ->name('profil');
 
+        Route::get('/dokumen/{idDokumen}/preview', [PageController::class, 'dokumenPreviewSiswa'])
+            ->whereNumber('idDokumen')
+            ->name('dokumen.preview');
+
         Route::get('/konfirmasi', [PageController::class, 'konfirmasi'])
             ->name('konfirmasi');
 

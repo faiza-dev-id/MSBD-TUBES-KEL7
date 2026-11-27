@@ -6,6 +6,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { animate, inView, hover, stagger } from 'motion';
 import './dropdown';
 import './validasi';
+import './auto-filter';
 
 window.Alpine = Alpine;
 Alpine.start();

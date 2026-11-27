@@ -223,6 +223,10 @@
                 $diunggah = $d->diunggah_pada
                     ? \Illuminate\Support\Carbon::parse($d->diunggah_pada)->locale('id')->translatedFormat('d M Y')
                     : '-';
+                $namaBerkas = $d->nama_file_asli ?: basename((string) ($d->path_file ?? 'berkas'));
+                $tipeBerkas = strtolower(pathinfo((string) ($d->path_file ?? ''), PATHINFO_EXTENSION)) === 'pdf' ? 'pdf' : 'gambar';
+                $urlPreview = route('tu.dokumen.preview', ['idDokumen' => $d->id_dokumen]);
+                $urlUnduh = route('tu.dokumen.preview', ['idDokumen' => $d->id_dokumen, 'download' => 1]);
             @endphp
             <div class="border-b border-line py-2.5 text-sm last:border-0">
                 <b>{{ $d->jenis_dokumen ?? 'Dokumen' }}</b>
@@ -236,7 +240,11 @@
                 </div>
                 @if (!empty($d->id_dokumen))
                     <div class="mt-2">
-                        <a href="{{ route('tu.dokumen.preview', ['idDokumen' => $d->id_dokumen]) }}" target="_blank" rel="noopener" class="text-xs font-semibold text-flame-dark hover:underline">Lihat berkas</a>
+                        <button type="button"
+                                class="text-xs font-semibold text-flame-dark hover:underline cursor-pointer"
+                                @click='$dispatch("preview-berkas", { url: @json($urlPreview), unduhUrl: @json($urlUnduh), nama: @json($namaBerkas), jenis: @json($d->jenis_dokumen ?? "Dokumen"), tipe: @json($tipeBerkas) })'>
+                            Lihat berkas
+                        </button>
                     </div>
                 @endif
             </div>

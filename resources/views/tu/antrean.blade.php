@@ -18,12 +18,11 @@
                 </a>
             @endforeach
         </div>
-        <form method="GET" action="{{ route('tu.antrean') }}" class="flex w-full items-center gap-2 sm:w-auto">
+        <form method="GET" action="{{ route('tu.antrean') }}" class="flex w-full items-center gap-2 sm:w-auto" data-auto-filter>
             @if ($status !== 'semua')
                 <input type="hidden" name="status" value="{{ $status }}">
             @endif
             <input id="cariAntrean" name="cari" type="search" class="input min-w-0 w-full sm:w-56" value="{{ $cari }}" placeholder="Cari nama / NISN" aria-label="Cari nama atau NISN">
-            <button type="submit" class="btn btn-ghost shrink-0">Cari</button>
         </form>
     </div>
 

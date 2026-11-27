@@ -3,7 +3,7 @@
 @section('heading', 'Log Login')
 @section('sub', 'Riwayat percobaan masuk, berhasil maupun gagal. Gagal beruntun akan mengunci akun sementara.')
 @section('content')
-<form method="GET" class="card mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5 items-end">
+<form method="GET" class="card mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5 items-end" data-auto-filter>
     <div><label class="label">Username</label>
         <input class="input" name="cari" value="{{ $f['cari'] ?? '' }}" placeholder="Cari username"></div>
     <div><label class="label">Hasil</label>
@@ -16,8 +16,7 @@
         <input class="input" type="date" name="dari" value="{{ $f['dari'] ?? '' }}"></div>
     <div><label class="label">Sampai tanggal</label>
         <input class="input" type="date" name="sampai" value="{{ $f['sampai'] ?? '' }}"></div>
-    <div class="flex gap-2">
-        <button class="btn btn-flame">Terapkan</button>
+    <div class="flex justify-end">
         <a href="{{ route('admin.log') }}" class="btn btn-ghost">Reset</a>
     </div>
 </form>
