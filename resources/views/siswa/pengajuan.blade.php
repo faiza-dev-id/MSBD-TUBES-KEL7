@@ -47,7 +47,7 @@
             @foreach ($pengajuan as $p)
                 <li class="py-3 border-b border-line last:border-0 text-sm">
                     <div class="flex justify-between gap-2"><b>{{ $p['field'] }}</b><x-badge :status="$p['status']" /></div>
-                    <div class="text-mute mt-1">{{ $p['lama'] }} → {{ $p['baru'] }}</div>
+                    <div class="text-mute mt-1">{{ $p['lama'] }} menjadi {{ $p['baru'] }}</div>
                     <div class="text-xs text-mute">{{ $p['tgl'] }}</div>
                 </li>
             @endforeach

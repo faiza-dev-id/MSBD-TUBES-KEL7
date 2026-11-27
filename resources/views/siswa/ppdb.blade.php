@@ -10,6 +10,8 @@
     $kelasTerpilih = old('kelas_tujuan', $form['kelas_tujuan'] ?? '');
     $kelasDikunci = $modePerbaikan && filled($form['kelas_tujuan'] ?? null);
     $opsi = \App\Support\Referensi\OpsiPpdb::pilihan($agamaOptions);
+    $punyaDraf = filled($token_draf ?? null);
+    $nilaiPilihan = fn ($nama, $draf = '') => (string) old($nama, $punyaDraf ? $draf : '');
 @endphp
 @if ($modePerbaikan)
     <div class="mb-4 rounded-xl border border-flame/30 bg-flame/5 px-4 py-3 text-sm text-navy" role="status">
@@ -63,20 +65,20 @@
             <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
                     <label class="label" for="pendaftaran_untuk">Pendaftaran untuk</label>
-                    <select class="input" id="pendaftaran_untuk" name="pendaftaran_untuk">
-                        <option value="SMA" selected>SMA</option>
-                    </select>
+                    <input class="input bg-slate-50 text-slate-700 font-medium cursor-default select-none"
+                           id="pendaftaran_untuk" type="text" value="SMA" readonly tabindex="-1" aria-readonly="true">
+                    <input type="hidden" name="pendaftaran_untuk" value="SMA">
                 </div>
                 <div>
                     <label class="label" for="jenjang_tujuan">Jenjang tujuan</label>
-                    <select class="input" id="jenjang_tujuan" name="jenjang_tujuan">
-                        <option value="SMA" selected>SMA</option>
-                    </select>
+                    <input class="input bg-slate-50 text-slate-700 font-medium cursor-default select-none"
+                           id="jenjang_tujuan" type="text" value="SMA" readonly tabindex="-1" aria-readonly="true">
+                    <input type="hidden" name="jenjang_tujuan" value="SMA">
                 </div>
                 <div>
                     <label class="label" for="kelas_tujuan">Kelas tujuan</label>
-                    <select class="input" id="kelas_tujuan" name="kelas_tujuan" data-wajib @disabled($kelasDikunci)>
-                        <option value="">Pilih kelas</option>
+                    <select class="input" id="kelas_tujuan" name="kelas_tujuan" data-wajib data-searchable @disabled($kelasDikunci)>
+                        <option value="" @selected($kelasTerpilih === '')>Pilih kelas tujuan</option>
                         @foreach ($kelasTujuan as $namaKelas)
                             <option value="{{ $namaKelas }}" @selected($kelasTerpilih === $namaKelas)>{{ $namaKelas }}</option>
                         @endforeach
@@ -117,19 +119,19 @@
                 </div>
                 <div>
                     <label class="label" for="hobi">Hobi</label>
-                    <select class="input" id="hobi" name="hobi">
-                        <option value="">Pilih hobi</option>
+                    <select class="input" id="hobi" name="hobi" data-searchable>
+                        <option value="" @selected($nilaiPilihan('hobi', $form['hobi'] ?? '') === '')>Pilih hobi</option>
                         @foreach ($opsi['hobi'] as $nilai => $label)
-                            <option value="{{ $nilai }}" @selected($form['hobi'] === $nilai)>{{ $label }}</option>
+                            <option value="{{ $nilai }}" @selected($nilaiPilihan('hobi', $form['hobi'] ?? '') === (string) $nilai)>{{ $label }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div>
                     <label class="label" for="cita_cita">Cita-cita</label>
-                    <select class="input" id="cita_cita" name="cita_cita">
-                        <option value="">Pilih cita-cita</option>
+                    <select class="input" id="cita_cita" name="cita_cita" data-searchable>
+                        <option value="" @selected($nilaiPilihan('cita_cita', $form['cita_cita'] ?? '') === '')>Pilih cita-cita</option>
                         @foreach ($opsi['cita_cita'] as $nilai => $label)
-                            <option value="{{ $nilai }}" @selected($form['cita_cita'] === $nilai)>{{ $label }}</option>
+                            <option value="{{ $nilai }}" @selected($nilaiPilihan('cita_cita', $form['cita_cita'] ?? '') === (string) $nilai)>{{ $label }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -146,14 +148,42 @@
                     <p class="text-[11px] text-mute mt-1">Sesuai akta kelahiran</p>
                 </div>
                 @if (!$modePerbaikan)
-                    <div>
+                    <div data-password-field>
                         <label class="label" for="password">Buat kata sandi</label>
-                        <input class="input" id="password" name="password" type="password" autocomplete="new-password" minlength="8" data-wajib>
+                        <div class="relative" x-data="{ showPassword: false }">
+                            <input class="input pr-11" id="password" name="password" :type="showPassword ? 'text' : 'password'" type="password" autocomplete="new-password" minlength="8" data-wajib>
+                            <button type="button" @click="showPassword = !showPassword" :aria-label="showPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'" :aria-pressed="showPassword" class="absolute right-0 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-r-xl text-slate-400 hover:text-slate-600">
+                                <svg x-show="!showPassword" class="block w-5 h-5 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.432 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                </svg>
+                                <svg x-show="showPassword" class="block w-5 h-5 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 2.036 11.68a1.012 1.012 0 0 0 0 .639C3.423 16.49 7.36 19.5 12 19.5c.993 0 1.953-.138 2.85-.396M6.228 6.228A10.45 10.45 0 0 1 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.432 0 .639a10.52 10.52 0 0 1-4.293 5.3" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.88 9.88a3 3 0 0 0 4.24 4.24" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m3 3 18 18" />
+                                </svg>
+                            </button>
+                        </div>
+                        <p class="err text-xs text-bad mt-1 hidden" data-password-error role="alert"></p>
                         <p class="text-[11px] text-mute mt-1">Minimal 8 karakter. Akun hanya dapat digunakan setelah disahkan Tata Usaha.</p>
                     </div>
-                    <div>
+                    <div data-password-field>
                         <label class="label" for="password_confirmation">Ulangi kata sandi</label>
-                        <input class="input" id="password_confirmation" name="password_confirmation" type="password" autocomplete="new-password" minlength="8" data-wajib>
+                        <div class="relative" x-data="{ showPassword: false }">
+                            <input class="input pr-11" id="password_confirmation" name="password_confirmation" :type="showPassword ? 'text' : 'password'" type="password" autocomplete="new-password" minlength="8" data-wajib>
+                            <button type="button" @click="showPassword = !showPassword" :aria-label="showPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'" :aria-pressed="showPassword" class="absolute right-0 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-r-xl text-slate-400 hover:text-slate-600">
+                                <svg x-show="!showPassword" class="block w-5 h-5 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.432 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                </svg>
+                                <svg x-show="showPassword" class="block w-5 h-5 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 2.036 11.68a1.012 1.012 0 0 0 0 .639C3.423 16.49 7.36 19.5 12 19.5c.993 0 1.953-.138 2.85-.396M6.228 6.228A10.45 10.45 0 0 1 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.432 0 .639a10.52 10.52 0 0 1-4.293 5.3" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.88 9.88a3 3 0 0 0 4.24 4.24" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m3 3 18 18" />
+                                </svg>
+                            </button>
+                        </div>
+                        <p class="err text-xs text-bad mt-1 hidden" data-password-error role="alert"></p>
                     </div>
                 @endif
                 <div>
@@ -189,26 +219,28 @@
                 </div>
                 <div>
                     <label class="label" for="status_keluarga">Status dalam keluarga</label>
-                    <select class="input" id="status_keluarga" name="status_keluarga">
+                    <select class="input" id="status_keluarga" name="status_keluarga" data-searchable>
+                        <option value="" @selected($nilaiPilihan('status_keluarga', $form['status_keluarga'] ?? '') === '')>Pilih status dalam keluarga</option>
                         @foreach ($opsi['status_keluarga'] as $status)
-                            <option value="{{ $status }}" @selected($form['status_keluarga'] === $status)>{{ $status }}</option>
+                            <option value="{{ $status }}" @selected($nilaiPilihan('status_keluarga', $form['status_keluarga'] ?? '') === $status)>{{ $status }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div>
                     <label class="label" for="agama">Agama</label>
-                    <select class="input" id="agama" name="agama" data-wajib>
-                        <option value="">Pilih agama</option>
+                    <select class="input" id="agama" name="agama" data-wajib data-searchable>
+                        <option value="" @selected($nilaiPilihan('agama', $form['agama'] ?? '') === '')>Pilih agama</option>
                         @foreach ($opsi['agama'] as $nilai => $label)
-                            <option value="{{ $nilai }}" @selected(old('agama', $form['agama']) === $nilai)>{{ $label }}</option>
+                            <option value="{{ $nilai }}" @selected($nilaiPilihan('agama', $form['agama'] ?? '') === (string) $nilai)>{{ $label }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div>
                     <label class="label" for="berkebutuhan_khusus">Berkebutuhan Khusus</label>
-                    <select class="input" id="berkebutuhan_khusus" name="berkebutuhan_khusus">
+                    <select class="input" id="berkebutuhan_khusus" name="berkebutuhan_khusus" data-searchable>
+                        <option value="" @selected($nilaiPilihan('berkebutuhan_khusus', $form['berkebutuhan_khusus'] ?? '') === '')>Pilih kebutuhan khusus</option>
                         @foreach ($opsi['kebutuhan'] as $nilai => $label)
-                            <option value="{{ $nilai }}" @selected(old('berkebutuhan_khusus', $form['berkebutuhan_khusus']) === $nilai)>{{ $label }}</option>
+                            <option value="{{ $nilai }}" @selected($nilaiPilihan('berkebutuhan_khusus', $form['berkebutuhan_khusus'] ?? '') === (string) $nilai)>{{ $label }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -229,17 +261,19 @@
                 </div>
                 <div>
                     <label class="label" for="tempat_tinggal">Tempat Tinggal</label>
-                    <select class="input" id="tempat_tinggal" name="tempat_tinggal">
+                    <select class="input" id="tempat_tinggal" name="tempat_tinggal" data-searchable>
+                        <option value="" @selected($nilaiPilihan('tempat_tinggal', $form['tempat_tinggal'] ?? '') === '')>Pilih tempat tinggal</option>
                         @foreach ($opsi['tempat_tinggal'] as $nilai => $label)
-                            <option value="{{ $nilai }}" @selected($form['tempat_tinggal'] === $nilai)>{{ $label }}</option>
+                            <option value="{{ $nilai }}" @selected($nilaiPilihan('tempat_tinggal', $form['tempat_tinggal'] ?? '') === (string) $nilai)>{{ $label }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div>
                     <label class="label" for="moda_transportasi">Moda Transportasi</label>
-                    <select class="input" id="moda_transportasi" name="moda_transportasi">
+                    <select class="input" id="moda_transportasi" name="moda_transportasi" data-searchable>
+                        <option value="" @selected($nilaiPilihan('moda_transportasi', $form['moda_transportasi'] ?? '') === '')>Pilih moda transportasi</option>
                         @foreach ($opsi['moda_transportasi'] as $nilai => $label)
-                            <option value="{{ $nilai }}" @selected($form['moda_transportasi'] === $nilai)>{{ $label }}</option>
+                            <option value="{{ $nilai }}" @selected($nilaiPilihan('moda_transportasi', $form['moda_transportasi'] ?? '') === (string) $nilai)>{{ $label }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -274,9 +308,10 @@
                 </div>
                 <div>
                     <label class="label" for="alasan_pip">Alasan Layak PIP</label>
-                    <select class="input" id="alasan_pip" name="alasan_pip">
+                    <select class="input" id="alasan_pip" name="alasan_pip" data-searchable>
+                        <option value="" @selected($nilaiPilihan('alasan_pip', $form['alasan_pip'] ?? '') === '')>Pilih alasan layak PIP</option>
                         @foreach ($opsi['alasan_pip'] as $nilai => $label)
-                            <option value="{{ $nilai }}" @selected($form['alasan_pip'] === $nilai)>{{ $label }}</option>
+                            <option value="{{ $nilai }}" @selected($nilaiPilihan('alasan_pip', $form['alasan_pip'] ?? '') === (string) $nilai)>{{ $label }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -352,33 +387,37 @@
                     </div>
                     <div>
                         <label class="label" for="ortu_pendidikan_{{ $i }}">Pendidikan</label>
-                        <select class="input" id="ortu_pendidikan_{{ $i }}" name="ortu_pendidikan_{{ $i }}">
+                        <select class="input" id="ortu_pendidikan_{{ $i }}" name="ortu_pendidikan_{{ $i }}" data-searchable>
+                            <option value="" @selected($nilaiPilihan('ortu_pendidikan_'.$i, $o['pendidikan'] ?? '') === '')>Pilih pendidikan</option>
                             @foreach ($opsi['pendidikan'] as $nilai => $label)
-                                <option value="{{ $nilai }}" @selected($o['pendidikan'] === $nilai)>{{ $label }}</option>
+                                <option value="{{ $nilai }}" @selected($nilaiPilihan('ortu_pendidikan_'.$i, $o['pendidikan'] ?? '') === (string) $nilai)>{{ $label }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div>
                         <label class="label" for="ortu_kerja_{{ $i }}">Pekerjaan</label>
-                        <select class="input" id="ortu_kerja_{{ $i }}" name="ortu_kerja_{{ $i }}" @if ($i < 2) data-wajib @endif>
+                        <select class="input" id="ortu_kerja_{{ $i }}" name="ortu_kerja_{{ $i }}" data-searchable @if ($i < 2) data-wajib @endif>
+                            <option value="" @selected($nilaiPilihan('ortu_kerja_'.$i, $o['pekerjaan'] ?? '') === '')>Pilih pekerjaan</option>
                             @foreach ($opsi['pekerjaan'] as $nilai => $label)
-                                <option value="{{ $nilai }}" @selected(old('ortu_kerja_'.$i, $o['pekerjaan']) === $nilai)>{{ $label }}</option>
+                                <option value="{{ $nilai }}" @selected($nilaiPilihan('ortu_kerja_'.$i, $o['pekerjaan'] ?? '') === (string) $nilai)>{{ $label }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div>
                         <label class="label" for="ortu_penghasilan_{{ $i }}">Penghasilan bulanan</label>
-                        <select class="input" id="ortu_penghasilan_{{ $i }}" name="ortu_penghasilan_{{ $i }}">
+                        <select class="input" id="ortu_penghasilan_{{ $i }}" name="ortu_penghasilan_{{ $i }}" data-searchable>
+                            <option value="" @selected($nilaiPilihan('ortu_penghasilan_'.$i, $o['penghasilan'] ?? '') === '')>Pilih penghasilan bulanan</option>
                             @foreach ($opsi['penghasilan'] as $nilai => $label)
-                                <option value="{{ $nilai }}" @selected($o['penghasilan'] === $nilai)>{{ $label }}</option>
+                                <option value="{{ $nilai }}" @selected($nilaiPilihan('ortu_penghasilan_'.$i, $o['penghasilan'] ?? '') === (string) $nilai)>{{ $label }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div>
                         <label class="label" for="ortu_kebutuhan_{{ $i }}">Berkebutuhan Khusus</label>
-                        <select class="input" id="ortu_kebutuhan_{{ $i }}" name="ortu_kebutuhan_{{ $i }}">
+                        <select class="input" id="ortu_kebutuhan_{{ $i }}" name="ortu_kebutuhan_{{ $i }}" data-searchable>
+                            <option value="" @selected($nilaiPilihan('ortu_kebutuhan_'.$i, $o['kebutuhan'] ?? '') === '')>Pilih kebutuhan khusus</option>
                             @foreach ($opsi['kebutuhan'] as $nilai => $label)
-                                <option value="{{ $nilai }}" @selected(old('ortu_kebutuhan_'.$i, $o['kebutuhan']) === $nilai)>{{ $label }}</option>
+                                <option value="{{ $nilai }}" @selected($nilaiPilihan('ortu_kebutuhan_'.$i, $o['kebutuhan'] ?? '') === (string) $nilai)>{{ $label }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -396,7 +435,7 @@
     </div>
 
     <div data-step="2" class="space-y-4 hidden">
-        <div class="card" x-data="{ jarak: '{{ old('jarak', $form['jarak']) }}' }">
+        <div class="card" x-data="{ jarak: '{{ $nilaiPilihan('jarak', $form['jarak'] ?? '') }}' }">
             <h2 class="sec-title">F. Data Periodik</h2>
             <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
@@ -409,17 +448,19 @@
                 </div>
                 <div>
                     <label class="label" for="gol_darah">Gol. Darah</label>
-                    <select class="input" id="gol_darah" name="gol_darah">
+                    <select class="input" id="gol_darah" name="gol_darah" data-searchable>
+                        <option value="" @selected($nilaiPilihan('gol_darah', $form['gol_darah'] ?? '') === '')>Pilih golongan darah</option>
                         @foreach ($opsi['gol_darah'] as $gol)
-                            <option value="{{ $gol }}" @selected($form['gol_darah'] === $gol)>{{ $gol }}</option>
+                            <option value="{{ $gol }}" @selected($nilaiPilihan('gol_darah', $form['gol_darah'] ?? '') === (string) $gol)>{{ $gol }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div>
                     <label class="label" for="jarak">Jarak tempat tinggal ke sekolah</label>
-                    <select class="input" id="jarak" name="jarak" x-model="jarak">
-                        <option value="1" @selected(old('jarak', $form['jarak']) === '1')>Kurang dari 1 km</option>
-                        <option value="2" @selected(old('jarak', $form['jarak']) === '2')>Lebih dari 1 km (sebutkan ... km)</option>
+                    <select class="input" id="jarak" name="jarak" x-model="jarak" data-searchable>
+                        <option value="" @selected($nilaiPilihan('jarak', $form['jarak'] ?? '') === '')>Pilih jarak tempat tinggal</option>
+                        <option value="1" @selected($nilaiPilihan('jarak', $form['jarak'] ?? '') === '1')>Kurang dari 1 km</option>
+                        <option value="2" @selected($nilaiPilihan('jarak', $form['jarak'] ?? '') === '2')>Lebih dari 1 km (sebutkan ... km)</option>
                     </select>
                 </div>
                 <div x-show="jarak === '2'">
@@ -449,7 +490,8 @@
                 <div class="grid sm:grid-cols-2 lg:grid-cols-6 gap-3 mb-3 items-end">
                     <div>
                         <label class="label">Jenis</label>
-                        <select class="input" x-model="row.jenis" name="prestasi_jenis[]">
+                        <select class="input" x-model="row.jenis" name="prestasi_jenis[]" data-searchable>
+                            <option value="">Pilih jenis prestasi</option>
                             @foreach ($opsi['prestasi_jenis'] as $nilai => $label)
                                 <option value="{{ $nilai }}">{{ $label }}</option>
                             @endforeach
@@ -457,7 +499,8 @@
                     </div>
                     <div>
                         <label class="label">Tingkat</label>
-                        <select class="input" x-model="row.tingkat" name="prestasi_tingkat[]">
+                        <select class="input" x-model="row.tingkat" name="prestasi_tingkat[]" data-searchable>
+                            <option value="">Pilih tingkat prestasi</option>
                             @foreach ($opsi['prestasi_tingkat'] as $nilai => $label)
                                 <option value="{{ $nilai }}">{{ $label }}</option>
                             @endforeach
@@ -478,7 +521,7 @@
                     <button type="button" class="btn btn-ghost" x-on:click="prestasi.splice(i, 1); berubah = true">Hapus</button>
                 </div>
             </template>
-            <button type="button" class="btn btn-ghost" x-on:click="prestasi.push({ jenis: '1', tingkat: '1', nama: '', tahun: '', penyelenggara: '' }); berubah = true">+ Tambah Prestasi</button>
+            <button type="button" class="btn btn-ghost" x-on:click="prestasi.push({ jenis: '', tingkat: '', nama: '', tahun: '', penyelenggara: '' }); berubah = true">+ Tambah Prestasi</button>
         </div>
 
         <div class="card" x-data='{ beasiswa: @json($form["beasiswa"]), berubah: false }'>
@@ -488,7 +531,8 @@
                 <div class="grid sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-3 items-end">
                     <div>
                         <label class="label">Jenis</label>
-                        <select class="input" x-model="row.jenis" name="beasiswa_jenis[]">
+                        <select class="input" x-model="row.jenis" name="beasiswa_jenis[]" data-searchable>
+                            <option value="">Pilih jenis beasiswa</option>
                             @foreach ($opsi['beasiswa_jenis'] as $nilai => $label)
                                 <option value="{{ $nilai }}">{{ $label }}</option>
                             @endforeach
@@ -509,7 +553,7 @@
                     <button type="button" class="btn btn-ghost" x-on:click="beasiswa.splice(i, 1); berubah = true">Hapus</button>
                 </div>
             </template>
-            <button type="button" class="btn btn-ghost" x-on:click="beasiswa.push({ jenis: '01', keterangan: '', tahun_mulai: '', tahun_selesai: '' }); berubah = true">+ Tambah Beasiswa</button>
+            <button type="button" class="btn btn-ghost" x-on:click="beasiswa.push({ jenis: '', keterangan: '', tahun_mulai: '', tahun_selesai: '' }); berubah = true">+ Tambah Beasiswa</button>
         </div>
 
         <div class="card">
@@ -572,13 +616,13 @@
     {{-- tombol navigasi: menempel di bawah layar pada HP --}}
     <div class="sticky bottom-0 z-20 -mx-4 px-4 py-3 bg-paper/90 backdrop-blur border-t border-line sm:static sm:mx-0 sm:px-0 sm:py-0 sm:bg-transparent sm:backdrop-blur-none sm:border-0">
         <div class="flex items-center gap-2">
-            <button type="button" id="prev" class="btn btn-ghost">← Kembali</button>
+            <button type="button" id="prev" class="btn btn-ghost">Kembali</button>
             @unless ($modePerbaikan)
                 <button type="submit" formaction="{{ route('ppdb.draf') }}" formnovalidate class="btn btn-ghost ml-auto">
                     <span class="sm:hidden">Draf</span><span class="hidden sm:inline">Simpan draf</span>
                 </button>
             @endunless
-            <button type="button" id="next" class="btn btn-flame">Lanjut →</button>
+            <button type="button" id="next" class="btn btn-flame">Lanjut</button>
         </div>
     </div>
 </form>
@@ -596,7 +640,8 @@
     // Tanda * merah di label kolom wajib
     document.querySelectorAll('[data-wajib]').forEach(function (el) {
         if (el.type === 'file' || el.type === 'checkbox') return;
-        var lb = el.parentNode.querySelector('label');
+        var host = el.closest('[data-password-field]') || el.parentNode;
+        var lb = host.querySelector('label');
         if (!lb) return;
         el.dataset.nama = el.dataset.nama || lb.textContent.trim();
         lb.insertAdjacentHTML('beforeend', ' <span class="text-bad">*</span>');
@@ -604,12 +649,18 @@
 
     function nm(el) {
         if (el.dataset.nama) return el.dataset.nama;
-        var lb = el.parentNode.querySelector('label');
+        var host = el.closest('[data-password-field]') || el.parentNode;
+        var lb = host.querySelector('label');
         return lb ? lb.textContent.trim() : el.name;
     }
     function boxErr(el) {
-        var host = (el.type === 'file' || el.type === 'checkbox') ? el.closest('label').parentNode : el.parentNode;
-        var p = host.querySelector(':scope > .err');
+        var passwordField = el.closest('[data-password-field]');
+        var host = (el.type === 'file' || el.type === 'checkbox')
+            ? el.closest('label').parentNode
+            : (passwordField || el.parentNode);
+        var p = passwordField
+            ? passwordField.querySelector('[data-password-error]')
+            : host.querySelector(':scope > .err');
         if (!p) {
             p = document.createElement('p');
             p.className = 'err text-xs text-bad mt-1 hidden';
@@ -683,7 +734,7 @@
         document.getElementById('stepLabel').textContent = 'Langkah ' + (n + 1) + ' dari ' + steps.length + ' · ' + judul[n];
         document.getElementById('langkah_terakhir').value = n;
         prev.style.visibility = n === 0 ? 'hidden' : 'visible';
-        next.textContent = n === steps.length - 1 ? (modePerbaikan ? 'Kirim ulang berkas' : 'Kirim pendaftaran') : 'Lanjut →';
+        next.textContent = n === steps.length - 1 ? (modePerbaikan ? 'Kirim ulang berkas' : 'Kirim pendaftaran') : 'Lanjut';
         window.scrollTo(0, 0);
     }
     prev.onclick = function () { if (cur > 0) { ringkas.classList.add('hidden'); show(cur - 1); } };

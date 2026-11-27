@@ -32,7 +32,7 @@
     </div>
 
     <div class="mt-6 flex flex-wrap justify-center gap-2.5">
-        <a href="{{ route('login') }}" class="btn btn-flame"><x-icon name="enter" size="w-4 h-4" /> Ke Halaman Login</a>
+        <a href="{{ route('login') }}" class="btn btn-flame">Ke Halaman Login</a>
         <a href="{{ route('beranda') }}" class="btn btn-ghost"><x-icon name="home" size="w-4 h-4" /> Halaman Utama</a>
     </div>
 

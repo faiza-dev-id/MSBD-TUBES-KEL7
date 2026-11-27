@@ -32,5 +32,5 @@
     </table>
 </div>
 @endif
-<a href="{{ route('tu.kelas', $sem ? ['semester' => $sem->id_semester] : []) }}" class="inline-block mt-4 text-sm text-flame-dark font-semibold">← Kembali ke daftar kelas</a>
+<a href="{{ route('tu.kelas', $sem ? ['semester' => $sem->id_semester] : []) }}" class="inline-block mt-4 text-sm text-flame-dark font-semibold">Kembali ke daftar kelas</a>
 @endsection

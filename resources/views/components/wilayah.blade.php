@@ -22,22 +22,24 @@
     <div class="min-w-0">
         <label class="label" for="w-prov">Provinsi</label>
         <select class="input min-w-0 disabled:bg-paper disabled:text-mute/70 disabled:cursor-not-allowed"
+                data-searchable
                 id="w-prov" name="prov" @if ($wajib) data-wajib @endif>
             <option value="">Pilih Provinsi</option>
             @foreach ($daftarProvinsi as $provinsiItem)
                 <option value="{{ $provinsiItem->nama_provinsi }}"
                         data-id="{{ $provinsiItem->id_provinsi }}"
-                        @selected($provinsiTerpilih === $provinsiItem->nama_provinsi)>{{ $provinsiItem->nama_provinsi }}</option>
+                        @selected($provinsiTerpilih === $provinsiItem->nama_provinsi)>{{ \Illuminate\Support\Str::ucfirst($provinsiItem->nama_provinsi) }}</option>
             @endforeach
         </select>
     </div>
     <div class="min-w-0">
         <label class="label" for="w-kota">Kabupaten/Kota</label>
         <select class="input min-w-0 disabled:bg-paper disabled:text-mute/70 disabled:cursor-not-allowed"
+                data-searchable
                 id="w-kota" name="kota" @disabled(! $provinsiAwal) @if ($wajib) data-wajib @endif>
             <option value="">{{ $provinsiAwal ? 'Pilih Kabupaten/Kota' : 'Pilih Provinsi dulu' }}</option>
             @foreach ($daftarKabupatenKota as $kabupatenKotaItem)
-                <option value="{{ $kabupatenKotaItem->nama_kota }}" @selected($kotaTerpilih === $kabupatenKotaItem->nama_kota)>{{ $kabupatenKotaItem->nama_kota }}</option>
+                <option value="{{ $kabupatenKotaItem->nama_kota }}" @selected($kotaTerpilih === $kabupatenKotaItem->nama_kota)>{{ \Illuminate\Support\Str::ucfirst($kabupatenKotaItem->nama_kota) }}</option>
             @endforeach
         </select>
     </div>
@@ -67,11 +69,15 @@
         daftar.forEach(function (kabupatenKota) {
             var opsi = document.createElement('option');
             opsi.value = kabupatenKota.nama;
-            opsi.textContent = kabupatenKota.nama;
+            opsi.textContent = kapitalAwal(kabupatenKota.nama);
             kota.appendChild(opsi);
         });
 
         kota.disabled = daftar.length === 0;
+    }
+
+    function kapitalAwal(teks) {
+        return teks ? teks.charAt(0).toLocaleUpperCase('id-ID') + teks.slice(1) : teks;
     }
 
     function muatKabupatenKota() {

@@ -3,7 +3,7 @@
 @section('heading', 'Dokumen siswa')
 @section('sub', ($nama ?? 'Siswa #' . $id) . ' · tambah, ganti, atau nonaktifkan dokumen.')
 @section('content')
-<div class="mb-4"><a href="{{ route('tu.siswa.detail', $id) }}" class="text-sm font-semibold text-flame-dark hover:underline">&larr; Kembali ke detail siswa</a></div>
+<div class="mb-4"><a href="{{ route('tu.siswa.detail', $id) }}" class="text-sm font-semibold text-flame-dark hover:underline">Kembali ke detail siswa</a></div>
 
 <div class="grid items-start gap-4 lg:grid-cols-[1.3fr_1fr]">
     <div class="card">

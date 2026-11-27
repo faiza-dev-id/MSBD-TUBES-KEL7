@@ -26,7 +26,7 @@
             <div class="py-3 border-b border-line last:border-0 text-sm flex items-center justify-between gap-3">
                 <div>
                     <b>{{ $p['tahun'] }}</b>
-                    <div class="text-xs text-mute">{{ $p['buka'] }} → {{ $p['tutup'] }}</div>
+                    <div class="text-xs text-mute">{{ $p['buka'] }} s.d. {{ $p['tutup'] }}</div>
                     @if ($p['persentase_konfirmasi'] !== null)
                         <div class="text-xs text-mute">Konfirmasi data: {{ number_format($p['persentase_konfirmasi'], 2, ',', '.') }}%</div>
                     @endif

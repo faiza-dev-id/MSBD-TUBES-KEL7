@@ -32,9 +32,9 @@
     </div>
 
     <div class="mt-6 flex flex-wrap justify-center gap-2.5">
-        <button type="button" onclick="history.length > 1 ? history.back() : location.assign('{{ route('beranda') }}')" class="btn btn-ghost">← Kembali</button>
+        <button type="button" onclick="history.length > 1 ? history.back() : location.assign('{{ route('beranda') }}')" class="btn btn-ghost">Kembali</button>
         <a href="{{ route('beranda') }}" class="btn btn-flame"><x-icon name="home" size="w-4 h-4" /> Halaman Utama</a>
-        <a href="{{ route('login') }}" class="btn !bg-ok hover:!bg-ok/90"><x-icon name="enter" size="w-4 h-4" /> Login</a>
+        <a href="{{ route('login') }}" class="btn !bg-ok hover:!bg-ok/90">Login</a>
     </div>
 
     <p class="mt-7 text-xs text-mute">Butuh bantuan lebih lanjut? Hubungi Tata Usaha sekolah.</p>

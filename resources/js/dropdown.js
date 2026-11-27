@@ -47,21 +47,23 @@ function pasang(sel) {
 
         const opsi = Array.from(sel.options);
         const panel = document.createElement('div');
-        panel.className = 'dd-panel fixed z-[70] rounded-xl border border-line bg-white shadow-xl shadow-navy/15 overflow-hidden';
+        panel.className = 'dd-panel fixed z-[70] rounded-xl border border-line bg-white shadow-xl shadow-navy/15 overflow-hidden overscroll-contain';
+        panel.setAttribute('data-lenis-prevent', '');
 
         let cari = null;
-        if (opsi.length > 8) {
+        if (opsi.length > 8 || sel.hasAttribute('data-searchable')) {
             const w = document.createElement('div');
             w.className = 'p-2 border-b border-line';
             cari = document.createElement('input');
             cari.type = 'search';
-            cari.placeholder = 'Cari…';
+            cari.placeholder = 'Cari...';
             cari.className = 'input !py-2 !text-sm';
             w.appendChild(cari);
             panel.appendChild(w);
         }
         const ul = document.createElement('ul');
-        ul.className = 'max-h-60 overflow-y-auto p-1';
+        ul.className = 'max-h-60 overflow-y-auto overscroll-contain p-1';
+        ul.setAttribute('data-lenis-prevent', '');
         ul.setAttribute('role', 'listbox');
         panel.appendChild(ul);
 
@@ -166,6 +168,19 @@ function pasang(sel) {
 function mulai() {
     if (!(window.matchMedia && window.matchMedia(DESKTOP).matches)) return;
     document.querySelectorAll('select.input:not([data-native])').forEach(pasang);
+
+    const form = document.getElementById('ppdb');
+    if (!form) return;
+
+    new MutationObserver((mutasi) => {
+        mutasi.forEach(({ addedNodes }) => {
+            addedNodes.forEach((node) => {
+                if (!(node instanceof Element)) return;
+                if (node.matches('select.input:not([data-native])')) pasang(node);
+                node.querySelectorAll('select.input:not([data-native])').forEach(pasang);
+            });
+        });
+    }).observe(form, { childList: true, subtree: true });
 }
 if (typeof document !== 'undefined') {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mulai); else mulai();
