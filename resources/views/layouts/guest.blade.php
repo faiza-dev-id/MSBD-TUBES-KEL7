@@ -8,7 +8,7 @@
     @fonts
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-screen">
+<body class="theme-background min-h-screen" style="--theme-foto: url('{{ asset('images/sekolah.jpeg') }}')">
     @yield('content')
 </body>
 </html>

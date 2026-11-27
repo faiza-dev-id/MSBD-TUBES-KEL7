@@ -7,7 +7,7 @@
 @endphp
 <section {{ $attributes->merge(['class' => "relative mb-6 overflow-hidden rounded-3xl p-6 text-white shadow-lg sm:p-8 $latar"]) }}>
     @if ($gambar)
-        <img src="{{ asset($gambar) }}" alt="" class="absolute inset-0 size-full object-cover">
+        <img data-latar-foto src="{{ asset($gambar) }}" alt="" class="absolute inset-0 size-full object-cover">
         <div class="absolute inset-0 bg-linear-to-r from-navy/90 via-navy/75 to-navy/40"></div>
     @endif
     <div class="absolute inset-0 opacity-[.08]" style="background-image: radial-gradient(#fff 1.2px, transparent 1.2px); background-size: 18px 18px"></div>

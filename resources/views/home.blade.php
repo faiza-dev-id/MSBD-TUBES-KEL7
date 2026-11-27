@@ -27,7 +27,7 @@
                      aria-hidden="{{ $i === 0 ? 'false' : 'true' }}">
 
                 @if ($s['gambar'])
-                    <img src="{{ asset($s['gambar']) }}" alt="" class="absolute inset-0 size-full object-cover"
+                    <img data-latar-foto src="{{ asset($s['gambar']) }}" alt="" class="absolute inset-0 size-full object-cover"
                          @if ($i > 0) loading="lazy" @endif>
                 @else
                     <div class="absolute inset-0 bg-linear-to-br from-navy via-navy-soft to-flame"></div>

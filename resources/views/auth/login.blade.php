@@ -9,7 +9,7 @@
 @endphp
 <div class="relative min-h-screen grid place-items-center px-4 py-10 sm:py-14 overflow-hidden">
     @if ($fotoSekolah)
-        <img src="{{ $fotoSekolah }}" alt="" class="absolute inset-0 size-full object-cover">
+        <img data-latar-foto src="{{ $fotoSekolah }}" alt="" class="absolute inset-0 size-full object-cover">
         <div aria-hidden="true" class="absolute inset-0 bg-navy/75"></div>
     @else
         <div aria-hidden="true" class="absolute inset-0 bg-linear-to-br from-navy via-navy-soft to-flame"></div>
